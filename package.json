@@ -1,0 +1,19 @@
+{
+  "name": "VUScheduler",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "start": "node app"
+  },
+  "engines": {
+    "node": "~0.8.14",
+    "npm": "~1.1.65"
+  },
+  "dependencies": {
+    "express": "~3.1.0",
+    "ejs": "~0.8.3",
+    "ejs-locals": "~0.2.5",
+    "less-middleware": "~0.1.9",
+    "async": "~0.2.6"
+  }
+}
