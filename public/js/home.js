@@ -20,9 +20,9 @@ $(document).ready(function () {
 		
 	if (majorId) {
 		var	major = new Goal({
-			_id: majorId
+			id: majorId
 		});
-		//major.fetch();
+		major.fetch();
 	} else {
 		var major = undefined;
 	}
@@ -45,7 +45,11 @@ $(document).ready(function () {
 /* Models */
 
 var Course = Backbone.Model.extend({
-	
+	urlRoot: '/courses',
+	getColorID: function() {
+		//TODO: make this return the color ID of its parent requirement
+		return 1;
+	}
 });
 
 var Schedule = Backbone.Model.extend({
@@ -66,11 +70,12 @@ var Schedule = Backbone.Model.extend({
 	}
 });
 
-
-var Requirement = Backbone.Model.extend({
-});
-
 var Goal = Backbone.Model.extend({
+	urlRoot: '/goals',
+	
+	initialize: function() {
+		// Make requirement objects for each.
+	}
 });
 
 /* Collections */
@@ -113,8 +118,14 @@ var ScheduleGrid = Backbone.View.extend({
 	
 	render: function() {
 		this.model.get('semesters').forEach((function(semester) {
-			this.$el.append('<div class="scheduleCol"><div class="scheduleColHeader">' + semester.getName() + '</div><div class="scheduleColBody"></div></div>');
+			this.$el.append('<div class="scheduleCol ' + semester.getSeason().toLowerCase() + '"><div class="scheduleColHeader">' + semester.getName() + '</div><div class="scheduleColBody"></div></div>');
 		}).bind(this));
+		
+		$('.scheduleCol').on('sortreceive', this.handleDropOnColumn);
+	},
+	
+	handleDropOnColumn: function(event, ui) {
+		console.log(event);
 	}
 	
 });
@@ -127,7 +138,13 @@ var GoalView = Backbone.View.extend({
 			var colorId = i % 9 + 1;
 			this.$el.append('<div class="goalSection color' + colorId + '"><h2>' + requirement.description + '</h2><div class="goalSectionCourseList"></div>');
 		
-			//TODO: go through the courses list and initialize any course views.
+			_.each(requirement.req, function(reqitem, i) {
+				// If a course, initialize a course model and view and append to .goalSection
+				// Make sure the course has an "originReq" property with a reference to a requirement object
+				
+				// If a requirement, recurse down. Requirements not at the top level inherit their parent's colorId.
+				
+			});
 		})
 	}
 	
@@ -135,5 +152,11 @@ var GoalView = Backbone.View.extend({
 
 // A draggable block representing a course
 var CourseView = Backbone.View.extend({
+	pixelsPerHour: 21,
 	
+	render: function() {
+		this.$el.addClass('scheduleBlock');
+		this.$el.append('<div class="scheduleBlock"><div class="scheduleBlockHeader color' + this.model.getColorId() + '">' + this.model.getShortName() + '	</div><div class="scheduleBlockBody">' + this.model.get('description') + '</div></div>');
+		this.$el.find('.scheduleBlockBody').css('height', this.pixelsPerHour * ((this.model.get('numOfCredits'))[0] - 1));
+	}
 });
