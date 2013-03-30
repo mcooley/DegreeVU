@@ -13,11 +13,17 @@ $(document).ready(function () {
 		gradYear = 2016;
 	}
 	
-	var defaultSchedule = new Schedule(gradYear);
-
-	var scheduleGrid = new ScheduleGrid({model: defaultSchedule, el:'#scheduleGrid'});
-	
+	var scheduleGrid = new ScheduleGrid({model: new Schedule(gradYear), el:'#scheduleGrid'});
 	scheduleGrid.render();
+	
+	var majorId = getQueryString('major');
+		
+	var	major = new Goal({
+		_id: majorId
+	});
+	major.fetch();
+	
+	var goalsList = new GoalsList([major], {el:'#goals'});	
 	
 	
 	
@@ -55,41 +61,9 @@ var Schedule = Backbone.Model.extend({
 
 
 var Requirement = Backbone.Model.extend({
-	check: function(schedule) {
-		//TODO: check if schedule meets requrement. Probably use schedule.has* methods. Probably eval some code specific to each requirement.
-		//Return true on success or string on a failure
-	},
-	
-	courseCounts: function(course) {
-		//TODO: check if course counts toward requirement
-	}
 });
 
 var Goal = Backbone.Model.extend({
-
-	check: function(schedule) {
-		var ok = true;
-		
-		this.get('requirements').each(function(requirement) {
-			var componentResult = requirement.check(schedule);
-			
-			if (componentResult !== true) {
-				ok = componentResult;
-			}
-		});
-		return ok;
-	},
-	
-	courseCounts: function(course) {
-		var ok = false;
-		this.get('requirements').each(function(requirement) {
-			if (requirement.courseCounts(course)) {
-				ok = true;
-			}
-		});
-		return ok;
-	}
-	
 });
 
 /* Collections */
@@ -135,5 +109,24 @@ var ScheduleGrid = Backbone.View.extend({
 			this.$el.append('<div class="scheduleCol"><div class="scheduleColHeader">' + semester.getName() + '</div><div class="scheduleColBody"></div></div>');
 		}).bind(this));
 	}
+	
+});
+
+// A tab listing the requirements for a goal.
+var GoalView = Backbone.View.extend({
+
+	render: function() {
+		_.each(this.model.get('requirements'), function(requirement, i) {
+			var colorId = i % 9 + 1;
+			this.$el.append('<div class="goalSection color' + colorId + '"><h2>' + requirement.description + '</h2><div class="goalSectionCourseList"></div>');
+		
+			//TODO: go through the courses list and initialize any course views.
+		})
+	}
+	
+});
+
+// A draggable block representing a course
+var CourseView = Backbone.View.extend({
 	
 });
