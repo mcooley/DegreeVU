@@ -97,17 +97,15 @@ html, body {
 	width:@scheduleBlockWidth;
 	display:inline-block;
 	vertical-align:top;
-	height:@pixelsPerHour * 20;
+	//height:@pixelsPerHour * 20;
+	box-sizing:border-box;
+	height:100%;
 	background-color:#eee;
 	font-size:10pt;
-	position:relative;
-	padding-top:40px;
 	border-left:1px solid #333;
 }
 
 .scheduleColHeader {
-	position:absolute;
-	top:0;
 	height:30px;
 	padding-top:10px;
 	width:100%;
@@ -115,6 +113,11 @@ html, body {
 	text-align:center;
 	background-color:#666;
 	color:#eee;
+	font-size:1.2em;
+}
+
+.scheduleColBody {
+	min-height:100%;
 }
 
 .scheduleBlock {

@@ -9,7 +9,7 @@ $(document).ready(function () {
 	console.log();
 	
 	var gradYear = parseInt(getQueryString('gradYear'), 10);
-	if (Math.abs(gradYear - 2013) > 4) {
+	if (!_.isFinite(gradYear) || Math.abs(gradYear - 2013) > 4) {
 		gradYear = 2016;
 	}
 	
@@ -18,20 +18,27 @@ $(document).ready(function () {
 	
 	var majorId = getQueryString('major');
 		
-	var	major = new Goal({
-		_id: majorId
-	});
-	major.fetch();
-	
+	if (majorId) {
+		var	major = new Goal({
+			_id: majorId
+		});
+		//major.fetch();
+	} else {
+		var major = undefined;
+	}
+
 	var goalsList = new GoalsList([major], {el:'#goals'});	
 	
 	
 	
-	$('.scheduleCol, .goalSectionCourseList').sortable({
-		connectWith: '.scheduleCol, .goalSectionCourseList',
+	$('.scheduleColBody, .goalSectionCourseList').sortable({
+		connectWith: '.scheduleColBody, .goalSectionCourseList',
 		items: '.scheduleBlock',
 		containment: 'body',
-		cursor: 'move'
+		cursor: 'move',
+		opacity: 0.75,
+		distance: 5,
+		appendTo: $('body')
 	}).disableSelection();
 });
 
