@@ -17,7 +17,7 @@ $(document).ready(function () {
 	scheduleGrid.render();
 	
 	var majorId = getQueryString('major');
-		
+	/*
 	if (majorId) {
 		var	major = new Goal({
 			id: majorId
@@ -28,7 +28,16 @@ $(document).ready(function () {
 	}
 
 	var goalsList = new GoalsList([major], {el:'#goals'});	
+	*/
 	
+	var testCourse = new Course({id: '51571cbf9c27196b6293f335'});
+	testCourse.fetch({success: function(model) {
+		var el = $('.scheduleColBody:eq(0)').append('<div></div');
+		
+		var view = new CourseView({model:model, el:el});
+		view.render();
+		
+	}});
 	
 	
 	$('.scheduleColBody, .goalSectionCourseList').sortable({
@@ -46,7 +55,7 @@ $(document).ready(function () {
 
 var Course = Backbone.Model.extend({
 	urlRoot: '/courses',
-	getColorID: function() {
+	getColorId: function() {
 		//TODO: make this return the color ID of its parent requirement
 		return 1;
 	}
@@ -121,12 +130,27 @@ var ScheduleGrid = Backbone.View.extend({
 			this.$el.append('<div class="scheduleCol ' + semester.getSeason().toLowerCase() + '"><div class="scheduleColHeader">' + semester.getName() + '</div><div class="scheduleColBody"></div></div>');
 		}).bind(this));
 		
+		$('.scheduleCol').on('sortremove', this.handleRemoveFromColumn);
 		$('.scheduleCol').on('sortreceive', this.handleDropOnColumn);
 	},
 	
 	handleDropOnColumn: function(event, ui) {
+
+		
+		// If previously came from another semester, remove from that semester
+		// Add to new semester
+		
 		console.log(event);
+		console.log(ui);
+	},
+	
+	handleRemoveFromColumn: function(event, ui) {
+		console.log('Remove from old semester!');
 	}
+	
+});
+
+var SemesterView = Backbone.View.extend({
 	
 });
 
@@ -156,7 +180,7 @@ var CourseView = Backbone.View.extend({
 	
 	render: function() {
 		this.$el.addClass('scheduleBlock');
-		this.$el.append('<div class="scheduleBlock"><div class="scheduleBlockHeader color' + this.model.getColorId() + '">' + this.model.getShortName() + '	</div><div class="scheduleBlockBody">' + this.model.get('description') + '</div></div>');
+		this.$el.append('<div class="scheduleBlock"><div class="scheduleBlockHeader color' + this.model.getColorId() + '">' + this.model.get('courseNumber') + '</div><div class="scheduleBlockBody">' + this.model.get('courseName') + '</div></div>');
 		this.$el.find('.scheduleBlockBody').css('height', this.pixelsPerHour * ((this.model.get('numOfCredits'))[0] - 1));
 	}
 });
