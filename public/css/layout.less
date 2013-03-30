@@ -1,3 +1,141 @@
-h1 {
-	font-size:0.5em;
+/* Common stuff */
+.quick-gradient (@origin: left, @alpha: 0.2) {
+	background-image: -webkit-linear-gradient(@origin, rgba(0,0,0,0.0), rgba(0,0,0,@alpha));
+	background-image: -moz-linear-gradient(@origin, rgba(0,0,0,0.0), rgba(0,0,0,@alpha));
+	background-image: -o-linear-gradient(@origin, rgba(0,0,0,0.0), rgba(0,0,0,@alpha));
+	background-image: -ms-linear-gradient(@origin, rgba(0,0,0,0.0), rgba(0,0,0,@alpha));
+	background-image: linear-gradient(@origin, rgba(0,0,0,0.0), rgba(0,0,0,@alpha));
+}
+
+
+html, body {
+	height:100%;
+}
+
+/* Colors */
+
+@color1: #ff2c00;
+@color2: #ff6a00;
+@color3: #ffd600;
+@color4: #8eeb00;
+@color5: #00c618;
+@color6: #00938e;
+@color7: #1240ab;
+@color8: #510fad;
+@color9: #c7007d;
+
+
+.scheduleBlockHeader.color1 {
+	background-color:@color1;
+}
+.scheduleBlockHeader.color2 {
+	background-color:@color2;
+}
+.scheduleBlockHeader.color3 {
+	background-color:@color3;
+}
+.scheduleBlockHeader.color4 {
+	background-color:@color4;
+}
+.scheduleBlockHeader.color5 {
+	background-color:@color5;
+}
+.scheduleBlockHeader.color6 {
+	background-color:@color6;
+}
+.scheduleBlockHeader.color7 {
+	background-color:@color7;
+}
+.scheduleBlockHeader.color8 {
+	background-color:@color8;
+}
+.scheduleBlockHeader.color9 {
+	background-color:@color9;
+}
+
+
+/* Schedule grid */
+@pixelsPerHour: 21px;
+@scheduleBlockWidth:170px;
+
+#scheduleGrid {
+	width:100%;
+	height:40%;
+	overflow:auto;
+	white-space:nowrap;
+}
+
+.scheduleCol {
+	width:@scheduleBlockWidth;
+	display:inline-block;
+	vertical-align:top;
+	height:@pixelsPerHour * 20;
+	background-color:#eee;
+	font-size:10pt;
+	position:relative;
+	padding-top:20px;
+}
+
+.scheduleColHeader {
+	position:absolute;
+	top:0;
+	height:20px;
+	width:100%;
+	font-weight:bold;
+	text-align:center;
+	background-color:#666;
+	color:#eee;
+}
+
+.scheduleBlock {
+	width:@scheduleBlockWidth;
+}
+
+.scheduleBlockHeader {
+	border-top-left-radius:5px;
+	border-top-right-radius:5px;
+	box-sizing:border-box;
+	margin-top:1px;
+	height:@pixelsPerHour;
+	color:#fff;
+	padding-left:5px;
+	padding-right:5px;
+	padding-top:2px;
+	.quick-gradient(top);
+}
+
+.scheduleBlockBody {
+	box-sizing:border-box;
+	background-color:#ccc;
+	border-bottom-left-radius:5px;
+	border-bottom-right-radius:5px;
+	padding-left:5px;
+	border:1px solid #aaa;
+	height:@pixelsPerHour;
+	overflow:hidden;
+}
+
+/* Goals tabs */
+#goals {
+	padding:10px;
+	height:50%;
+}
+
+#goals .tab-pane {
+	padding:15px;
+}
+
+.goalSectionCourseList {
+	min-height:@pixelsPerHour * 3;
+	width:100%;
+}
+
+.goalSection h2 {
+	font-size:1.4em;
+}
+
+.goalSectionCourseList > .scheduleBlock {
+	display:inline-block;
+	vertical-align:top;
+	margin-right:10px;
 }
