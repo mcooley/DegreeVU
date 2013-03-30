@@ -1,5 +1,19 @@
 $(document).ready(function () {
-	var defaultSchedule = new Schedule(2016);
+	var getQueryString = function (key) {
+		var re=new RegExp('(?:\\?|&)'+key+'=(.*?)(?=&|$)','gi');
+		var r=[], m;
+		while ((m=re.exec(document.location.search)) != null) r.push(m[1]);
+		return r;
+	}
+	
+	console.log();
+	
+	var gradYear = parseInt(getQueryString('gradYear'), 10);
+	if (Math.abs(gradYear - 2013) > 4) {
+		gradYear = 2016;
+	}
+	
+	var defaultSchedule = new Schedule(gradYear);
 
 	var scheduleGrid = new ScheduleGrid({model: defaultSchedule, el:'#scheduleGrid'});
 	
@@ -18,10 +32,6 @@ $(document).ready(function () {
 /* Models */
 
 var Course = Backbone.Model.extend({
-	check: function(schedule) {
-		//TODO: write validation
-	},
-	
 	
 });
 
