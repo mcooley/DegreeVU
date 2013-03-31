@@ -14,6 +14,9 @@
 		<label for="major">Choose your (most likely) major:</label>
 		<select id="major" name="major">
 			<!-- TODO: generate this list from the database -->
+			<% for (var i = 0; i < queryArray.length; ++i) {%>
+				<option value = <%=queryArray[i]._id%> ><%=queryArray[i].name%></option>
+			<%}%>
 			<option value="5156f582300426dacea28766">Test Major</option>
 		</select>
 		
