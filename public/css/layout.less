@@ -15,8 +15,8 @@ html, body {
 /* Colors */
 
 @color1: #ff2c00;
-@color6: #ff6a00;
-@color3: #ffd600;
+@color3: #ff6a00;
+@color6: #ffd600;
 @color8: #8eeb00;
 @color5: #00c618;
 @color2: #00938e;
@@ -137,13 +137,17 @@ html, body {
 	border-top-left-radius:5px;
 	border-top-right-radius:5px;
 	box-sizing:border-box;
-	margin-top:1px;
 	height:@pixelsPerHour;
 	color:#fff;
 	padding-left:5px;
 	padding-right:5px;
 	padding-top:2px;
 	.quick-gradient(top);
+}
+
+.scheduleBlockHeader.oneHour {
+	border-bottom-left-radius:5px;
+	border-bottom-right-radius:5px;
 }
 
 .scheduleBlockBody {
@@ -170,7 +174,7 @@ html, body {
 }
 
 .goalSectionCourseList {
-	min-height:@pixelsPerHour * 3;
+	margin-bottom:30px;
 	width:100%;
 }
 
@@ -201,6 +205,7 @@ html, body {
 	display:inline-block;
 	vertical-align:top;
 	margin-right:10px;
+	margin-bottom:5px;
 }
 
 .goalSectionCourseList > .scheduleBlock.placed .scheduleBlockHeader {

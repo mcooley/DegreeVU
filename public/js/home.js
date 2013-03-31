@@ -52,9 +52,14 @@ var CourseView = Backbone.View.extend({
 	
 	render: function() {
 		this.$el.addClass('scheduleBlock');
-		this.$el.append('<div class="scheduleBlockHeader color' + this.model.getColorId() + '">' + this.model.get('courseCode') + '</div><div class="scheduleBlockBody">' + this.model.get('courseName') + '</div>');
-		this.$el.find('.scheduleBlockBody').css('height', this.pixelsPerHour * (this.model.getHours() - 1));
-		
+		this.$el.append('<div class="scheduleBlockHeader color' + this.model.getColorId() + '">' + this.model.get('courseCode') + '</div>');
+		if (this.model.getHours() > 1) {
+			console.log(this.model.getHours());
+			var x = $('<div class="scheduleBlockBody" style="height:' + (this.pixelsPerHour * (this.model.getHours() - 1)) + 'px;">' + this.model.get('courseName') + '</div>').appendTo(this.$el);
+			//x.css('height', this.pixelsPerHour * (this.model.getHours() - 1));
+		} else {
+			this.$el.find('.scheduleBlockHeader').addClass('oneHour');
+		}
 		this.$el.draggable({
 			appendTo: 'body',
 			cursor: 'move',

@@ -6,13 +6,19 @@
 			"title" : "Introduction to Engineering (3 hours)",
 			"comment" : "none",
 			"courses" : ["ES140A", "ES140B", "ES140C"],
-			"validator" : "return this.courses.length"
+			"validator" : "return this.courses.length;"
 		},{
 			"title" : "Science (12 hours)",
 			"comment": "Students are required to take at least one two-course sequence",
 			"courses": ["BSCI 110A", "BSCI 110B", "BSCI 111A", "BSCI 111B", "BSCI 100", "BSCI 218", "BSCI 219",
 						"CHEM 102A", "CHEM 104A", "CHEM 102B", "CHEM 104B", "EES 101", "EES 111", "MSE 150",
-						"PHYS 116A", "PHYS 116B", "PHYS 118A", "PHYS 118B"],
-						"validator":"return this.courses.length"
+						"PHYS 116A", "PHYS 116B", "PHYS 118A", "PHYS 118B", "ANTH 266"],
+						"validator":"return this.courses.length;"
+		},
+		{
+			"title" : "Science (12 hours)",
+			"comment": "Students are required to take at least one two-course sequence",
+			"courses": ["P~"],
+						"validator":"return this.courses.length;"
 		}]
 }
