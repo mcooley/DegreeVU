@@ -323,6 +323,9 @@ var Goal = Backbone.Model.extend({
 	initialize:function() {
 		this.on('sync', (this.loadCourses).bind(this));
 		Schedule.getInstance().on('add remove reset', (this.updateValidation).bind(this));
+		this.on('error', function() {
+			console.log('oh, crap.');
+		});
 	},
 	
 	loadCourses:function() {
