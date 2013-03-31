@@ -37,6 +37,11 @@ $(document).ready(function () {
 	var testCourse2 = new Course({_id: '51582cdff99cc15bf8a09ed8'});
 	testCourse2.fetch();
 	
+	var goalView = new GoalView({
+		model:major,
+		el:'#goal1'
+	});
+	
 	window.setTimeout(function() {
 		var view = new CourseView({model: testCourse, el:'#testCourseHome'});
 		view.render();
@@ -44,13 +49,10 @@ $(document).ready(function () {
 		view2.render();
 		
 		
-		var goalView = new GoalView({
-			model:major,
-			el:'#goal1'
-		});
-		goalView.render();
 		
-	}, 100);
+		//goalView.render();
+		
+	}, 10000);
 });
 
 var Course = Backbone.Model.extend({
@@ -78,7 +80,7 @@ var CourseView = Backbone.View.extend({
 		this.$el.find('.scheduleBlockBody').css('height', this.pixelsPerHour * (this.model.getHours() - 1));
 		
 		
-		$('.scheduleBlock').draggable({
+		this.$el.draggable({
 			appendTo: 'body',
 			cursor: 'move',
 			opacity: 0.75,
@@ -249,11 +251,12 @@ var Goal = Backbone.Model.extend({
 				colorId: ((i % 9) + 1)
 			});
 			item.courseCollection.on('sync', (this.onCourseCollectionLoad).bind(this));
+			//item.courseCollection.on('all', function(t) { console.log(t); });
 			item.courseCollection.fetch();
 		}).bind(this));
 	},
 	
-	onCourseCollectionLoad:function() {
+	onCourseCollectionLoad:function(e) {
 		this.trigger('collectionloaded');
 	}
 });
@@ -261,11 +264,12 @@ var Goal = Backbone.Model.extend({
 var GoalView = Backbone.View.extend({
 	initialize: function() {
 		this._courseCollectionViews = [];
-		
+		this.model.on('sync', (this.render).bind(this));
 		this.model.on('collectionloaded', (this.render).bind(this));
 	},
 	
 	render: function() {
+		console.log('Render goalView.');
 		_.each(this.model.get('items'), (function(item, i) {
 			if (!item.courseCollection) return;
 			

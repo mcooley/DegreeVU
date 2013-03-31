@@ -162,9 +162,6 @@ function getCoursesFromTokens(tokens, callback) {
 						flattenedResults.push(r);
 					} else if (r && r.length) {
 						flattendedResults = flattenedResults.concat(r);
-					} else {
-						console.log('oh, crap!');
-						console.log(r);
 					}
 				});
 				
