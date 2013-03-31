@@ -87,6 +87,12 @@ var CourseView = Backbone.View.extend({
 			distance: 5,
 			helper: 'clone',
 			connectToSortable: '.scheduleColBody'
+		}).popover({
+			html:true,
+			title:this.model.get('courseCode') + ': ' + this.model.get('courseName'),
+			placement:'top',
+			trigger:'click',
+			content:this.model.get('details')
 		});
 		
 		
