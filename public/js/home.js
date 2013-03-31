@@ -119,22 +119,54 @@ var Schedule = Backbone.Collection.extend({
 		return this._semesters;
 	},
 	
-	hasCourse: function(course) {
-		return this.contains(course);
-	},
-	
 	//Validation stuff
-	isComplete: function(c) {
-		return true;
+	hasCourses: function(courseArray) {
+		return _.every(courseArray, function(coursePattern) {
+			return this.some(function(course) {
+				return CourseCodeTokenizer.matches(course.get('courseCode'), coursePattern);
+			});
+		});
 	},
 	
-	getHoursOfAllCourses: function() {
-		return 1;
+	countHours: function(courseArray) {
+		return this.reduce(function(memo, course) {
+			var courseCode = course.get('courseCode');
+			var courseMatches = _.some(courseArray, function(coursePattern) {
+				return CourseCodeTokenizer.matches(courseCode, coursePattern);
+			});
+			
+			if (courseMatches) {
+				return memo + course.getHours();
+			} else {
+				return memo;
+			}
+		}, 0);
 	},
 	
-	getCoursesForAttr: function(a) {
-		return null;
+	countClasses: function(courseArray) {
+		return this.reduce(function(memo, course) {
+			var courseCode = course.get('courseCode');
+			var courseMatches = _.some(courseArray, function(coursePattern) {
+				return CourseCodeTokenizer.matches(courseCode, coursePattern);
+			});
+			if (courseMatches) {
+				return memo++;
+			} else {
+				return memo;
+			}
+		}, 0);
+	},
+	
+	countClassesWithCategory: function(category) {
+		return this.reduce(function(memo, course) {
+			if (course.get('category') === category) {
+				return memo++;
+			} else {
+				return memo;
+			}
+		}, 0);
 	}
+	
 },
 {
 	_singletonInstance:null,
@@ -258,6 +290,16 @@ var CourseCollection = Backbone.Collection.extend({
 		this.each((function(model) {
 			model.set('colorId', this.getColorId());
 		}).bind(this));
+	},
+	
+	filterByCourses: function() {
+		return this.filter(function(course) {
+			var courseCode = course.get('courseCode');
+			var courseMatches = _.some(courseArray, function(coursePattern) {
+				return CourseCodeTokenizer.matches(courseCode, coursePattern);
+			});
+			return courseMatches;
+		});
 	}
 	
 });
@@ -366,7 +408,7 @@ var StdValidator = {
 		return function(schedule) {
 			var remainingClasses = numOfClasses;
 			this.courseCollection.forEach(function(course) {
-				if (schedule.hasCourse(course)) {
+				if (schedule.contains(course)) {
 					remainingClasses--;
 				}
 			});
@@ -395,4 +437,54 @@ var StdValidator = {
 			return 'Young Jedi! ' + missingCourses.length + ' ' + noun + ' missing you are.  Take them you must: ' + missingCourses.join(', ') + '.';
 		}
 	}
+};
+
+var CourseCodeTokenizer = {
+	
+	matches:function(courseCode, pattern) {
+		var myCourse = CourseCodeTokenizer.parse(courseCode);
+		var testCourse = CourseCodeTokenizer.parse(pattern);
+		if (testCourse.parseChar === '+') {
+			return (myCourse.courseNumber >= testCourse.courseNumber && myCourse.coursePrefix === testCourse.coursePrefix);
+		} else if (testCourse.parseChar === '*') {
+			return myCourse.coursePrefix === testCourse.coursePrefix;
+		} else {
+			return myCourse.courseCode === testCourse.courseCode;
+		}
+	},
+	
+	parse:function(token) {
+		var coursePrefix = token.match(/[a-z]+/i)[0];
+		var courseNumber = token.match(/\d+/);
+		var courseSuffix = "";
+		var parseChar = "";
+		var temp = token[token.length - 1];
+
+		if (temp.match(/[+, !, ~, *]/)) {
+			parseChar = temp;
+		}
+		if (temp.match(/[a-z]/i)) {
+			courseSuffix = temp;
+		}
+		var temp2 = token[token.length - 2];
+		if (temp2.match(/[a-z]/i)) {
+			var courseSuffix = temp2;
+		}
+		var courseCode = coursePrefix + " " + courseNumber + courseSuffix;
+		var course = {
+			"coursePrefix" : coursePrefix,
+			"courseSuffix" : courseSuffix,
+			"courseCode" : courseCode,
+			"parseChar" : parseChar
+		};
+
+		if (courseNumber) {
+			course.courseNumber = parseInt(courseNumber[0]);
+		} else {
+			course.courseNumber = 0;
+		}
+
+		return course;
+	}
+	
 };
