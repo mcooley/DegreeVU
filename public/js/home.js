@@ -11,10 +11,12 @@ $(document).ready(function () {
 		gradYear = 2016;
 	}
 	
-	var sched = Schedule.getInstance(gradYear);
-
-	var scheduleView = new ScheduleView({collection: sched, el:'#scheduleGrid'});
+	var scheduleView = new ScheduleView({collection: Schedule.getInstance(gradYear), el:'#scheduleGrid'});
 	scheduleView.render();
+	
+	var goalsList = new GoalList();	
+	var goalsListView = new GoalListView({collection:goalsList, el:'#goals'});
+	goalsListView.render();
 	
 	var majorId = getQueryString('major');
 	if (majorId) {
@@ -22,37 +24,11 @@ $(document).ready(function () {
 			id: majorId
 		});
 		
-		major.fetch();
-		
-	} else {
-		var major = undefined;
+		major.once('sync', function() {
+			goalsList.add(this);
+		});
+		major.fetch();	
 	}
-	
-
-	//var goalsList = new GoalsList([major], {el:'#goals'});	
-	
-	
-	var testCourse = new Course({_id: '51582cdff99cc15bf8a09ed7'});
-	testCourse.fetch();
-	var testCourse2 = new Course({_id: '51582cdff99cc15bf8a09ed8'});
-	testCourse2.fetch();
-	
-	var goalView = new GoalView({
-		model:major,
-		el:'#goal1'
-	});
-	
-	window.setTimeout(function() {
-		var view = new CourseView({model: testCourse, el:'#testCourseHome'});
-		view.render();
-		var view2 = new CourseView({model: testCourse2, el:'#testCourseHome2'});
-		view2.render();
-		
-		
-		
-		//goalView.render();
-		
-	}, 10000);
 });
 
 var Course = Backbone.Model.extend({
@@ -200,13 +176,28 @@ var ScheduleView = Backbone.View.extend({
 
 
 
-// Goals stuff (not yet implemented)
 var GoalList = Backbone.Collection.extend({
 	model:Goal
 });
 
 var GoalListView = Backbone.View.extend({
-
+	initialize:function() {
+		this._goalViews = [];
+		this.collection.on('add', (this.addTab).bind(this));
+	},
+	
+	render:function() {
+		this.$el.append('<ul class="nav nav-tabs"></ul>');
+		this.$el.append('<div class="tab-content"></div>');
+	},
+	
+	addTab:function(model) {
+		this.$el.find('ul.nav-tabs').append('<li class="active"><a href="goal' + model.get('_id') + '" data-toggle="tab">' + model.get('name') + ' ' + model.get('type').charAt(0).toUpperCase() + model.get('type').slice(1) + '</a></li>');
+		var e = $('<div class="tab-pane active" id="goal' + model.get('_id') + '"></div>').appendTo(this.$el.find('div.tab-content'));
+		var view = new GoalView({model:model, el:e});
+		this._goalViews.push(view);
+		view.render();
+	}
 });
 
 
