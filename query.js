@@ -230,8 +230,10 @@ function getCoursesPlus(course, callback) {
 
 function getGoalsByName(name, callback) {
 	db.collection("goals", function(error, collection) {
-		collection.find({"name" : name}, function(error, cursor) {
+		var regex = RegExp(name, "i");
+		collection.find({"name" : regex}, function(error, cursor) {
 			cursor.toArray(function(error, goals) {
+				console.log(goals);
 				callback(goals);
 			});
 		});
