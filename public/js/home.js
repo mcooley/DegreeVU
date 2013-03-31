@@ -32,9 +32,9 @@ $(document).ready(function () {
 	//var goalsList = new GoalsList([major], {el:'#goals'});	
 	
 	
-	var testCourse = new Course({_id: '5157a473f99cc15bf8a06e92'});
+	var testCourse = new Course({_id: '51582cdff99cc15bf8a09ed7'});
 	testCourse.fetch();
-	var testCourse2 = new Course({_id: '5157a473f99cc15bf8a06e93'});
+	var testCourse2 = new Course({_id: '51582cdff99cc15bf8a09ed8'});
 	testCourse2.fetch();
 	
 	window.setTimeout(function() {
@@ -50,31 +50,6 @@ $(document).ready(function () {
 		});
 		goalView.render();
 		
-		$('.scheduleBlock').draggable({
-			appendTo: 'body',
-			cursor: 'move',
-			opacity: 0.75,
-			distance: 5,
-			helper: 'clone',
-			connectToSortable: '.scheduleColBody'
-		});
-		
-		$('.scheduleColBody').sortable({
-			connectWith: '.scheduleColBody',
-			items: '.scheduleBlock',
-			cursor: 'move',
-			opacity: 0.75,
-			distance: 5,
-			helper: 'clone',
-			appendTo: 'body',
-			beforeStop: function(event, ui) {
-				ui.item.trigger(event, ui);
-			},
-			stop: function(event, ui) {
-				ui.item.trigger(event, ui);
-			}
-		}).disableSelection();
-		
 	}, 100);
 });
 
@@ -83,10 +58,10 @@ var Course = Backbone.Model.extend({
 		return '/courses/' + this.get('_id');
 	},
 	getColorId: function() {
-		//TODO: actually check the requirements and stuff
-		return 1;
+		return this.get('colorId') || 1;
 	},
 	getHours:function() {
+		console.log(this.toJSON());
 		return (this.get('numOfCredits'))[0];
 	}
 });
@@ -100,8 +75,19 @@ var CourseView = Backbone.View.extend({
 	
 	render: function() {
 		this.$el.addClass('scheduleBlock');
-		this.$el.append('<div class="scheduleBlockHeader color' + this.model.getColorId() + '">' + this.model.get('courseNumber') + '</div><div class="scheduleBlockBody">' + this.model.get('courseName') + '</div>');
+		this.$el.append('<div class="scheduleBlockHeader color' + this.model.getColorId() + '">' + this.model.get('courseCode') + '</div><div class="scheduleBlockBody">' + this.model.get('courseName') + '</div>');
 		this.$el.find('.scheduleBlockBody').css('height', this.pixelsPerHour * (this.model.getHours() - 1));
+		
+		
+		$('.scheduleBlock').draggable({
+			appendTo: 'body',
+			cursor: 'move',
+			opacity: 0.75,
+			distance: 5,
+			helper: 'clone',
+			connectToSortable: '.scheduleColBody'
+		});
+		
 		
 		this.$el.data('courseObj', this.model);
 	},
@@ -159,6 +145,23 @@ var ScheduleView = Backbone.View.extend({
 			this.$el.append('<div class="scheduleCol ' + semester.season.toLowerCase() + '" data-semesterseason="' + semester.season + '" data-semesteryear="' + semester.year + '"><div class="scheduleColHeader">' + (semester.season || '') + (semester.year? ' ' : '') + (semester.year || '') + '</div><div class="scheduleColBody"></div></div>');
 		}).bind(this));
 		
+		$('.scheduleColBody').sortable({
+			connectWith: '.scheduleColBody',
+			items: '.scheduleBlock',
+			cursor: 'move',
+			opacity: 0.75,
+			distance: 5,
+			helper: 'clone',
+			appendTo: 'body',
+			beforeStop: function(event, ui) {
+				ui.item.trigger(event, ui);
+			},
+			stop: function(event, ui) {
+				ui.item.trigger(event, ui);
+			}
+		}).disableSelection();
+		
+		
 		this.$el.children('.scheduleCol').on('sortreceive', (this.onCourseMoved).bind(this));
 	},
 	
@@ -172,10 +175,6 @@ var ScheduleView = Backbone.View.extend({
 			courseModel.set('semester', semester);
 			this.collection.add(courseModel);
 		} else if (ui.sender.parent().is('.scheduleCol')) {
-			// trigger event on ui.item?
-			
-			// Problem: we don't have a reference to the courseModel.
-			
 			// Moving course within the schedule
 			console.log('Move course within schedule.');
 		}
@@ -204,8 +203,37 @@ var GoalListView = Backbone.View.extend({
 });
 
 
+var CourseCollectionView = Backbone.View.extend({
+	initialize:function() {
+		this.collection.on('sync', (this.render).bind(this));
+	},
+	
+	render: function() {
+		this.collection.each((function(courseModel) {
+			var e = $('<div></div>').appendTo(this.$el);
+			var courseView = new CourseView({model:courseModel, el:e});
+			courseView.render();
+		}).bind(this));
+	}
+});
+
 var CourseCollection = Backbone.Collection.extend({
-	model:Course
+	model:Course,
+	initialize: function(models, options) {
+		this.on('add remove reset', (this.doOnLoad).bind(this));
+		this._colorId = options.colorId;
+	},
+	
+	getColorId: function() {
+		return this._colorId;
+	},
+	
+	doOnLoad: function() {
+		this.each((function(model) {
+			model.set('colorId', this.getColorId());
+		}).bind(this));
+	}
+	
 });
 
 var Goal = Backbone.Model.extend({
@@ -216,23 +244,39 @@ var Goal = Backbone.Model.extend({
 	},
 	
 	loadCourses:function() {
-		console.log('ran loadCourses!');
 		_.each(this.get('items'), (function(item, i, items) {
-			console.log(item);
-			var courseCollection = new CourseCollection([], {
-				url: '/courses/lookup?q=' + item.courses.map(encodeURIComponent).join(',')
+			item.courseCollection = new CourseCollection([], {
+				url: '/courses/lookup?q=' + item.courses.map(encodeURIComponent).join(','),
+				colorId: ((i % 9) + 1)
 			});
-			courseCollection.fetch();
-			
+			item.courseCollection.on('sync', (this.onCourseCollectionLoad).bind(this));
+			item.courseCollection.fetch();
 		}).bind(this));
+	},
+	
+	onCourseCollectionLoad:function() {
+		this.trigger('collectionloaded');
 	}
 });
 
 var GoalView = Backbone.View.extend({
+	initialize: function() {
+		this._courseCollectionViews = [];
+		
+		this.model.on('collectionloaded', (this.render).bind(this));
+	},
+	
 	render: function() {
 		_.each(this.model.get('items'), (function(item, i) {
-			this.$el.append('<div class="goalSection color' + ((i % 9) + 1) + '"><h2>' + item.title + '</h2></div>');
-			//TODO: deal with item.courses
+			if (!item.courseCollection) return;
+			
+			if (!this._courseCollectionViews[i]) {
+				var p = $('<div class="goalSection color' + item.courseCollection.getColorId() + '"><h2>' + item.title + '</h2><div class="goalSectionCourseList"></div></div>').appendTo(this.$el);
+			
+				var childEl = p.find('.goalSectionCourseList');
+				
+				this._courseCollectionViews[i] = new CourseCollectionView({collection:item.courseCollection, el:childEl});
+			}
 		}).bind(this));
 	}
 });
