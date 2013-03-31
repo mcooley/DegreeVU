@@ -199,7 +199,7 @@ function getCoursesFromTokens(tokens, callback) {
 					checkBomb();
 				});
 			} else {
-				if (course.courseSuffix.match(/\w/)) {
+				if (course.courseSuffix.match(/[a-z]/i)) {
 					course.courseCode += course.courseSuffix;
 				}
 				getCoursesByCode(course.courseCode, function(courses) {
