@@ -1,3 +1,183 @@
-h1 {
-	font-size:0.5em;
+/* Common stuff */
+.quick-gradient (@origin: left, @alpha: 0.2) {
+	background-image: -webkit-linear-gradient(@origin, rgba(0,0,0,0.0), rgba(0,0,0,@alpha));
+	background-image: -moz-linear-gradient(@origin, rgba(0,0,0,0.0), rgba(0,0,0,@alpha));
+	background-image: -o-linear-gradient(@origin, rgba(0,0,0,0.0), rgba(0,0,0,@alpha));
+	background-image: -ms-linear-gradient(@origin, rgba(0,0,0,0.0), rgba(0,0,0,@alpha));
+	background-image: linear-gradient(@origin, rgba(0,0,0,0.0), rgba(0,0,0,@alpha));
+}
+
+
+html, body {
+	height:100%;
+}
+
+/* Colors */
+
+@color1: #ff2c00;
+@color2: #ff6a00;
+@color3: #ffd600;
+@color4: #8eeb00;
+@color5: #00c618;
+@color6: #00938e;
+@color7: #1240ab;
+@color8: #510fad;
+@color9: #c7007d;
+
+
+.scheduleBlockHeader.color1 {
+	background-color:@color1;
+}
+.scheduleBlockHeader.color2 {
+	background-color:@color2;
+}
+.scheduleBlockHeader.color3 {
+	background-color:@color3;
+}
+.scheduleBlockHeader.color4 {
+	background-color:@color4;
+}
+.scheduleBlockHeader.color5 {
+	background-color:@color5;
+}
+.scheduleBlockHeader.color6 {
+	background-color:@color6;
+}
+.scheduleBlockHeader.color7 {
+	background-color:@color7;
+}
+.scheduleBlockHeader.color8 {
+	background-color:@color8;
+}
+.scheduleBlockHeader.color9 {
+	background-color:@color9;
+}
+
+.goalSection.color1 > h2 {
+	color:@color1;
+}
+.goalSection.color2 > h2 {
+	color:@color2;
+}
+.goalSection.color3 > h2 {
+	color:@color3;
+}
+.goalSection.color4 > h2 {
+	color:@color4;
+}
+.goalSection.color5 > h2 {
+	color:@color5;
+}
+.goalSection.color6 > h2 {
+	color:@color6;
+}
+.goalSection.color7 > h2 {
+	color:@color7;
+}
+.goalSection.color8 > h2 {
+	color:@color8;
+}
+.goalSection.color9 > h2 {
+	color:@color9;
+}
+
+
+/* Schedule grid */
+@pixelsPerHour: 21px;
+@scheduleBlockWidth:140px;
+
+#scheduleGrid {
+	width:100%;
+	//height:40%;
+	height:@pixelsPerHour * 18 + 48px;
+	//min-height:@pixelsPerHour * 6;
+	overflow:auto;
+	white-space:nowrap;
+}
+
+.scheduleCol {
+	width:@scheduleBlockWidth;
+	display:inline-block;
+	vertical-align:top;
+	box-sizing:border-box;
+	height:100%;
+	font-size:10pt;
+}
+
+.scheduleCol.fall {
+	border-left-width:2px;
+}
+
+.scheduleColHeader {
+	height:30px;
+	padding-top:10px;
+	width:100%;
+	text-align:center;
+	background-color:#666;
+	.quick-gradient(top);
+	color:#eee;
+	font-size:1.2em;
+	border-left:1px solid #333;
+}
+
+.scheduleColBody {
+	min-height:100%;
+	margin-top:1px;
+	background-image:url('../img/grid.png');
+	background-color:#eee;
+	border-left:1px solid #333;
+}
+
+.scheduleBlock {
+	width:@scheduleBlockWidth;
+	font-size:10pt;
+}
+
+.scheduleBlockHeader {
+	border-top-left-radius:5px;
+	border-top-right-radius:5px;
+	box-sizing:border-box;
+	margin-top:1px;
+	height:@pixelsPerHour;
+	color:#fff;
+	padding-left:5px;
+	padding-right:5px;
+	padding-top:2px;
+	.quick-gradient(top);
+}
+
+.scheduleBlockBody {
+	box-sizing:border-box;
+	background-color:#ccc;
+	border-bottom-left-radius:5px;
+	border-bottom-right-radius:5px;
+	padding-left:5px;
+	border:1px solid #aaa;
+	height:@pixelsPerHour;
+	overflow:hidden;
+}
+
+/* Goals tabs */
+#goals {
+	padding:10px;
+}
+
+#goals .tab-pane {
+	padding:15px;
+	padding-top:0;
+}
+
+.goalSectionCourseList {
+	min-height:@pixelsPerHour * 3;
+	width:100%;
+}
+
+.goalSection h2 {
+	font-size:1.4em;
+}
+
+.goalSectionCourseList > .scheduleBlock {
+	display:inline-block;
+	vertical-align:top;
+	margin-right:10px;
 }
