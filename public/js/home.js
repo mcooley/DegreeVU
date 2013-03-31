@@ -54,7 +54,6 @@ var CourseView = Backbone.View.extend({
 		this.$el.addClass('scheduleBlock');
 		this.$el.append('<div class="scheduleBlockHeader color' + this.model.getColorId() + '">' + this.model.get('courseCode') + '</div>');
 		if (this.model.getHours() > 1) {
-			console.log(this.model.getHours());
 			var x = $('<div class="scheduleBlockBody" style="height:' + (this.pixelsPerHour * (this.model.getHours() - 1)) + 'px;">' + this.model.get('courseName') + '</div>').appendTo(this.$el);
 			//x.css('height', this.pixelsPerHour * (this.model.getHours() - 1));
 		} else {
@@ -272,14 +271,24 @@ var Goal = Backbone.Model.extend({
 	},
 	
 	loadCourses:function() {
-		console.log(this.get('items'));
 		_.each(this.get('items'), (function(item, i, items) {
 			item.courseCollection = new CourseCollection([], {
 				url: '/courses/lookup?q=' + item.courses.map(encodeURIComponent).join(','),
 				colorId: ((i % 9) + 1)
 			});
-			console.log(i);
-			item.validate = (new Function('schedule', '"use strict"; ' + item.validator)).bind(item);
+
+			if (item.validator === "StdValidator.takeAll") {
+				item.validate = (StdValidator.takeAll).bind(item);
+			} else if (item.validator.substr(0, 22) === "StdValidator.takeHours") {
+				var num = parseInt(item.validator.match(/\d+/), 10);
+				item.validate = (StdValidator.takeHours(num)).bind(item);
+			} else if (item.validator.substr(0, 24) === "StdValidator.takeCourses") {
+				var num = parseInt(item.validator.match(/\d+/), 10);
+				item.validate = (StdValidator.takeCourses(num)).bind(item);
+			} else {
+				item.validate = (new Function('schedule', '"use strict"; ' + item.validator)).bind(item);
+			}
+			
 			item.courseCollection.on('sync', (this.onCourseCollectionLoad).bind(this));
 			item.courseCollection.fetch();
 		}).bind(this));
@@ -287,6 +296,7 @@ var Goal = Backbone.Model.extend({
 	},
 	
 	onCourseCollectionLoad:function(e) {
+		this.updateValidation();
 		this.trigger('collectionloaded');
 	},
 	
@@ -334,3 +344,55 @@ var GoalView = Backbone.View.extend({
 		}).bind(this));
 	}
 });
+
+
+
+// Factory for common validators.
+var StdValidator = {
+	takeHours: function(hours) {
+
+		return (function(schedule) {
+			var remainingHours = hours; 
+			this.courseCollection.forEach(function(course_b) {
+				if (schedule.contains(course_b)) {
+					remainingHours = remainingHours - course_b.getHours();	
+				}
+			});
+			
+			return (remainingHours <= 0) ? true : 'Yo!! You be missin\' ' + remainingHours + ' hours in yo\' schedule';
+		});
+	},
+	takeCourses: function(numOfClasses) {
+		return function(schedule) {
+			var remainingClasses = numOfClasses;
+			this.courseCollection.forEach(function(course) {
+				if (schedule.hasCourse(course)) {
+					remainingClasses--;
+				}
+			});
+			return (remainingClasses <= 0) ? true : 'Ahoy!! There be ' + remainingClasses + ' that not be taken, me matey!';
+		};
+	},
+	takeAll: function(schedule) {
+		var missingCourses = [];
+		this.courseCollection.forEach(function(course) {
+			if (!schedule.contains(course)) {
+				missingCourses.push(course.get('courseCode'));
+			}
+		});
+	
+		if (this.courseCollection.length === 0) {
+			return true;
+		}
+		
+		if (missingCourses.length === 0) {
+			return true;
+		} else {
+			var noun = 'course';
+			if (missingCourses.length > 1) {
+				noun += 's';
+			}
+			return 'Young Jedi! ' + missingCourses.length + ' ' + noun + ' missing you are.  Take them you must: ' + missingCourses.join(', ') + '.';
+		}
+	}
+};
