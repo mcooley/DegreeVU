@@ -84,12 +84,20 @@ var Course = Backbone.Model.extend({
 var CourseView = Backbone.View.extend({
 	pixelsPerHour: 21,
 	
+	initialize: function() {
+		this.model.on('change:semester', (this.onAddToSchedule).bind(this))
+	},
+	
 	render: function() {
 		this.$el.addClass('scheduleBlock');
 		this.$el.append('<div class="scheduleBlockHeader color' + this.model.getColorId() + '">' + this.model.get('courseNumber') + '</div><div class="scheduleBlockBody">' + this.model.get('courseName') + '</div>');
 		this.$el.find('.scheduleBlockBody').css('height', this.pixelsPerHour * ((this.model.get('numOfCredits'))[0] - 1));
 		
 		this.$el.data('courseObj', this.model);
+	},
+	
+	onAddToSchedule: function() {
+		this.$el.draggable("disable").addClass('placed');
 	}
 });
 
@@ -99,7 +107,7 @@ var Schedule = Backbone.Collection.extend({
 		
 		this._semesters = [
 			{season: 'Before College'},
-			{season: 'Fall', year: gradYear - 4},
+			{season: 'Fall ', year: gradYear - 4},
 			{season: 'Spring', year: gradYear - 3},
 			{season: 'Fall', year: gradYear - 3},
 			{season: 'Spring', year: gradYear - 2},
@@ -116,16 +124,13 @@ var Schedule = Backbone.Collection.extend({
 });
 
 var ScheduleView = Backbone.View.extend({
-	initialize: function() {
-		this.collection.on('add remove reset', (this.updateHoursCount).bind(this));
-	},
 	
 	render: function() {
 		_.each(this.collection.getSemesters(), (function(semester) {
 			this.$el.append('<div class="scheduleCol ' + semester.season.toLowerCase() + '" data-semesterseason="' + semester.season + '" data-semesteryear="' + semester.year + '"><div class="scheduleColHeader">' + (semester.season || '') + (semester.year? ' ' : '') + (semester.year || '') + ' <span class="hoursCount">(0)</span></div><div class="scheduleColBody"></div></div>');
 		}).bind(this));
 		
-		this.$el.children('.scheduleCol').on('sortreceive', (this.onCourseMoved).bind(this));
+		this.$el.children('.scheduleCol').on('sortreceive', (this.onCourseMoved).bind(this)).on('sortbeforestop', (this.validateCourseMove).bind(this));
 	},
 	
 	onCourseMoved: function(event, ui) {
@@ -135,10 +140,11 @@ var ScheduleView = Backbone.View.extend({
 		if (ui.sender.parent().is('.goalSectionCourseList')) {
 			// Adding course to the schedule
 			var courseModel = ui.sender.data('courseObj');
-			this.collection.add(courseModel);
-			console.log(courseModel);
 			courseModel.set('semester', semester);
+			this.collection.add(courseModel);
 		} else if (ui.sender.parent().is('.scheduleCol')) {
+			// trigger event on ui.item?
+			
 			// Moving course within the schedule
 			console.log('Move course within schedule.');
 		}
@@ -146,7 +152,6 @@ var ScheduleView = Backbone.View.extend({
 	
 	updateHoursCount: function() {
 		//TODO: change this to count semester-by-semester
-		
 		var h = this.collection.reduce(function(memo, model) {
 			return memo + (model.get('numOfCredits'))[0];
 		}, 0);
