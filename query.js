@@ -130,12 +130,26 @@ function getCoursesLike(str, numResults, callback) {
 function parseCourseToken(token) {
 	var coursePrefix = token.match(/[a-z]+/i)[0];
 	var courseNumber = token.match(/\d+/);
-	var courseSuffix = token.match(/[+, !, ~, *, \w]?$/)[0];
-	var courseCode = coursePrefix + " " + courseNumber;
+	var courseSuffix = "";
+	var parseChar = "";
+	var temp = token[token.length - 1];
+
+	if (temp.match(/[+, !, ~, *]/)) {
+		parseChar = temp;
+	}
+	if (temp.match(/[a-z]/i)) {
+		courseSuffix = temp;
+	}
+	var temp2 = token[token.length - 2];
+	if (temp2.match(/[a-z]/i)) {
+		var courseSuffix = temp2;
+	}
+	var courseCode = coursePrefix + " " + courseNumber + courseSuffix;
 	var course = {
 		"coursePrefix" : coursePrefix,
 		"courseSuffix" : courseSuffix,
-		"courseCode" : courseCode
+		"courseCode" : courseCode,
+		"parseChar" : parseChar
 	};
 
 	if (courseNumber) {
@@ -180,39 +194,36 @@ function getCoursesFromTokens(tokens, callback) {
 
 		tokens.forEach(function(token, i) {
 			var course = parseCourseToken(token);
-			if (course.courseSuffix === "+") {
+			if (course.parseChar === "+") {
 				getCoursesPlus(course, function(courses) {
-					if (courses) {
+					if (courses.length > 0) {
 						results.additions[i] = courses;
 					}
 					checkBomb();
 				});
-			} else if (course.courseSuffix === "!") {
+			} else if (course.parseChar === "!") {
 				getCoursesByCode(course.courseCode, function(courses) {	
-					if (courses) {
+
+					if (courses.length > 0) {
 						results.removals.push(courses[0]._id.toString());
 					}
 					checkBomb();
 				});
-			} else if (course.courseSuffix === "*") { 
+			} else if (course.parseChar === "*") { 
 				getCoursesPlus(course, function(courses) {
-					if (courses) {
+					if (courses.length > 0) {
 						results.additions[i] = courses;
 					}
 					checkBomb();
 				});
-			} else if (course.courseSuffix === '~') {
+			} else if (course.parseChar === '~') {
 				getCoursesByCategory(course.coursePrefix, function(courses) {
-					if (courses) {
+					if (courses.length > 0) {
 						results.additions[i] = courses;
 					}
-					console.log(results.additions[i]);
 					checkBomb();
 				});
 			} else {
-				if (course.courseSuffix.match(/[a-z]/i)) {
-					course.courseCode += course.courseSuffix;
-				}
 				getCoursesByCode(course.courseCode, function(courses) {
 					if (courses) {
 						results.additions[i] = courses[0]; //Closure issues

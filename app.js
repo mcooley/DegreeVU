@@ -55,13 +55,20 @@ app.get("/courses/lookup", function(req, res) {
   var str = req.query.q;
   tokens = str.split(",");
   query.getCoursesFromTokens(tokens, function(courses) {
+// <<<<<<< HEAD
     var results = JSON.stringify(courses);
     // var results = "";
     // for (var i = 0; i < courses.length; i++) {
     //   results = results + JSON.stringify(courses[i]);
     // }
+// =======
+    //var results = "";
+    //for (var i = 0; i < courses.length; i++) {
+    //  results = results + JSON.stringify(courses[i]);
+    //}
+// >>>>>>> 05ef88db08fad9a75b59a11a3ba3a4a50bd7177a
     // console.log(results);
-    res.send(results);
+    res.send(JSON.stringify(courses));
   });
 });
 
