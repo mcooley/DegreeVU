@@ -290,7 +290,7 @@ var GoalView = Backbone.View.extend({
 			if (!item.courseCollection) return;
 			
 			if (!this._courseCollectionViews[i]) {
-				var p = $('<div class="goalSection color' + item.courseCollection.getColorId() + '"><div class="goalSectionHeader"><h2>' + item.title + '</h2><span class="validationStatus"></span></div><div class="goalSectionCourseList"></div></div>').appendTo(this.$el);
+				var p = $('<div class="goalSection color' + item.courseCollection.getColorId() + '"><div class="goalSectionHeader"><h2>' + item.title + '</h2><span class="validationStatus"></span>' + (item.comment? '<div class="comment">' + item.comment + '</div>' : '') + '</div><div class="goalSectionCourseList"></div></div>').appendTo(this.$el);
 			
 				var childEl = p.find('.goalSectionCourseList');
 				
