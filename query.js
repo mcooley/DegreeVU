@@ -130,7 +130,7 @@ function getCoursesLike(str, numResults, callback) {
 function parseCourseToken(token) {
 	var coursePrefix = token.match(/[a-z]+/i)[0];
 	var courseNumber = token.match(/\d+/);
-	var courseSuffix = token.match(/[+, !, *, \w]?$/)[0];
+	var courseSuffix = token.match(/[+, !, ~, *, \w]?$/)[0];
 	var courseCode = coursePrefix + " " + courseNumber;
 	var course = {
 		"coursePrefix" : coursePrefix,
@@ -161,10 +161,10 @@ function getCoursesFromTokens(tokens, callback) {
 					if (r && r._id) {
 						flattenedResults.push(r);
 					} else if (r && r.length) {
-						flattendedResults = flattenedResults.concat(r);
+						flattenedResults = flattenedResults.concat(r);
 					}
 				});
-				
+
 				var finalResults = flattenedResults.filter(function(item) {
 					if (item) {
 						return (results.removals.indexOf(item._id.toString()) === -1);
@@ -183,7 +183,7 @@ function getCoursesFromTokens(tokens, callback) {
 			if (course.courseSuffix === "+") {
 				getCoursesPlus(course, function(courses) {
 					if (courses) {
-						results.additions[i] = results.additions.concat(courses);
+						results.additions[i] = courses;
 					}
 					checkBomb();
 				});
@@ -197,8 +197,16 @@ function getCoursesFromTokens(tokens, callback) {
 			} else if (course.courseSuffix === "*") { 
 				getCoursesPlus(course, function(courses) {
 					if (courses) {
-						results.additions[i] = results.additions.concat(courses);
+						results.additions[i] = courses;
 					}
+					checkBomb();
+				});
+			} else if (course.courseSuffix === '~') {
+				getCoursesByCategory(course.coursePrefix, function(courses) {
+					if (courses) {
+						results.additions[i] = courses;
+					}
+					console.log(results.additions[i]);
 					checkBomb();
 				});
 			} else {
@@ -227,6 +235,16 @@ function getCoursesPlus(course, callback) {
 		});
 	});
 }
+
+function getCoursesByCategory(cat, callback) {
+	db.collection("courses", function(error, collection) {
+		collection.find({"category" : cat}, function(error, cursor) {
+			cursor.toArray(function(error, courses) {
+				callback(courses);
+			});
+		});
+	});
+};
 
 function getGoalsByName(name, callback) {
 	db.collection("goals", function(error, collection) {
