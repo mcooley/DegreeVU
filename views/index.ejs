@@ -1,33 +1,36 @@
 <!DOCTYPE html>
 <head>
-	<link rel="stylesheet" href="/css/bootstrap/bootstrap.min.css">
+        <link rel="stylesheet" href="/css/bootstrap/bootstrap.min.css">
 </head>
 <body>
-	<div class="hero-unit">
-		<h1>DegreeVU</h1>
-		<p>Plan your future!</p>
-	</div>
-	
-	<form method="get" action="/home">
-		<fieldset style="width:200px; margin-left:auto; margin-right:auto;">
-		<legend>Get started</legend>
-		<label for="major">Choose your (most likely) major:</label>
-		<select id="major" name="major">
-			<!-- TODO: generate this list from the database -->
-			<option value="5157259c38043c78a4e16931">Computer Engineering</option>
-		</select>
-		
-		<label for="gradYear">Graduation year:</label>
-		<select id="gradYear" name="gradYear">
-			<!-- TODO: generate this list from the database -->
-			<option value="2017">2017</option>
-			<option value="2016">2016</option>
-			<option value="2015">2015</option>
-			<option value="2014">2014</option>
-		</select>
-		
-		<button type="submit" class="btn btn-large btn-primary">Go</button>
-		</fieldset>
-	</form>
+        <div class="hero-unit">
+                <h1>DegreeVU</h1>
+                <p>Plan your future!</p>
+        </div>
+        
+        <form method="get" action="/home">
+                <fieldset style="width:200px; margin-left:auto; margin-right:auto;">
+                <legend>Get started</legend>
+                <label for="major">Choose your (most likely) major:</label>
+                <select id="major" name="major">
+                        <!-- TODO: generate this list from the database -->
+                        <% for (var i = 0; i < queryArray.length; ++i) {%>
+                                <option value = <%=queryArray[i]._id%> ><%=queryArray[i].name%></option>
+                        <%}%>
+                        <option value="5156f582300426dacea28766">Test Major</option>
+                </select>
+                
+                <label for="gradYear">Graduation year:</label>
+                <select id="gradYear" name="gradYear">
+                        <!-- TODO: generate this list from the database -->
+                        <option value="2017">2017</option>
+                        <option value="2016">2016</option>
+                        <option value="2015">2015</option>
+                        <option value="2014">2014</option>
+                </select>
+                
+                <button type="submit" class="btn btn-large btn-primary">Go</button>
+                </fieldset>
+        </form>
 </body>
 </html>
