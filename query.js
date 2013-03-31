@@ -156,8 +156,19 @@ function getCoursesFromTokens(tokens, callback) {
 		var checkBomb = function() {
 			timeBomb--;
 			if (timeBomb <= 0) {
-				// console.log(results.additions);
-				var finalResults = results.additions.filter(function(item) {
+				var flattenedResults = [];
+				results.additions.forEach(function(r) {
+					if (r && r._id) {
+						flattenedResults.push(r);
+					} else if (r && r.length) {
+						flattendedResults = flattenedResults.concat(r);
+					} else {
+						console.log('oh, crap!');
+						console.log(r);
+					}
+				});
+				
+				var finalResults = flattenedResults.filter(function(item) {
 					if (item) {
 						return (results.removals.indexOf(item._id.toString()) === -1);
 					}
@@ -170,31 +181,26 @@ function getCoursesFromTokens(tokens, callback) {
 
 		var results = {additions:[], removals:[]};
 
-		for (var i = 0; i < tokens.length; i++) {
-			var course = parseCourseToken(tokens[i]);
-			console.log(course);
+		tokens.forEach(function(token, i) {
+			var course = parseCourseToken(token);
 			if (course.courseSuffix === "+") {
 				getCoursesPlus(course, function(courses) {
 					if (courses) {
-						results.additions = results.additions.concat(courses);
+						results.additions[i] = results.additions.concat(courses);
 					}
 					checkBomb();
 				});
 			} else if (course.courseSuffix === "!") {
 				getCoursesByCode(course.courseCode, function(courses) {	
 					if (courses) {
-
 						results.removals.push(courses[0]._id.toString());
-						//var index = resultsArray.indexOf(courses[0]);
-						//console.log(index);
-						//resultsArray = resultsArray.splice(index, 1);
 					}
 					checkBomb();
 				});
 			} else if (course.courseSuffix === "*") { 
 				getCoursesPlus(course, function(courses) {
 					if (courses) {
-						results.additions = results.additions.concat(courses);
+						results.additions[i] = results.additions.concat(courses);
 					}
 					checkBomb();
 				});
@@ -204,12 +210,12 @@ function getCoursesFromTokens(tokens, callback) {
 				}
 				getCoursesByCode(course.courseCode, function(courses) {
 					if (courses) {
-						results.additions.push(courses[0]);
+						results.additions[i] = courses[0]; //Closure issues
 					}
 					checkBomb();
 				});
 			}
-		}
+		});
 	});
 };
 
@@ -217,11 +223,8 @@ function getCoursesPlus(course, callback) {
 	db.collection("courses", function(error, collection) {
 		var courseNumber = course.courseNumber;
 		var coursePrefix = course.coursePrefix;
-		console.log("DEBUG3");
 		collection.find({"courseNumber" : {$gte: courseNumber}, "coursePrefix" : coursePrefix}, function(error, cursor) {
-			console.log("DEBUG2");
 			cursor.toArray(function(error, courses) {
-				console.log("DEBUG");
 				callback(courses);
 			});
 		});

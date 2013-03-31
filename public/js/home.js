@@ -61,7 +61,6 @@ var Course = Backbone.Model.extend({
 		return this.get('colorId') || 1;
 	},
 	getHours:function() {
-		console.log(this.toJSON());
 		return (this.get('numOfCredits'))[0];
 	}
 });
