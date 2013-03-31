@@ -55,7 +55,6 @@ var CourseView = Backbone.View.extend({
 		this.$el.append('<div class="scheduleBlockHeader color' + this.model.getColorId() + '">' + this.model.get('courseCode') + '</div><div class="scheduleBlockBody">' + this.model.get('courseName') + '</div>');
 		this.$el.find('.scheduleBlockBody').css('height', this.pixelsPerHour * (this.model.getHours() - 1));
 		
-		
 		this.$el.draggable({
 			appendTo: 'body',
 			cursor: 'move',
@@ -67,8 +66,20 @@ var CourseView = Backbone.View.extend({
 			html:true,
 			title:this.model.get('courseCode') + ': ' + this.model.get('courseName'),
 			placement:'top',
-			trigger:'click',
+			trigger:'manual',
 			content:this.model.get('details')
+		}).click(function(event) {
+			if (!$(this).hasClass('hasPopoverShowing')) {
+				$('.hasPopoverShowing').popover('hide');
+				$(this).addClass('hasPopoverShowing').popover('show');
+			} else {
+				$(this).popover('hide').removeClass('hasPopoverShowing');
+			}
+			event.stopPropagation();
+		});
+		
+		$(document).click(function() {
+			$('.hasPopoverShowing').popover('hide');
 		});
 		
 		
