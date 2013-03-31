@@ -134,7 +134,7 @@ function parseCourseToken(token) {
 	var parseChar = "";
 	var temp = token[token.length - 1];
 
-	if (temp.match(/[+, !, ~, *]/)) {
+	if (temp.match(/[+, !, ~, *, $]/)) {
 		parseChar = temp;
 	}
 	if (temp.match(/[a-z]/i)) {
@@ -223,9 +223,16 @@ function getCoursesFromTokens(tokens, callback) {
 					}
 					checkBomb();
 				});
+			} else if (course.parseChar === '$') {
+				getCoursesBySuffix(course.courseSuffix, function(courses) {
+					if (courses.length > 0) {
+						results.additions[i] = courses;
+					}
+					checkBomb();
+				});
 			} else {
 				getCoursesByCode(course.courseCode, function(courses) {
-					if (courses) {
+					if (courses.length > 0) {
 						results.additions[i] = courses[0]; //Closure issues
 					}
 					checkBomb();
@@ -246,6 +253,17 @@ function getCoursesPlus(course, callback) {
 		});
 	});
 }
+
+function getCoursesBySuffix(suffix, callback) {
+	db.collection("courses", function(error, collection) {
+		collection.find({"courseSuffix": suffix}, function(error, cursor) {
+			cursor.toArray(function(error, courses) {
+				callback(courses);
+			});
+		});
+	});
+
+};
 
 function getCoursesByCategory(cat, callback) {
 	db.collection("courses", function(error, collection) {
