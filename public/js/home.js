@@ -117,6 +117,19 @@ var Schedule = Backbone.Collection.extend({
 	
 	hasCourse: function(course) {
 		return this.contains(course);
+	},
+	
+	//Validation stuff
+	isComplete: function(c) {
+		return true;
+	},
+	
+	getHoursOfAllCourses: function() {
+		return 1;
+	},
+	
+	getCoursesForAttr: function(a) {
+		return null;
 	}
 },
 {
@@ -254,14 +267,15 @@ var Goal = Backbone.Model.extend({
 	},
 	
 	loadCourses:function() {
+		console.log(this.get('items'));
 		_.each(this.get('items'), (function(item, i, items) {
 			item.courseCollection = new CourseCollection([], {
 				url: '/courses/lookup?q=' + item.courses.map(encodeURIComponent).join(','),
 				colorId: ((i % 9) + 1)
 			});
-			item.validate = (new Function('schedule', item.validator)).bind(item);
+			console.log(i);
+			item.validate = (new Function('schedule', '"use strict"; ' + item.validator)).bind(item);
 			item.courseCollection.on('sync', (this.onCourseCollectionLoad).bind(this));
-			//item.courseCollection.on('all', function(t) { console.log(t); });
 			item.courseCollection.fetch();
 		}).bind(this));
 		this.updateValidation();
