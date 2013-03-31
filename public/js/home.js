@@ -248,6 +248,7 @@ var Goal = Backbone.Model.extend({
 	
 	initialize:function() {
 		this.on('sync', (this.loadCourses).bind(this));
+		Schedule.getInstance().on('add remove reset', (this.updateValidation).bind(this));
 	},
 	
 	loadCourses:function() {
@@ -256,14 +257,23 @@ var Goal = Backbone.Model.extend({
 				url: '/courses/lookup?q=' + item.courses.map(encodeURIComponent).join(','),
 				colorId: ((i % 9) + 1)
 			});
+			item.validate = (new Function('schedule', item.validator)).bind(item);
 			item.courseCollection.on('sync', (this.onCourseCollectionLoad).bind(this));
 			//item.courseCollection.on('all', function(t) { console.log(t); });
 			item.courseCollection.fetch();
 		}).bind(this));
+		this.updateValidation();
 	},
 	
 	onCourseCollectionLoad:function(e) {
 		this.trigger('collectionloaded');
+	},
+	
+	updateValidation:function() {
+		_.each(this.get('items'), function(item) {
+			item.validationStatus = item.validate(Schedule.getInstance());
+		});
+		this.trigger('revalidated');
 	}
 });
 
@@ -272,20 +282,34 @@ var GoalView = Backbone.View.extend({
 		this._courseCollectionViews = [];
 		this.model.on('sync', (this.render).bind(this));
 		this.model.on('collectionloaded', (this.render).bind(this));
+		this.model.on('revalidated', (this.updateValidation).bind(this));
 	},
 	
 	render: function() {
-		console.log('Render goalView.');
 		_.each(this.model.get('items'), (function(item, i) {
 			if (!item.courseCollection) return;
 			
 			if (!this._courseCollectionViews[i]) {
-				var p = $('<div class="goalSection color' + item.courseCollection.getColorId() + '"><h2>' + item.title + '</h2><div class="goalSectionCourseList"></div></div>').appendTo(this.$el);
+				var p = $('<div class="goalSection color' + item.courseCollection.getColorId() + '"><div class="goalSectionHeader"><h2>' + item.title + '</h2><span class="validationStatus"></span></div><div class="goalSectionCourseList"></div></div>').appendTo(this.$el);
 			
 				var childEl = p.find('.goalSectionCourseList');
 				
 				this._courseCollectionViews[i] = new CourseCollectionView({collection:item.courseCollection, el:childEl});
 			}
+		}).bind(this));
+		this.updateValidation();
+	},
+	
+	updateValidation: function() {
+		_.each(this.model.get('items'), (function(item, i) {
+			var status = '';
+			if (item.validationStatus === true) {
+				status = '<img class="validationIcon" src="/img/check.png">';
+			} else {
+				status = '<img class="validationIcon" src="/img/x.png">' + item.validationStatus;
+			}
+			
+			this.$el.find('.goalSection:eq(' + i + ') .validationStatus').html(status);
 		}).bind(this));
 	}
 });
