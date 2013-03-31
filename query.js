@@ -128,16 +128,22 @@ function getCoursesLike(str, numResults, callback) {
 };
 
 function parseCourseToken(token) {
-	var coursePrefix = token.match(/\D+/)[0];
-	var courseNumber = parseInt(token.match(/\d+/)[0]);
-	var courseSuffix = token.match(/[+, !, \w]?$/)[0];
+	var coursePrefix = token.match(/[a-z]+/i)[0];
+	var courseNumber = token.match(/\d+/);
+	var courseSuffix = token.match(/[+, !, *, \w]?$/)[0];
 	var courseCode = coursePrefix + " " + courseNumber;
 	var course = {
 		"coursePrefix" : coursePrefix,
-		"courseNumber" : courseNumber,
 		"courseSuffix" : courseSuffix,
 		"courseCode" : courseCode
 	};
+
+	if (courseNumber) {
+		course.courseNumber = parseInt(courseNumber[0]);
+	} else {
+		course.courseNumber = 0;
+	}
+
 	return course;
 };
 
@@ -146,14 +152,16 @@ function getCoursesFromTokens(tokens, callback) {
 		if (error) {
 			console.log(error);
 		}
-
 		var timeBomb = tokens.length;
 		var checkBomb = function() {
 			timeBomb--;
 			if (timeBomb <= 0) {
-				
+				// console.log(results.additions);
 				var finalResults = results.additions.filter(function(item) {
-					return (results.removals.indexOf(item._id.toString()) === -1);
+					if (item) {
+						return (results.removals.indexOf(item._id.toString()) === -1);
+					}
+					return false;
 				});
 
 				callback(finalResults);
@@ -173,8 +181,9 @@ function getCoursesFromTokens(tokens, callback) {
 					checkBomb();
 				});
 			} else if (course.courseSuffix === "!") {
-				getCoursesByCode(course.courseCode, function(courses) {
+				getCoursesByCode(course.courseCode, function(courses) {	
 					if (courses) {
+
 						results.removals.push(courses[0]._id.toString());
 						//var index = resultsArray.indexOf(courses[0]);
 						//console.log(index);
@@ -182,7 +191,17 @@ function getCoursesFromTokens(tokens, callback) {
 					}
 					checkBomb();
 				});
+			} else if (course.courseSuffix === "*") { 
+				getCoursesPlus(course, function(courses) {
+					if (courses) {
+						results.additions = results.additions.concat(courses);
+					}
+					checkBomb();
+				});
 			} else {
+				if (course.courseSuffix.match(/\w/)) {
+					course.courseCode += course.courseSuffix;
+				}
 				getCoursesByCode(course.courseCode, function(courses) {
 					if (courses) {
 						results.additions.push(courses[0]);
@@ -198,13 +217,27 @@ function getCoursesPlus(course, callback) {
 	db.collection("courses", function(error, collection) {
 		var courseNumber = course.courseNumber;
 		var coursePrefix = course.coursePrefix;
+		console.log("DEBUG3");
 		collection.find({"courseNumber" : {$gte: courseNumber}, "coursePrefix" : coursePrefix}, function(error, cursor) {
+			console.log("DEBUG2");
 			cursor.toArray(function(error, courses) {
+				console.log("DEBUG");
 				callback(courses);
 			});
 		});
 	});
 }
+
+function getGoalsByName(name, callback) {
+	db.collection("goals", function(error, collection) {
+		collection.find({"name" : name}, function(error, cursor) {
+			cursor.toArray(function(error, goals) {
+				callback(goals);
+			});
+		});
+	});
+};
+
 // Open the connection
 db.open(function(error) {
 	if (!error) {
@@ -219,3 +252,4 @@ exports.getCoursesLike = getCoursesLike;
 exports.getGoalsByType = getGoalsByType;
 exports.getGoalsByKey = getGoalsByKey;
 exports.getCoursesFromTokens = getCoursesFromTokens;
+exports.getGoalsByName = getGoalsByName;

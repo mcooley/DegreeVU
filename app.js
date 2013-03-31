@@ -59,17 +59,17 @@ app.get("/courses/lookup", function(req, res) {
     for (var i = 0; i < courses.length; i++) {
       results = results + JSON.stringify(courses[i]);
     }
-    console.log(results);
+    // console.log(results);
     res.send(results);
   });
 });
 
-// app.get("/courses/:key", function(req, res) {
-//   var courseKey = req.params.key;
-//   query.getCoursesByKey(courseKey, function(course) {
-//     res.send(course[0]);
-//   });
-// }); 
+app.get("/courses/:key", function(req, res) {
+  var courseKey = req.params.key;
+  query.getCoursesByKey(courseKey, function(course) {
+    res.send(course[0]);
+  });
+}); 
 
 app.get('/home', routes.home);
 
