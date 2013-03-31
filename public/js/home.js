@@ -6,157 +6,312 @@ $(document).ready(function () {
 		return r;
 	}
 	
-	console.log();
-	
 	var gradYear = parseInt(getQueryString('gradYear'), 10);
 	if (!_.isFinite(gradYear) || Math.abs(gradYear - 2013) > 4) {
 		gradYear = 2016;
 	}
 	
-	var scheduleGrid = new ScheduleGrid({model: new Schedule(gradYear), el:'#scheduleGrid'});
-	scheduleGrid.render();
+	var scheduleView = new ScheduleView({collection: Schedule.getInstance(gradYear), el:'#scheduleGrid'});
+	scheduleView.render();
+	
+	var goalsList = new GoalList();	
+	var goalsListView = new GoalListView({collection:goalsList, el:'#goals'});
+	goalsListView.render();
 	
 	var majorId = getQueryString('major');
-		
 	if (majorId) {
 		var	major = new Goal({
 			id: majorId
 		});
-		major.fetch();
-	} else {
-		var major = undefined;
+		
+		major.once('sync', function() {
+			goalsList.add(this);
+		});
+		major.fetch();	
 	}
-
-	var goalsList = new GoalsList([major], {el:'#goals'});	
-	
-	
-	
-	$('.scheduleColBody, .goalSectionCourseList').sortable({
-		connectWith: '.scheduleColBody, .goalSectionCourseList',
-		items: '.scheduleBlock',
-		containment: 'body',
-		cursor: 'move',
-		opacity: 0.75,
-		distance: 5,
-		appendTo: $('body')
-	}).disableSelection();
 });
-
-/* Models */
 
 var Course = Backbone.Model.extend({
-	urlRoot: '/courses',
-	getColorID: function() {
-		//TODO: make this return the color ID of its parent requirement
-		return 1;
+	url: function() {
+		return '/courses/' + this.get('_id');
+	},
+	getColorId: function() {
+		return this.get('colorId') || 1;
+	},
+	getHours:function() {
+		return (this.get('numOfCredits'))[0];
 	}
 });
 
-var Schedule = Backbone.Model.extend({
-	initialize: function(gradYear) {
-		semesters = [
-			new Semester(null, {season: 'Before College'}),
-			new Semester(null, {season: 'Fall', year: gradYear - 4}),
-			new Semester(null, {season: 'Spring', year: gradYear - 3}),
-			new Semester(null, {season: 'Fall', year: gradYear - 3}),
-			new Semester(null, {season: 'Spring', year: gradYear - 2}),
-			new Semester(null, {season: 'Fall', year: gradYear - 2}),
-			new Semester(null, {season: 'Spring', year: gradYear - 1}),
-			new Semester(null, {season: 'Fall', year: gradYear - 1}),
-			new Semester(null, {season: 'Spring', year: gradYear})
-		];
+var CourseView = Backbone.View.extend({
+	pixelsPerHour: 21,
+	
+	initialize: function() {
+		Schedule.getInstance().on('add remove reset', (this.onAddToSchedule).bind(this));
+	},
+	
+	render: function() {
+		this.$el.addClass('scheduleBlock');
+		this.$el.append('<div class="scheduleBlockHeader color' + this.model.getColorId() + '">' + this.model.get('courseCode') + '</div><div class="scheduleBlockBody">' + this.model.get('courseName') + '</div>');
+		this.$el.find('.scheduleBlockBody').css('height', this.pixelsPerHour * (this.model.getHours() - 1));
 		
-		this.set('semesters', semesters);
+		this.$el.draggable({
+			appendTo: 'body',
+			cursor: 'move',
+			opacity: 0.75,
+			distance: 5,
+			helper: 'clone',
+			connectToSortable: '.scheduleColBody'
+		}).popover({
+			html:true,
+			title:this.model.get('courseCode') + ': ' + this.model.get('courseName'),
+			placement:'top',
+			trigger:'manual',
+			content:this.model.get('details')
+		}).click(function(event) {
+			if (!$(this).hasClass('hasPopoverShowing')) {
+				$('.hasPopoverShowing').popover('hide');
+				$(this).addClass('hasPopoverShowing').popover('show');
+			} else {
+				$(this).popover('hide').removeClass('hasPopoverShowing');
+			}
+			event.stopPropagation();
+		});
+		
+		$(document).click(function() {
+			$('.hasPopoverShowing').popover('hide');
+		});
+		
+		
+		this.$el.data('courseObj', this.model);
+	},
+	
+	onAddToSchedule: function() {
+		if (Schedule.getInstance().contains(this.model)) {
+			this.$el.draggable("disable").addClass('placed');
+		}
 	}
+});
+
+var Schedule = Backbone.Collection.extend({
+	model: Course,
+	initialize: function(models, options) {		
+		var gradYear = options.gradYear;
+		
+		this._semesters = [
+			{season: 'Before College'},
+			{season: 'Fall ', year: gradYear - 4},
+			{season: 'Spring', year: gradYear - 3},
+			{season: 'Fall', year: gradYear - 3},
+			{season: 'Spring', year: gradYear - 2},
+			{season: 'Fall', year: gradYear - 2},
+			{season: 'Spring', year: gradYear - 1},
+			{season: 'Fall', year: gradYear - 1},
+			{season: 'Spring', year: gradYear}
+		];
+	},
+	
+	getSemesters: function() {
+		return this._semesters;
+	},
+	
+	hasCourse: function(course) {
+		return this.contains(course);
+	}
+},
+{
+	_singletonInstance:null,
+	getInstance:function(gradYear) {
+		if (!this._singletonInstance) {
+			this._singletonInstance = new Schedule([], {gradYear:gradYear});
+		}
+		return this._singletonInstance;
+	}
+});
+
+var ScheduleView = Backbone.View.extend({
+	initialize: function() {
+		//this.collection.on('add remove reset', (this.updateHoursCount).bind(this));
+	},
+	
+	render: function() {
+		_.each(this.collection.getSemesters(), (function(semester) {
+			this.$el.append('<div class="scheduleCol ' + semester.season.toLowerCase() + '" data-semesterseason="' + semester.season + '" data-semesteryear="' + semester.year + '"><div class="scheduleColHeader">' + (semester.season || '') + (semester.year? ' ' : '') + (semester.year || '') + '</div><div class="scheduleColBody"></div></div>');
+		}).bind(this));
+		
+		$('.scheduleColBody').sortable({
+			connectWith: '.scheduleColBody',
+			items: '.scheduleBlock',
+			cursor: 'move',
+			opacity: 0.75,
+			distance: 5,
+			helper: 'clone',
+			appendTo: 'body',
+			beforeStop: function(event, ui) {
+				ui.item.trigger(event, ui);
+			},
+			stop: function(event, ui) {
+				ui.item.trigger(event, ui);
+			}
+		}).disableSelection();
+		
+		
+		this.$el.children('.scheduleCol').on('sortreceive', (this.onCourseMoved).bind(this));
+	},
+	
+	onCourseMoved: function(event, ui) {
+		var col = $(event.target).parent();
+		var semester = {season: col.attr('data-semesterseason'), year:col.attr('data-semesteryear')};
+		
+		if (ui.sender.parent().is('.goalSectionCourseList')) {
+			// Adding course to the schedule
+			var courseModel = ui.sender.data('courseObj');
+			courseModel.set('semester', semester);
+			this.collection.add(courseModel);
+		} else if (ui.sender.parent().is('.scheduleCol')) {
+			// Moving course within the schedule
+			console.log('Move course within schedule.');
+		}
+	},
+	
+	updateHoursCount: function() {
+		//TODO: change this to count semester-by-semester
+		var h = this.collection.reduce(function(memo, model) {
+			return memo + (model.get('numOfCredits'))[0];
+		}, 0);
+		this.$el.find('.hoursCount').text('(' + h + ')');
+	}
+});
+
+
+
+
+
+var GoalList = Backbone.Collection.extend({
+	model:Goal
+});
+
+var GoalListView = Backbone.View.extend({
+	initialize:function() {
+		this._goalViews = [];
+		this.collection.on('add', (this.addTab).bind(this));
+	},
+	
+	render:function() {
+		this.$el.append('<ul class="nav nav-tabs"></ul>');
+		this.$el.append('<div class="tab-content"></div>');
+	},
+	
+	addTab:function(model) {
+		this.$el.find('ul.nav-tabs').append('<li class="active"><a href="goal' + model.get('_id') + '" data-toggle="tab">' + model.get('name') + ' ' + model.get('type').charAt(0).toUpperCase() + model.get('type').slice(1) + '</a></li>');
+		var e = $('<div class="tab-pane active" id="goal' + model.get('_id') + '"></div>').appendTo(this.$el.find('div.tab-content'));
+		var view = new GoalView({model:model, el:e});
+		this._goalViews.push(view);
+		view.render();
+	}
+});
+
+
+var CourseCollectionView = Backbone.View.extend({
+	initialize:function() {
+		this.collection.on('sync', (this.render).bind(this));
+	},
+	
+	render: function() {
+		this.collection.each((function(courseModel) {
+			var e = $('<div></div>').appendTo(this.$el);
+			var courseView = new CourseView({model:courseModel, el:e});
+			courseView.render();
+		}).bind(this));
+	}
+});
+
+var CourseCollection = Backbone.Collection.extend({
+	model:Course,
+	initialize: function(models, options) {
+		this.on('add remove reset', (this.doOnLoad).bind(this));
+		this._colorId = options.colorId;
+	},
+	
+	getColorId: function() {
+		return this._colorId;
+	},
+	
+	doOnLoad: function() {
+		this.each((function(model) {
+			model.set('colorId', this.getColorId());
+		}).bind(this));
+	}
+	
 });
 
 var Goal = Backbone.Model.extend({
 	urlRoot: '/goals',
 	
-	initialize: function() {
-		// Make requirement objects for each.
-	}
-});
-
-/* Collections */
-
-var GoalsList = Backbone.Collection.extend({
-	
-});
-
-var Semester = Backbone.Collection.extend({
-	
-	initialize: function(models, options) {
-		if (options.season) {
-			this._season = options.season;
-		}
-		if (options.year) {
-			this._year = options.year;
-		}
+	initialize:function() {
+		this.on('sync', (this.loadCourses).bind(this));
+		Schedule.getInstance().on('add remove reset', (this.updateValidation).bind(this));
 	},
 	
-	getName: function() {
-		var name = (this._season || '');
-		if (this._year) {
-			name += ' ' + this._year;
-		}
-		return name;
-	},
-	
-	getSeason: function() {
-		return this._season;
-	},
-	
-	getYear: function() {
-		return this._year;
-	}
-});
-
-/* Views */
-
-var ScheduleGrid = Backbone.View.extend({
-	
-	render: function() {
-		this.model.get('semesters').forEach((function(semester) {
-			this.$el.append('<div class="scheduleCol ' + semester.getSeason().toLowerCase() + '"><div class="scheduleColHeader">' + semester.getName() + '</div><div class="scheduleColBody"></div></div>');
-		}).bind(this));
-		
-		$('.scheduleCol').on('sortreceive', this.handleDropOnColumn);
-	},
-	
-	handleDropOnColumn: function(event, ui) {
-		console.log(event);
-	}
-	
-});
-
-// A tab listing the requirements for a goal.
-var GoalView = Backbone.View.extend({
-
-	render: function() {
-		_.each(this.model.get('requirements'), function(requirement, i) {
-			var colorId = i % 9 + 1;
-			this.$el.append('<div class="goalSection color' + colorId + '"><h2>' + requirement.description + '</h2><div class="goalSectionCourseList"></div>');
-		
-			_.each(requirement.req, function(reqitem, i) {
-				// If a course, initialize a course model and view and append to .goalSection
-				// Make sure the course has an "originReq" property with a reference to a requirement object
-				
-				// If a requirement, recurse down. Requirements not at the top level inherit their parent's colorId.
-				
+	loadCourses:function() {
+		_.each(this.get('items'), (function(item, i, items) {
+			item.courseCollection = new CourseCollection([], {
+				url: '/courses/lookup?q=' + item.courses.map(encodeURIComponent).join(','),
+				colorId: ((i % 9) + 1)
 			});
-		})
-	}
+			item.validate = (new Function('schedule', item.validator)).bind(item);
+			item.courseCollection.on('sync', (this.onCourseCollectionLoad).bind(this));
+			//item.courseCollection.on('all', function(t) { console.log(t); });
+			item.courseCollection.fetch();
+		}).bind(this));
+		this.updateValidation();
+	},
 	
+	onCourseCollectionLoad:function(e) {
+		this.trigger('collectionloaded');
+	},
+	
+	updateValidation:function() {
+		_.each(this.get('items'), function(item) {
+			item.validationStatus = item.validate(Schedule.getInstance());
+		});
+		this.trigger('revalidated');
+	}
 });
 
-// A draggable block representing a course
-var CourseView = Backbone.View.extend({
-	pixelsPerHour: 21,
+var GoalView = Backbone.View.extend({
+	initialize: function() {
+		this._courseCollectionViews = [];
+		this.model.on('sync', (this.render).bind(this));
+		this.model.on('collectionloaded', (this.render).bind(this));
+		this.model.on('revalidated', (this.updateValidation).bind(this));
+	},
 	
 	render: function() {
-		this.$el.addClass('scheduleBlock');
-		this.$el.append('<div class="scheduleBlock"><div class="scheduleBlockHeader color' + this.model.getColorId() + '">' + this.model.getShortName() + '	</div><div class="scheduleBlockBody">' + this.model.get('description') + '</div></div>');
-		this.$el.find('.scheduleBlockBody').css('height', this.pixelsPerHour * ((this.model.get('numOfCredits'))[0] - 1));
+		_.each(this.model.get('items'), (function(item, i) {
+			if (!item.courseCollection) return;
+			
+			if (!this._courseCollectionViews[i]) {
+				var p = $('<div class="goalSection color' + item.courseCollection.getColorId() + '"><div class="goalSectionHeader"><h2>' + item.title + '</h2><span class="validationStatus"></span>' + (item.comment? '<div class="comment">' + item.comment + '</div>' : '') + '</div><div class="goalSectionCourseList"></div></div>').appendTo(this.$el);
+			
+				var childEl = p.find('.goalSectionCourseList');
+				
+				this._courseCollectionViews[i] = new CourseCollectionView({collection:item.courseCollection, el:childEl});
+			}
+		}).bind(this));
+		this.updateValidation();
+	},
+	
+	updateValidation: function() {
+		_.each(this.model.get('items'), (function(item, i) {
+			var status = '';
+			if (item.validationStatus === true) {
+				status = '<img class="validationIcon" src="/img/check.png">';
+			} else {
+				status = '<img class="validationIcon" src="/img/x.png">' + item.validationStatus;
+			}
+			
+			this.$el.find('.goalSection:eq(' + i + ') .validationStatus').html(status);
+		}).bind(this));
 	}
 });

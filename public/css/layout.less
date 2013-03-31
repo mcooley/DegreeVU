@@ -15,13 +15,13 @@ html, body {
 /* Colors */
 
 @color1: #ff2c00;
-@color2: #ff6a00;
+@color6: #ff6a00;
 @color3: #ffd600;
-@color4: #8eeb00;
+@color8: #8eeb00;
 @color5: #00c618;
-@color6: #00938e;
+@color2: #00938e;
 @color7: #1240ab;
-@color8: #510fad;
+@color4: #510fad;
 @color9: #c7007d;
 
 
@@ -53,31 +53,31 @@ html, body {
 	background-color:@color9;
 }
 
-.goalSection.color1 > h2 {
+.goalSection.color1 .goalSectionHeader {
 	color:@color1;
 }
-.goalSection.color2 > h2 {
+.goalSection.color2 .goalSectionHeader {
 	color:@color2;
 }
-.goalSection.color3 > h2 {
+.goalSection.color3 .goalSectionHeader {
 	color:@color3;
 }
-.goalSection.color4 > h2 {
+.goalSection.color4 .goalSectionHeader {
 	color:@color4;
 }
-.goalSection.color5 > h2 {
+.goalSection.color5 .goalSectionHeader {
 	color:@color5;
 }
-.goalSection.color6 > h2 {
+.goalSection.color6 .goalSectionHeader {
 	color:@color6;
 }
-.goalSection.color7 > h2 {
+.goalSection.color7 .goalSectionHeader {
 	color:@color7;
 }
-.goalSection.color8 > h2 {
+.goalSection.color8 .goalSectionHeader {
 	color:@color8;
 }
-.goalSection.color9 > h2 {
+.goalSection.color9 .goalSectionHeader {
 	color:@color9;
 }
 
@@ -104,7 +104,7 @@ html, body {
 	font-size:10pt;
 }
 
-.scheduleCol.fall {
+.scheduleCol.fall .scheduleColBody {
 	border-left-width:2px;
 }
 
@@ -152,9 +152,11 @@ html, body {
 	border-bottom-left-radius:5px;
 	border-bottom-right-radius:5px;
 	padding-left:5px;
+	padding-right:5px;
 	border:1px solid #aaa;
 	height:@pixelsPerHour;
 	overflow:hidden;
+	white-space:normal;
 }
 
 /* Goals tabs */
@@ -172,7 +174,26 @@ html, body {
 	width:100%;
 }
 
+.goalSectionHeader .validationStatus {
+	color:#ff0000;
+	margin-left:10px;
+}
+
+.goalSectionHeader .validationIcon {
+	width:25px;
+	height:25px;
+	margin-right:8px;
+	position:relative;
+	top:-5px;
+}
+.goalSectionHeader .comment {
+	font-size:0.9em;
+	position:relative;
+	top:-5px;
+}
+
 .goalSection h2 {
+	display:inline;
 	font-size:1.4em;
 }
 
@@ -180,4 +201,8 @@ html, body {
 	display:inline-block;
 	vertical-align:top;
 	margin-right:10px;
+}
+
+.goalSectionCourseList > .scheduleBlock.placed .scheduleBlockHeader {
+	background-color:#666;
 }
