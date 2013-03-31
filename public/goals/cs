@@ -1,140 +1,30 @@
 {
-    "_id": "cs",
-    "name": "Computer Science",
-    "type": "major",
-    "school": "School of Engineering",
-    "items": [
-        {
-            "title": "Math Sequence",
-            "comment": "Must take a calculus sequence, a course in linear algebra, a course in statistics, and one additional math elective.  The electives course must either be MATH 198, MATH 200, or MATH 208 or higher",
-            "courses": [
-                "MATH 150A",
-                "MATH 150B",
-                "MATH 155A",
-                "MATH 155B",
-                "MATH 170",
-                "MATH 175",
-                "MATH 194",
-                "MATH 205A",
-                "MATH 204",
-                "MATH 205B",
-                "MATH 198",
-                "MATH 208+",
-                "MATH 200"
-            ],
-            "validator": "var calcSequence1=['MATH 150A','MATH 150B','MATH 170','MATH 175'];var calcSequence2=['MATH 155A','MATH 155B','MATH 175'];var calcSequence3=['MATH 155A','MATH 155B','MATH 205A','MATH 205B'];var linearSequence=['MATH 194','MATH 204','MATH 205B'];var statistics=['MATH 216','MATH 218','MATH 247'];var electiveCourses=['MATH 198','MATH 200','MATH 208+'];var errorMessage='';if(schedule.isComplete(calcSequence1)!==true&&schedule.isComplete(calcSequence2)!==true&&schedule.isComplete(calcSequence3)!==true){errorMessage+='U gots no calc sequence';} if(schedule.isComplete(linearSequence).length===2){errorMessage+=(errorMessage.length==0)?'I don see no linear algebra class':',I don see no linear algebra class';} if(schedule.isComplete(linearSequence).length===3){errorMessage+=(errorMessage.length==0)?'Where be the statistics':', where be the statistics';} if(schedule.isComplete(linearSequence).length===electiveCourses.length){errorMessage+=(errorMessage.length==0)?'U gotta get some calc electives goin':',u gotta get some calc electives goin';} return(errorMessage.length==0)?true:errorMessage;"
-        },
-        {
-            "title": "Liberal Arts Core (18 hours)",
-            "comment": "Must have 3 credit hours in each of 3 categories, and 6 credit hours in a single category.  The total number of elective hours must add up to 18",
-            "courses": [
-                "P~",
-                "US~",
-                "INT~",
-                "CD~",
-                "MCP~",
-                "SBS~",
-                "MNS~"
-            ],
-            "validator": "var possibleCategories=['HCA','SBS','US','P','INT','MCP','CD'];var numOfCatsWith6Hours=0;var numOfCatsWith3Hours=0;var totalHours=0;possibleCategories.forEach(function(category){var arrayForCatCourses=[];totalHours+=schedule.getHoursOfAllCourses(arrayForCatCourses);if(schedule.getHoursOfAllCourses(arrayForCatCourses)>=3||(schedule.getHoursOfAllCourses(arrayForCatCourses)>=6&&numOfCatsWith6Hours>=1)){numOfCatsWith3Hours++;}else if(schedule.getHoursOfAllCourses(arrayForCatCourses.length>=6)){numOfCatsWith6Hours++;}});if(numOfCatsWith6Hours>=1&&numOfCatsWith3Hours>=3&&totalHours>=18){return true;}else{var errorMessage='';if(numOfCatsWith6Hours==0){errorMessage='U have no 6 hours in any category';}if(numOfCatsWith3Hours<3){if(errorMessage.length!==0){errorMessage+=', ';}errorMessage+='U goin to need 3 hours in 3 different categories';}}"
-        },
-        {
-            "title": "Standard Engineering Modules (3)",
-            "courses": [
-                "ES 140A",
-                "ES 140B",
-                "ES 140C"
-            ],
-            "validator": "return true;'StdValidatorTakeAll';"
-        },
-        {
-            "title": "Basic Science sequence (12 hours)",
-            "courses": [
-                "BSCI 110A",
-                "BSCI 110B",
-                "BSCI 111A",
-                "BSCI 111B",
-                "BSCI 100",
-                "BSCI 218",
-                "BSCI 219",
-                "CHEM 102A",
-                "CHEM 102B",
-                "CHEM 104A",
-                "CHEM 104B",
-                "EES 101",
-                "EES 111",
-                "MSE 150",
-                "PHYS 116A",
-                "PHYS 116B",
-                "PHYS 118A",
-                "PHYS 118B"
-            ],
-            "validator": "return true;"
-        },
-        {
-            "title": "Computer Science Core Curriculum (28 hours)",
-            "courses": [
-                "CS 101",
-                "CS 201",
-                "CS 251",
-                "CS 270",
-                "EECE 116",
-                "EECE 116L",
-                "CS 231",
-                "CS 281",
-                "CS 212",
-                "CS 250"
-            ],
-            "validator": "return true; 'StdValidatorTakeAll';"
-        },
-        {
-            "title": "Computer Science Depth (12 hours)",
-            "comment": "Must have at least 1 project course in computer science.  Only 2 math courses may count towards credit",
-            "courses": [
-                "CS 258",
-                "CS 265",
-                "CS 269",
-                "CS 274",
-                "CS 276",
-                "CS 279",
-                "CS 282",
-                "CS 283",
-                "CS 284",
-                "CS 285"
-            ],
-            "validator": "return true;"
-        },
-        {
-            "title": "Computer Science Ethics courses (3 hours)",
-            "comment": "Must take a single course that counts towards ethics",
-            "courses": [
-                "CS 151",
-                "PHIL 150"
-            ],
-            "validator": "return true; 'StdValidatorTakeClasses(1)';"
-        },
-        {
-            "title": "Writing course (3 hours)",
-            "comment": "Must take 1 W designated course",
-            "courses": [
-                "W~"
-            ],
-            "validator": "return true; 'StdValidatorTakeHours(3)';"
-        },
-        {
-            "title": "Technical Electives (6 hours)",
-            "comment": "Must take two courses from CS 240 or higher, a non-CS engineering major with the number 200 or higher, or Mathematical and Natural Sciences category offered in the College of Arts and Science",
-            "courses": [
-                "EECE 200+",
-                "ME 200+",
-                "CE 200+",
-                "BME 200+",
-                "CHBE 200+",
-                "ES 200+",
-                "CS 240+",
-                "MNS~"
-            ],
-            "validator": "return true; 'StdValidatorTakeHours(6)';"
-        }
-    ]
+	"name": "Computer Science",
+	"type": "major",
+	"school": "School of Engineering",
+	"items": [
+		{
+			"title": "Standard Engineering Modules (3)", 
+			"courses": ["ES 140A", "ES 140B", "ES 140C"],
+			"validator": "StdValidator.takeAll"
+		},
+		{
+			"title": "Computer Science Core Curriculum (28 hours)",
+			"courses": ["CS 101", "CS 201", "CS 251", "CS 270", "EECE 116", "EECE 116L", "CS 231", "CS 281", "CS 212", "CS 250"],
+			"validator": "StdValidator.takeAll"
+		},
+		{
+			"title": "Computer Science Ethics courses (3 hours)",
+			"comment": "Must take a single course that counts towards ethics",
+			"courses": ["CS 151", "PHIL 150"],
+			"validator": "StdValidator.takeCourses(1)"
+		},
+		{
+			"title": "Writing course (3 hours)", 
+			"comment": "Must take 1 W designated course",
+			"courses": ["W~"]
+			"validator": "StdValidator.takeHours(3)"
+			
+		}
+	]
 }
