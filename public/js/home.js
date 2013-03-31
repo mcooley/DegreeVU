@@ -221,6 +221,19 @@ var ScheduleView = Backbone.View.extend({
 			// Moving course within the schedule
 			console.log('Move course within schedule.');
 		}
+		this.updateHeight();
+	},
+	
+	updateHeight:function() {
+		var maxHeight = 250;
+		$('.scheduleColBody').each(function(i, el) {
+			if ($(el).height() - 40 > maxHeight) {
+				maxHeight = $(el).height() + 60;
+			}
+		});
+		
+		$('.scheduleCol').css('height', maxHeight + 'px');
+		$('#scheduleGrid').css('height', maxHeight + 'px');
 	},
 	
 	updateHoursCount: function() {
