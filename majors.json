@@ -1,0 +1,34 @@
+{
+	"name": "Computer Science",
+	"type": "major",
+	"school": "Engineering",
+	"requirements": [
+	{
+		"description": "Mathematics (20-22 hours)",
+		"courseList": ["MATH 150A", "MATH 150B", "MATH 170", "MATH 175",
+					 "MATH 155A", "MATH 155B", "MATH 205A", "MATH 205B",
+					 "MATH 204", "MATH 216", "MATH 218", "MATH 247"]
+	},
+	{
+		"description": "Science (12 hours)",
+		"courseList" : ["BSCI 110A", "BSCI 110B", "BSCI 111A", "BSCI 111B",
+						"BSCI 100", "BSCI 218", "BSCI 219", "CHEM 102A",
+						"CHEM 104A", "CHEM 102B", "CHEM 104B", "EES 101",
+						"EES 111", "MSE 150", "PHYS 116A", "PHYS 116B",
+						"PHYS 118A", "PHYS 188B"]
+	}, 
+	{
+		"description": "Introduction to Engineering (3 hours)",
+		"courseList" : ["ES 140A", "ES 140B", "ES 140C"]
+	}, 
+	{
+		"description": "Computer Science Core (28 hours)",
+		"courseList" : ["CS 101", "CS 201", "CS 251", "CS 270", "EECE 116",
+						"EECE 116L", "CS 231", "CS 281", "CS 212", "CS 250"]
+	},
+	{
+		"description": "Computer Science Depth (12 hours)",
+		"courseList" : ["EECE 253", "EECE 254", "EECE 276", "MATH 226", 
+						"MATH 253", "MATH 288", "CS 240"]
+	}]
+}
