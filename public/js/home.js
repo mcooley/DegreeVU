@@ -6,181 +6,173 @@ $(document).ready(function () {
 		return r;
 	}
 	
-	console.log();
-	
 	var gradYear = parseInt(getQueryString('gradYear'), 10);
 	if (!_.isFinite(gradYear) || Math.abs(gradYear - 2013) > 4) {
 		gradYear = 2016;
 	}
 	
-	var scheduleGrid = new ScheduleGrid({model: new Schedule(gradYear), el:'#scheduleGrid'});
-	scheduleGrid.render();
+	var sched = new Schedule([], {gradYear:gradYear});
+
+	var scheduleView = new ScheduleView({collection: sched, el:'#scheduleGrid'});
+	scheduleView.render();
 	
-	var majorId = getQueryString('major');
 	/*
+	var majorId = getQueryString('major');
 	if (majorId) {
 		var	major = new Goal({
 			id: majorId
 		});
+		
 		major.fetch();
+		
 	} else {
 		var major = undefined;
 	}
+	
 
 	var goalsList = new GoalsList([major], {el:'#goals'});	
 	*/
 	
 	var testCourse = new Course({id: '51571cbf9c27196b6293f335'});
-	testCourse.fetch({success: function(model) {
-		var el = $('.scheduleColBody:eq(0)').append('<div></div');
-		
-		var view = new CourseView({model:model, el:el});
+	testCourse.fetch();
+	var testCourse2 = new Course({id: '51571cd69c27196b6293f336'});
+	testCourse2.fetch();
+	
+	window.setTimeout(function() {
+		var view = new CourseView({model: testCourse, el:'#testCourseHome'});
 		view.render();
+		var view2 = new CourseView({model: testCourse2, el:'#testCourseHome2'});
+		view2.render();
 		
-	}});
-	
-	
-	$('.scheduleColBody, .goalSectionCourseList').sortable({
-		connectWith: '.scheduleColBody, .goalSectionCourseList',
-		items: '.scheduleBlock',
-		containment: 'body',
-		cursor: 'move',
-		opacity: 0.75,
-		distance: 5,
-		appendTo: $('body')
-	}).disableSelection();
+		
+		$('.scheduleBlock').draggable({
+			appendTo: 'body',
+			cursor: 'move',
+			opacity: 0.75,
+			distance: 5,
+			helper: 'clone',
+			connectToSortable: '.scheduleColBody'
+		});
+		
+		$('.scheduleColBody').sortable({
+			connectWith: '.scheduleColBody',
+			items: '.scheduleBlock',
+			cursor: 'move',
+			opacity: 0.75,
+			distance: 5,
+			helper: 'clone',
+			appendTo: 'body',
+			beforeStop: function(event, ui) {
+				ui.item.trigger(event, ui);
+			},
+			stop: function(event, ui) {
+				ui.item.trigger(event, ui);
+			}
+		}).disableSelection();
+		
+	}, 100);
 });
-
-/* Models */
 
 var Course = Backbone.Model.extend({
 	urlRoot: '/courses',
 	getColorId: function() {
-		//TODO: make this return the color ID of its parent requirement
+		//TODO: actually check the requirements and stuff
 		return 1;
 	}
 });
 
-var Schedule = Backbone.Model.extend({
-	initialize: function(gradYear) {
-		semesters = [
-			new Semester(null, {season: 'Before College'}),
-			new Semester(null, {season: 'Fall', year: gradYear - 4}),
-			new Semester(null, {season: 'Spring', year: gradYear - 3}),
-			new Semester(null, {season: 'Fall', year: gradYear - 3}),
-			new Semester(null, {season: 'Spring', year: gradYear - 2}),
-			new Semester(null, {season: 'Fall', year: gradYear - 2}),
-			new Semester(null, {season: 'Spring', year: gradYear - 1}),
-			new Semester(null, {season: 'Fall', year: gradYear - 1}),
-			new Semester(null, {season: 'Spring', year: gradYear})
-		];
-		
-		this.set('semesters', semesters);
-	}
-});
-
-var Goal = Backbone.Model.extend({
-	urlRoot: '/goals',
-	
-	initialize: function() {
-		// Make requirement objects for each.
-	}
-});
-
-/* Collections */
-
-var GoalsList = Backbone.Collection.extend({
-	
-});
-
-var Semester = Backbone.Collection.extend({
-	
-	initialize: function(models, options) {
-		if (options.season) {
-			this._season = options.season;
-		}
-		if (options.year) {
-			this._year = options.year;
-		}
-	},
-	
-	getName: function() {
-		var name = (this._season || '');
-		if (this._year) {
-			name += ' ' + this._year;
-		}
-		return name;
-	},
-	
-	getSeason: function() {
-		return this._season;
-	},
-	
-	getYear: function() {
-		return this._year;
-	}
-});
-
-/* Views */
-
-var ScheduleGrid = Backbone.View.extend({
-	
-	render: function() {
-		this.model.get('semesters').forEach((function(semester) {
-			this.$el.append('<div class="scheduleCol ' + semester.getSeason().toLowerCase() + '"><div class="scheduleColHeader">' + semester.getName() + '</div><div class="scheduleColBody"></div></div>');
-		}).bind(this));
-		
-		$('.scheduleCol').on('sortremove', this.handleRemoveFromColumn);
-		$('.scheduleCol').on('sortreceive', this.handleDropOnColumn);
-	},
-	
-	handleDropOnColumn: function(event, ui) {
-
-		
-		// If previously came from another semester, remove from that semester
-		// Add to new semester
-		
-		console.log(event);
-		console.log(ui);
-	},
-	
-	handleRemoveFromColumn: function(event, ui) {
-		console.log('Remove from old semester!');
-	}
-	
-});
-
-var SemesterView = Backbone.View.extend({
-	
-});
-
-// A tab listing the requirements for a goal.
-var GoalView = Backbone.View.extend({
-
-	render: function() {
-		_.each(this.model.get('requirements'), function(requirement, i) {
-			var colorId = i % 9 + 1;
-			this.$el.append('<div class="goalSection color' + colorId + '"><h2>' + requirement.description + '</h2><div class="goalSectionCourseList"></div>');
-		
-			_.each(requirement.req, function(reqitem, i) {
-				// If a course, initialize a course model and view and append to .goalSection
-				// Make sure the course has an "originReq" property with a reference to a requirement object
-				
-				// If a requirement, recurse down. Requirements not at the top level inherit their parent's colorId.
-				
-			});
-		})
-	}
-	
-});
-
-// A draggable block representing a course
 var CourseView = Backbone.View.extend({
 	pixelsPerHour: 21,
 	
 	render: function() {
 		this.$el.addClass('scheduleBlock');
-		this.$el.append('<div class="scheduleBlock"><div class="scheduleBlockHeader color' + this.model.getColorId() + '">' + this.model.get('courseNumber') + '</div><div class="scheduleBlockBody">' + this.model.get('courseName') + '</div></div>');
+		this.$el.append('<div class="scheduleBlockHeader color' + this.model.getColorId() + '">' + this.model.get('courseNumber') + '</div><div class="scheduleBlockBody">' + this.model.get('courseName') + '</div>');
 		this.$el.find('.scheduleBlockBody').css('height', this.pixelsPerHour * ((this.model.get('numOfCredits'))[0] - 1));
+		
+		this.$el.data('courseObj', this.model);
 	}
+});
+
+var Schedule = Backbone.Collection.extend({
+	initialize: function(models, options) {		
+		var gradYear = options.gradYear;
+		
+		this._semesters = [
+			{season: 'Before College'},
+			{season: 'Fall', year: gradYear - 4},
+			{season: 'Spring', year: gradYear - 3},
+			{season: 'Fall', year: gradYear - 3},
+			{season: 'Spring', year: gradYear - 2},
+			{season: 'Fall', year: gradYear - 2},
+			{season: 'Spring', year: gradYear - 1},
+			{season: 'Fall', year: gradYear - 1},
+			{season: 'Spring', year: gradYear}
+		];
+	},
+	
+	getSemesters: function() {
+		return this._semesters;
+	}
+});
+
+var ScheduleView = Backbone.View.extend({
+	initialize: function() {
+		this.collection.on('add remove reset', (this.updateHoursCount).bind(this));
+	},
+	
+	render: function() {
+		_.each(this.collection.getSemesters(), (function(semester) {
+			this.$el.append('<div class="scheduleCol ' + semester.season.toLowerCase() + '" data-semesterseason="' + semester.season + '" data-semesteryear="' + semester.year + '"><div class="scheduleColHeader">' + (semester.season || '') + (semester.year? ' ' : '') + (semester.year || '') + ' <span class="hoursCount">(0)</span></div><div class="scheduleColBody"></div></div>');
+		}).bind(this));
+		
+		this.$el.children('.scheduleCol').on('sortreceive', (this.onCourseMoved).bind(this));
+	},
+	
+	onCourseMoved: function(event, ui) {
+		var col = $(event.target).parent();
+		var semester = {season: col.attr('data-semesterseason'), year:col.attr('data-semesteryear')};
+		
+		if (ui.sender.parent().is('.goalSectionCourseList')) {
+			// Adding course to the schedule
+			var courseModel = ui.sender.data('courseObj');
+			this.collection.add(courseModel);
+			console.log(courseModel);
+			courseModel.set('semester', semester);
+		} else if (ui.sender.parent().is('.scheduleCol')) {
+			// Moving course within the schedule
+			console.log('Move course within schedule.');
+		}
+	},
+	
+	updateHoursCount: function() {
+		//TODO: change this to count semester-by-semester
+		
+		var h = this.collection.reduce(function(memo, model) {
+			return memo + (model.get('numOfCredits'))[0];
+		}, 0);
+		this.$el.find('.hoursCount').text('(' + h + ')');
+	}
+});
+
+
+
+
+
+// Goals stuff (not yet implemented)
+var GoalList = Backbone.Collection.extend({
+	
+});
+
+var GoalListView = Backbone.View.extend({
+	render: function() {
+		
+	}
+});
+
+var Goal = Backbone.Model.extend({
+	urlRoot: '/goals'
+});
+
+var GoalView = Backbone.View.extend({
+	
 });
