@@ -199,6 +199,9 @@ function getCoursesFromTokens(tokens, callback) {
 					checkBomb();
 				});
 			} else {
+				if (course.courseSuffix.match(/\w/)) {
+					course.courseCode += course.courseSuffix;
+				}
 				getCoursesByCode(course.courseCode, function(courses) {
 					if (courses) {
 						results.additions.push(courses[0]);
@@ -224,6 +227,17 @@ function getCoursesPlus(course, callback) {
 		});
 	});
 }
+
+function getGoalsByName(name, callback) {
+	db.collection("goals", function(error, collection) {
+		collection.find({"name" : name}, function(error, cursor) {
+			cursor.toArray(function(error, goals) {
+				callback(goals);
+			});
+		});
+	});
+};
+
 // Open the connection
 db.open(function(error) {
 	if (!error) {
@@ -238,3 +252,4 @@ exports.getCoursesLike = getCoursesLike;
 exports.getGoalsByType = getGoalsByType;
 exports.getGoalsByKey = getGoalsByKey;
 exports.getCoursesFromTokens = getCoursesFromTokens;
+exports.getGoalsByName = getGoalsByName;
