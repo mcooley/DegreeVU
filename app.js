@@ -1,7 +1,9 @@
 var express = require('express'),
   routes = require('./routes'),
   lessMiddleware = require('less-middleware'),
-  http = require('http');
+  http = require('http'),
+  query = require("./query.js"),
+  mongo = require("./node_modules/mongodb");
 
 var app = express();
 
@@ -25,7 +27,30 @@ app.configure('development', function(){
   app.use(express.errorHandler());
 });
 
-app.get('/', routes.index);
+app.get('/', routes.index)
+
+
+app.get("/courses/autocomplete", function(req, res) {
+  var qryStr = req.query.qry;
+  var courses = query.getCoursesLike(qryStr, 10, function(courses) {
+    var results = "";
+    for (var i = 0; i < courses.length; i++) {
+      // delete results._id;
+      results = results + JSON.stringify(courses[i]);
+    }
+    res.send("Your courses: " + results);
+  });
+});
+
+app.get("/courses/:key", function(req, res) {
+  var courseKey = req.params.key;
+  var course = query.getCourseByKey(courseKey, function(course) {
+    res.send(course[0]);
+  });
+});
+
+
+
 
 app.get('/home', routes.home);
 
