@@ -143,12 +143,13 @@ var Schedule = Backbone.Collection.extend({
 		}, 0);
 	},
 	
-	countClasses: function(courseArray) {
+	countCourses: function(courseArray) {
 		return this.reduce(function(memo, course) {
 			var courseCode = course.get('courseCode');
 			var courseMatches = _.some(courseArray, function(coursePattern) {
 				return CourseCodeTokenizer.matches(courseCode, coursePattern);
 			});
+			//Wrong!
 			if (courseMatches) {
 				return memo++;
 			} else {
@@ -157,13 +158,19 @@ var Schedule = Backbone.Collection.extend({
 		}, 0);
 	},
 	
-	countClassesWithCategory: function(category) {
+	countCoursesWithCategory: function(category) {
 		return this.reduce(function(memo, course) {
 			if (course.get('category') === category) {
 				return memo++;
 			} else {
 				return memo;
 			}
+		}, 0);
+	},
+	
+	getHoursOfAllCourses: function() {
+		return this.reduce(function(memo, course) {
+			return memo + course.getHours();
 		}, 0);
 	}
 	
@@ -227,10 +234,12 @@ var ScheduleView = Backbone.View.extend({
 	updateHeight:function() {
 		var maxHeight = 250;
 		$('.scheduleColBody').each(function(i, el) {
-			if ($(el).height() - 40 > maxHeight) {
-				maxHeight = $(el).height() + 60;
+			if ($(el).height() > maxHeight) {
+				maxHeight = $(el).height() + 40;
 			}
 		});
+		
+		maxHeight=300;
 		
 		$('.scheduleCol').css('height', maxHeight + 'px');
 		$('#scheduleGrid').css('height', maxHeight + 'px');

@@ -2,7 +2,8 @@
 	"name": "Computer Science",
 	"type": "major",
 	"school": "School of Engineering",
-	"items": [
+	"items": 
+	[
 		{
 			"title": "Standard Engineering Modules (3)", 
 			"courses": ["ES 140A", "ES 140B", "ES 140C"],
@@ -11,7 +12,7 @@
 		{
 			"title": "Basic Science sequence (12 hours)",
 			"courses": ["BSCI 110A", "BSCI 110B", "BSCI 111A", "BSCI 111B", "BSCI 100", "BSCI 218", "BSCI 219","CHEM 102A", "CHEM 102B", "CHEM 104A", "CHEM 104B", "EES 101", "EES 111", "MSE 150", "PHYS 116A", "PHYS 116B", "PHYS 118A", "PHYS 118B"],
-			"validator": "if(this.courseCollection.length==0){return true;}var scienceSequences=[['BSCI 110a','BSCI 110b','BSCI 111a','BSCI 111b'],['BSCI 100','BSCI 218','BSCI 219'],['CHEM 102A','CHEM 102B','CHEM 104A','CHEM 104B'],['EES 101','EES 111'],['MSE 150'],['PHYS 116A','PHYS 116B','PHYS 118A','PHYS 118B']];var sequenceSatisfied=false;scienceSequences.forEach(function(sequence){if(schedule.countClasses(sequence)===sequence.length){sequenceSatisfied=true;}});return(sequenceSatisfied)?sequenceSatisfied:'Gotta get a basic science sequence goin\\'';"
+			"validator": "if(this.courseCollection.length==0){return true;}var scienceSequences=[['BSCI 110a','BSCI 110b','BSCI 111a','BSCI 111b'],['BSCI 100','BSCI 218','BSCI 219'],['CHEM 102A','CHEM 102B','CHEM 104A','CHEM 104B'],['EES 101','EES 111'],['MSE 150'],['PHYS 116A','PHYS 116B','PHYS 118A','PHYS 118B']];var sequenceSatisfied=false;scienceSequences.forEach(function(sequence){if(schedule.countCourses(sequence)===sequence.length){sequenceSatisfied=true;}});return(sequenceSatisfied)?sequenceSatisfied:'Gotta get a basic science sequence goin\\'';"
 		},
 		{
 			"title": "Computer Science Core Curriculum (28 hours)",
@@ -29,6 +30,13 @@
 			"comment": "Must take 1 W designated course",
 			"courses": ["W$"],
 			"validator": "StdValidator.takeHours(3)"
+			
+		},
+		{
+			"title": "Technical Electives (6 hours)",
+			"comment": "Must take two courses from CS 240 or higher, a non-CS engineering major with the number 200 or higher, or Mathematical and Natural Sciences category offered in the College of Arts and Science",
+			"courses": ["EECE 200+", "ME 200+", "CE 200+", "BME 200+", "CHBE 200+", "ES 200+", "CS 240+", "MNS~"],
+			"validator": "StdValidator.takeHours(6)"
 		}
 	]
 }
