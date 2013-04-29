@@ -4,12 +4,15 @@
 	<link rel="stylesheet" href="/css/layout.css">
 </head>
 <body>
-	<h1>DegreeVU</h1>
-	
+	<div id="fadeOut"></div>
 	<div id="scheduleGrid">
+		<div class="infoCol">
+			<h1>DegreeVU</h1>
+			<p>What can you do with four years?</p>
+		</div>
 	</div>
 	
-	<div id="goals">
+	<div id="goals">		
 	</div>
 	
 	<script src="/js/jquery-1.9.1.js"></script>
@@ -18,5 +21,16 @@
 	<script src="/js/underscore-min.js"></script>
 	<script src="/js/backbone-min.js"></script>
 	<script src="/js/home.js"></script>
+	<script type="text/javascript">
+		$(document).ready(function() {
+			//Display shim to handle scrolling in the schedule grid
+			$('#scheduleGrid').scroll(function() {
+				var el = $(this);
+				el.css('background-position', '0 ' + (25 - el.scrollTop()) + 'px');
+				el.find('.semesterName').css('top', el.scrollTop());
+			});
+		});
+	
+	</script>
 </body>
 </html>

@@ -44,20 +44,24 @@ var Course = Backbone.Model.extend({
 });
 
 var CourseView = Backbone.View.extend({
-	pixelsPerHour: 21,
+	pixelsPerHour: 18,
 	
 	initialize: function() {
 		Schedule.getInstance().on('add remove reset', (this.onAddToSchedule).bind(this));
 	},
 	
 	render: function() {
-		this.$el.addClass('scheduleBlock');
-		this.$el.append('<div class="scheduleBlockHeader color' + this.model.getColorId() + '">' + this.model.get('courseCode') + '</div>');
+		this.$el.addClass('courseBlock').addClass('color' + this.model.getColorId());
+		this.$el.append('<div class="courseBlockHeader">' + this.model.get('courseCode') + '</div>');
 		if (this.model.getHours() > 1) {
-			var x = $('<div class="scheduleBlockBody" style="height:' + (this.pixelsPerHour * (this.model.getHours() - 1)) + 'px;">' + this.model.get('courseName') + '</div>').appendTo(this.$el);
+			//ATODO: (this.pixelsPerHour * (this.model.getHours() - 1))
+			var x = $().appendTo(this.$el);
+			this.$el.append(this.model.get('courseName'));
 			//x.css('height', this.pixelsPerHour * (this.model.getHours() - 1));
+			this.$el.css('height', ((this.pixelsPerHour * (this.model.getHours() - 1)) - 4) + 'px');
 		} else {
-			this.$el.find('.scheduleBlockHeader').addClass('oneHour');
+			this.$el.addClass('oneHour');
+			this.$el.css('height', '0');
 		}
 		this.$el.draggable({
 			appendTo: 'body',
@@ -65,7 +69,7 @@ var CourseView = Backbone.View.extend({
 			opacity: 0.75,
 			distance: 5,
 			helper: 'clone',
-			connectToSortable: '.scheduleColBody'
+			connectToSortable: '.scheduleCol'
 		}).popover({
 			html:true,
 			title:this.model.get('courseCode') + ': ' + this.model.get('courseName'),
@@ -192,12 +196,12 @@ var ScheduleView = Backbone.View.extend({
 	
 	render: function() {
 		_.each(this.collection.getSemesters(), (function(semester) {
-			this.$el.append('<div class="scheduleCol ' + semester.season.toLowerCase() + '" data-semesterseason="' + semester.season + '" data-semesteryear="' + semester.year + '"><div class="scheduleColHeader">' + (semester.season || '') + (semester.year? ' ' : '') + (semester.year || '') + '</div><div class="scheduleColBody"></div></div>');
+			this.$el.append('<div class="scheduleCol ' + semester.season.toLowerCase() + '" data-semesterseason="' + semester.season + '" data-semesteryear="' + semester.year + '"><div class="semesterName">' + (semester.season || '') + (semester.year? ' ' : '') + (semester.year || '') + '</div></div>');
 		}).bind(this));
 		
-		$('.scheduleColBody').sortable({
-			connectWith: '.scheduleColBody',
-			items: '.scheduleBlock',
+		$('.scheduleCol').sortable({
+			connectWith: '.scheduleCol',
+			items: '.courseBlock',
 			cursor: 'move',
 			opacity: 0.75,
 			distance: 5,
@@ -219,7 +223,7 @@ var ScheduleView = Backbone.View.extend({
 		var col = $(event.target).parent();
 		var semester = {season: col.attr('data-semesterseason'), year:col.attr('data-semesteryear')};
 		
-		if (ui.sender.parent().is('.goalSectionCourseList')) {
+		if (ui.sender.parent().is('.reqCourseList')) {
 			// Adding course to the schedule
 			var courseModel = ui.sender.data('courseObj');
 			courseModel.set('semester', semester);
@@ -228,21 +232,6 @@ var ScheduleView = Backbone.View.extend({
 			// Moving course within the schedule
 			console.log('Move course within schedule.');
 		}
-		this.updateHeight();
-	},
-	
-	updateHeight:function() {
-		var maxHeight = 250;
-		$('.scheduleColBody').each(function(i, el) {
-			if ($(el).height() > maxHeight) {
-				maxHeight = $(el).height() + 40;
-			}
-		});
-		
-		maxHeight=300;
-		
-		$('.scheduleCol').css('height', maxHeight + 'px');
-		$('#scheduleGrid').css('height', maxHeight + 'px');
 	},
 	
 	updateHoursCount: function() {
@@ -275,7 +264,7 @@ var GoalListView = Backbone.View.extend({
 	
 	addTab:function(model) {
 		this.$el.find('ul.nav-tabs').append('<li class="active"><a href="goal' + model.get('_id') + '" data-toggle="tab">' + model.get('name') + ' ' + model.get('type').charAt(0).toUpperCase() + model.get('type').slice(1) + '</a></li>');
-		var e = $('<div class="tab-pane active" id="goal' + model.get('_id') + '"></div>').appendTo(this.$el.find('div.tab-content'));
+		var e = $('<div class="tab-pane active" id="goal' + model.get('_id') + '"></div>').appendTo(this.$el.find('div.tab-content'));		
 		var view = new GoalView({model:model, el:e});
 		this._goalViews.push(view);
 		view.render();
@@ -384,13 +373,31 @@ var GoalView = Backbone.View.extend({
 	},
 	
 	render: function() {
+		
+		if (!this.$el.has('.reqsSidebar').length) {
+			this.$el.append('<div class="reqsSidebar well tabbable span4"><ul class="nav nav-list"><li class="nav-header">Requirements</li></ul></div><div class="tab-content span11">');
+		}
 		_.each(this.model.get('items'), (function(item, i) {
 			if (!item.courseCollection) return;
 			
 			if (!this._courseCollectionViews[i]) {
-				var p = $('<div class="goalSection color' + item.courseCollection.getColorId() + '"><div class="goalSectionHeader"><h2>' + item.title + '</h2><span class="validationStatus"></span>' + (item.comment? '<div class="comment">' + item.comment + '</div>' : '') + '</div><div class="goalSectionCourseList"></div></div>').appendTo(this.$el);
+				var activity = '';
+				if (i === 0) {
+					activity = ' active';
+				}
 			
-				var childEl = p.find('.goalSectionCourseList');
+				var tabId = 'goal' + this.model.get('id') + 'tab' + i;
+			
+				var sidebarItem = $('<li class="' + activity + ' color' + item.courseCollection.getColorId() + '"><a href="#' + tabId + '" data-toggle="tab">' + item.title + '</a></li>');
+				this.$el.find('.reqsSidebar .nav-list').append(sidebarItem);
+				
+			
+				var tabBody = $('<div class="reqPane tab-pane' + activity + '" id="' + tabId + '"><h2>' + item.title + '</h2>' + 
+								(item.comment? '<div class="description">' + item.comment + '</div>' : '') + '<div class="validationError"></div><div class="reqCourseList"></div></div>').appendTo(this.$el);
+			
+				tabBody.appendTo(this.$el.find('.tab-content'));
+				
+				var childEl = tabBody.find('.reqCourseList');
 				
 				this._courseCollectionViews[i] = new CourseCollectionView({collection:item.courseCollection, el:childEl});
 			}
@@ -400,14 +407,22 @@ var GoalView = Backbone.View.extend({
 	
 	updateValidation: function() {
 		_.each(this.model.get('items'), (function(item, i) {
-			var status = '';
+			var tabId = 'goal' + this.model.get('id') + 'tab' + i;
+
+			var heading = this.$el.find('#' + tabId + ' > h2');
+			var sidebar = this.$el.find('a[href=\'#' + tabId + '\']').parent();
+			var statusArea = this.$el.find('#' + tabId + ' > .validationError');
+			
 			if (item.validationStatus === true) {
-				status = '<img class="validationIcon" src="/img/check.png">';
+				heading.removeClass('no').addClass('yes');
+				sidebar.removeClass('no').addClass('yes');
+				statusArea.text('');
 			} else {
-				status = '<img class="validationIcon" src="/img/x.png">' + item.validationStatus;
+				heading.removeClass('yes').addClass('no');
+				sidebar.removeClass('yes').addClass('no');
+				statusArea.text(item.validationStatus);
 			}
 			
-			this.$el.find('.goalSection:eq(' + i + ') .validationStatus').html(status);
 		}).bind(this));
 	}
 });
