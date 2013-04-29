@@ -1,0 +1,341 @@
+@import url(http://fonts.googleapis.com/css?family=Noto+Sans);
+
+/* Colors */
+
+@color4: #ff2c00;
+@color1: #ff6a00;
+@color5: #ffd600;
+@color7: #8eeb00;
+@color2: #00c618;
+@color9: #00938e;
+@color3: #1240ab;
+@color8: #510fad;
+@color6: #c7007d;
+
+
+.color1 .courseBlockHeader {
+	background-color:@color1;
+}
+.courseBlock.color1.highlight {
+	background-color:lighten(@color1, 30%);
+}
+.reqsSidebar .color1 a {
+	color:@color1;
+}
+.reqsSidebar .color1.active a {
+	background-color:@color1;
+}
+
+.color2 .courseBlockHeader {
+	background-color:@color2;
+}
+.courseBlock.color2.highlight {
+	background-color:lighten(@color2, 30%);
+}
+.reqsSidebar .color2 a {
+	color:@color2;
+}
+.reqsSidebar .color2.active a {
+	background-color:@color2;
+}
+
+.color3 .courseBlockHeader {
+	background-color:@color3;
+}
+.courseBlock.color3.highlight {
+	background-color:lighten(@color3, 30%);
+}
+.reqsSidebar .color3 a {
+	color:@color3;
+}
+.reqsSidebar .color3.active a {
+	background-color:@color3;
+}
+
+.color4 .courseBlockHeader {
+	background-color:@color4;
+}
+.courseBlock.color4.highlight {
+	background-color:lighten(@color4, 30%);
+}
+.reqsSidebar .color4 a {
+	color:@color4;
+}
+.reqsSidebar .color4.active a {
+	background-color:@color4;
+}
+
+.color5 .courseBlockHeader {
+	background-color:@color5;
+}
+.courseBlock.color5.highlight {
+	background-color:lighten(@color5, 30%);
+}
+.reqsSidebar .color5 a {
+	color:@color5;
+}
+.reqsSidebar .color5.active a {
+	background-color:@color5;
+}
+
+.color6 .courseBlockHeader {
+	background-color:@color6;
+}
+.courseBlock.color6.highlight {
+	background-color:lighten(@color6, 30%);
+}
+.reqsSidebar .color6 a {
+	color:@color6;
+}
+.reqsSidebar .color6.active a {
+	background-color:@color6;
+}
+
+.color7 .courseBlockHeader {
+	background-color:@color7;
+}
+.courseBlock.color7.highlight {
+	background-color:lighten(@color7, 30%);
+}
+.reqsSidebar .color7 a {
+	color:@color7;
+}
+.reqsSidebar .color7.active a {
+	background-color:@color7;
+}
+
+.color8 .courseBlockHeader {
+	background-color:@color8;
+}
+.courseBlock.color8.highlight {
+	background-color:lighten(@color8, 30%);
+}
+.reqsSidebar .color8 a {
+	color:@color8;
+}
+.reqsSidebar .color8.active a {
+	background-color:@color8;
+}
+
+.color9 .courseBlockHeader {
+	background-color:@color9;
+}
+.courseBlock.color9.highlight {
+	background-color:lighten(@color9, 30%);
+}
+.reqsSidebar .color9 a {
+	color:@color9;
+}
+.reqsSidebar .color9.active a {
+	background-color:@color9;
+}
+
+/* Constants */
+
+@scheduleColWidth: 160px;
+@pixelsPerHour: 18px;
+
+/* Junk for testing - get rid of this */
+
+html, body {
+	height:100%;
+	font-family:'Noto Sans', Helvetica, sans-serif;
+	line-height:1.3;
+}
+
+.courseBlock {
+	height:((@pixelsPerHour * (3 - 1)) - 4);
+}
+
+.courseBlock.oneHour {
+	height:0;
+}
+
+/* Schedule Grid */
+
+#scheduleGrid {
+	width:100%;
+	height:50%;
+	position:relative;
+	overflow:auto;
+	background-color:#fafafa;
+	background-image:url('../img/grid2.png');
+	background-position:0 25px;
+	white-space:nowrap;
+}
+
+#fadeOut {
+	position:absolute;
+	left:0;
+	bottom:50%;
+	width:100%;
+	height:25px;
+	background-image:url('../img/fadeout.png');
+	z-index:40;
+}
+
+.scheduleCol {
+	padding-left:2px; padding-right:2px;
+	border-left:1px solid #000;
+	display:inline-block;
+	vertical-align:top;
+	padding-top:25px;
+	padding-bottom:25px;
+	width:@scheduleColWidth;
+	min-height:100%;
+}
+
+.scheduleCol .semesterName {
+	position:absolute; top:0;
+	width:@scheduleColWidth + 4px;
+	text-align:center;
+	background-color:#08c;
+	color:#eee;
+	height:22px;
+	margin-bottom:2px;
+	padding-top:1px;
+	margin-left:-2px;
+	z-index:30;
+}
+
+/* Special Columns */
+
+.infoCol {
+	display:inline-block;
+	width:220px;
+	background-color:#08c;
+	color:#eee;
+	border-radius:10px;
+	margin-left:20px;
+	margin-top:10px;
+	margin-right:5px;
+	padding:15px;
+	white-space:normal;
+	min-height:80%;
+}
+
+.scheduleCol.fall {
+	border-left-width:2px;
+}
+
+/* Course Blocks */
+
+.courseBlock {
+	width:(@scheduleColWidth - 12);
+	font-size:9pt;
+	position:relative;
+	margin-bottom:1px;
+	background-color:#ccc;
+	border-radius:3px;
+	padding-top:@pixelsPerHour + 2px;
+	padding-left:5px;
+	padding-right:5px;
+	overflow:hidden;
+	white-space:normal;
+	border:1px solid #aaa;
+	border-top:none;
+}
+
+.courseBlock.oneHour {
+	padding-top:@pixelsPerHour;
+	border:none;
+	width:(@scheduleColWidth - 10);
+}
+
+.courseBlockHeader {
+	border-top-left-radius:3px;
+	border-top-right-radius:3px;
+	height:(@pixelsPerHour - 1px);
+	color:#fff;
+	padding-left:5px;
+	padding-right:5px;
+	padding-top:1px;
+	position:absolute; left:0; top:0;
+	width:(@scheduleColWidth - 10px);
+	z-index:10;
+}
+
+.courseBlock.oneHour .courseBlockHeader {
+	height:(@pixelsPerHour - 1px);
+	border-bottom-left-radius:3px;
+	border-bottom-right-radius:3px;
+}
+
+/* Course block states */
+
+.courseBlock.ui-state-disabled {
+	background-color:#eee;
+	color:#ccc;
+}
+.courseBlock.ui-state-disabled .courseBlockHeader {
+	background-color:#ddd;
+	color:#aaa;
+}
+
+/* Goals area */
+
+#goals {
+	height:40%;
+	overflow:auto;
+	padding:20px;
+}
+
+.reqPane h2 {
+	display:inline-block;
+	padding-right:40px;
+	background-position:right center;
+	background-repeat:no-repeat;
+	margin-bottom:0;
+}
+
+.reqPane .description {
+	font-size:1.4em;
+	color:#999;
+}
+
+.reqPane h2.yes {
+	background-image:url('../img/yes.png');
+}
+
+.reqPane h2.no {
+	background-image:url('../img/no.png');
+}
+
+.reqsSidebar {
+	padding:8px 0;
+}
+
+.reqsSidebar li.active a {
+	color:#eee;
+}
+
+.reqsSidebar li.yes a {
+	background-image:url('../img/yes.png');
+	background-size:18px 18px;
+	background-repeat:no-repeat;
+	background-position:15px 4px;
+	padding-left:40px;
+}
+
+.reqsSidebar li.no a {
+	background-image:url('../img/no.png');
+	background-size:18px 18px;
+	background-repeat:no-repeat;
+	background-position:15px 4px;
+	padding-left:40px;
+}
+
+.reqPane .validationError {
+	color:rgb(178, 126, 35);
+}
+
+.reqCourseList {
+	margin-top:15px;
+}
+
+.reqCourseList .courseBlock {
+	display:inline-block;
+	vertical-align:top;
+	margin-right:6px;
+	margin-bottom:6px;
+}
