@@ -81,6 +81,8 @@ app.get("/courses/:key", function(req, res) {
 
 app.get('/home', routes.home);
 
+app.get('/ejs/templates', routes.templates);
+
 http.createServer(app).listen(app.get('port'), function(){
   console.log("Express server listening on port " + app.get('port'));
 });
