@@ -290,11 +290,11 @@ var currentTheme = {};
             //access only and acces by 
             //custom validate method
             this[methodCode] = function() {
-                var n = remainingCourses.length,
+                var n = options.remainingCourses.length,
                     i;
                 for (i = 0; i < n; ++i) {
                    
-                    if (remainingCourses[i] === courseCode) {
+                    if (options.remainingCourses[i] === courseCode) {
                         return false;
                     }
                 }
@@ -356,7 +356,7 @@ var currentTheme = {};
             };
 
             _private.helper.takenCourses = function() {
-                return _.difference(courses, remainingCourses);
+                return _.difference(options.courses, options.remainingCourses);
             };
 
             //set up dynamic binding of validation methods
