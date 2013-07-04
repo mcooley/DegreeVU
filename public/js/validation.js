@@ -135,7 +135,7 @@ var currentTheme = 'StarWars';
             //list of all courses that are relevant
             //to this requirement.  This list never changes
             //after it has been initialized. Array of courseCode strings
-            relevantCourses = [],
+            courses = [],
             //list of courses that still need to be taken.
             //when first initialized, this list contains the same list of
             //courses as the relevant courses list
@@ -209,7 +209,8 @@ var currentTheme = 'StarWars';
         //this method takes a course code and converts it into
         //a method that can be used to get the hours of the course
         function hoursFactory(courseCode) {
-
+            //cannot implement until courses becomes
+            //array of backbone models
         };
 
         //CONSTRUCTOR
@@ -219,8 +220,8 @@ var currentTheme = 'StarWars';
             if (options) {
                 name = options.name || name;
                 description = options.description || description;
-                relevantCourses = options.relevantCourses || relevantCourses;
-                remainingCourses = [].slice.call(relevantCourses);
+                courses = options.courses || courses;
+                remainingCourses = [].slice.call(courses);
             
                 validate = options.validate.bind(helper) || validate;
                 
@@ -232,12 +233,12 @@ var currentTheme = 'StarWars';
                 //set properties of helper so 
                 //the validate method has access to some
                 //additional properties
-                helper.courses = relevantCourses.slice();
+                helper.courses = courses.slice();
             }
 
             //set up dynamic binding of validation methods
-            for (i = 0, n = relevantCourses.length; i < n; ++i) {
-                validationFactory.call(helper, relevantCourses[i]);
+            for (i = 0, n = courses.length; i < n; ++i) {
+                validationFactory.call(helper, courses[i]);
             }
             this.getName = function() {
                 return name;
@@ -272,7 +273,7 @@ var currentTheme = 'StarWars';
             };
             //removes all courses from the requirement
             this.resetCourses = function() {
-                remainingCourses = relevantCourses.slice();
+                remainingCourses = courses.slice();
             };
             //if the course being removed cannot 
             //be found, then this method does nothing
@@ -296,16 +297,14 @@ var currentTheme = 'StarWars';
                 return [].slice.call(remainingCourses);
             };
             this.takenCourses = function() {
-                return _.difference(relevantCourses, remainingCourses);
+                return _.difference(courses, remainingCourses);
             };
             this.allCourses = function() {
-                return [].slice.call(relevantCourses);
+                return [].slice.call(courses);
             };
-            this.isRelevantCourse = function(courseCode) {
+            this.isCourse = function(courseCode) {
 
             };
-
-
 
         };
 
