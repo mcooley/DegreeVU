@@ -265,8 +265,11 @@ var currentTheme = {};
             for (i = 0, n = courses.length; i < n; ++i) {
                 validationFactory.call(helper, courses[i]);
             }
-            this.getName = function() {
+            this.name = function() {
                 return name;
+            };
+            this.description = function() {
+                return description;
             };
             //adds the course to the list of courses
             //taken.  If the course that is added is not
@@ -355,6 +358,7 @@ var currentTheme = {};
                 }
                 return false;
             };
+
 
         };
 
