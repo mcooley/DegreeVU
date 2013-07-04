@@ -10,7 +10,7 @@ var currentTheme = 'StarWars';
 
 (function(global) {
 
-    //global namespace ValidationBundle
+    //global bundle
     global.ValidationBundle = {};
 
     //themes for validation messages
@@ -128,11 +128,8 @@ var currentTheme = 'StarWars';
     //INSTEAD OF JUST COURSE CODES
     ValidationBundle.Requirement = (function(theme) {
         //private variables and default values
-        var helper = new ValidationHelper(),
 
-
-        //the name and description for the course requirements
-            name = "",
+        var name = "",
 
             description = "",
             //list of all courses that are relevant
@@ -162,6 +159,8 @@ var currentTheme = 'StarWars';
                 Pirate: "Aaargh! Walk the plank!",
                 Surfer: "Not chill braw!"
             },
+
+            helper = new ValidationHelper(),
 
             //regex strings to parse the course code
 
@@ -212,7 +211,8 @@ var currentTheme = 'StarWars';
         function hoursFactory(courseCode) {
 
         };
-        //constructor
+
+        //CONSTRUCTOR
         return function(options) {
             var i, n;
             //set the options
@@ -227,6 +227,12 @@ var currentTheme = 'StarWars';
                 
                 onSuccess = options.onSuccess || onSuccess;
                 onFailure = options.onFailure || onFailure;
+
+
+                //set properties of helper so 
+                //the validate method has access to some
+                //additional properties
+                helper.courses = relevantCourses.slice();
             }
 
             //set up dynamic binding of validation methods
