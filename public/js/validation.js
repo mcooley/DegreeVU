@@ -56,33 +56,7 @@ var currentTheme = {};
         //private variables for Goal
         //instance and their default values
 
-        //the name of the goal
-        var name = "",
-        //the type of the goal, which is from the list of 
-        //goal types
-            type = "Major",
-        //requirements are the sub-routines
-        //of a validation... for example, the engineering
-        //module is a requirement of the the Computer
-        //Science major
-            requirements = [],
-        //count is the number of requirements
-            count = 0,
-        //count of the requirements that have been completed
-            completionCount = 0,
-        //message that shows up when the 
-        //validation for the goal has been satisfied
-        //this is an object that contains messages for multiple 
-        //themes, if a theme is selected that does not
-        //exist in the completion message, then the default
-        //theme is used, below are the default completion messages
-        //custom ones can be created for specific goals
-            completionMessage = {
-                Default: "You have finished all your requirements",
-                StarWars: "The force is strong with this one",
-                Pirates: "Arrrgh!",
-                Surfer: "Rock on Dude!"
-            }; 
+        
 
         //returns a Backbone constructor
         // for the goal
@@ -91,26 +65,50 @@ var currentTheme = {};
         //with the options passed in as the parameter
         return Backbone.Model.extend({
             initialize: function(options) {
-                
+
+                //private variables
+
+                //the name of the goal
+                var name = "",
+                //the type of the goal, which is from the list of 
+                //goal types
+                    type = "Major",
+                //requirements are the sub-routines
+                //of a validation... for example, the engineering
+                //module is a requirement of the the Computer
+                //Science major
+                    requirements = [],
+                //count is the number of requirements
+                    count = 0,
+                //count of the requirements that have been completed
+                    completionCount = 0,
+                //message that shows up when the 
+                //validation for the goal has been satisfied
+                //this is an object that contains messages for multiple 
+                //themes, if a theme is selected that does not
+                //exist in the completion message, then the default
+                //theme is used, below are the default completion messages
+                //custom ones can be created for specific goals
+                    completionMessage = {
+                        Default: "You have finished all your requirements",
+                        StarWars: "The force is strong with this one",
+                        Pirates: "Arrrgh!",
+                        Surfer: "Rock on Dude!"
+                    }; 
+
                 if (options) {
                     this.set('name', options.name || name);
                     this.set('type', options.type || type);
                     requirements = options.requirements || requirements;
                     count = requirements.length || count;
                     completionMessage = options.completionMessage || completionMessage;
-                    console.log(count);
                 }
-                console.log(requirements);
-                console.log(requirements[0].name());
-                console.log(requirements[1].name());
             },
             getName: function() {
                 return this.get('name');
             },
             getRequirements: function() {
-                console.log(requirements);
-                console.log(requirements[0].name());
-                console.log(requirements[1].name());
+                
                 return requirements.slice();
             },
             requirementsCount: function() {
@@ -146,7 +144,7 @@ var currentTheme = {};
                     }
                 } else if (Array.isArray(course)) {
                     for (i = 0, n = course.length; i < n; ++i) {
-                        console.log(course[i]);
+                        
                         this.add(course[i]);
                     }
                 }
