@@ -50,17 +50,14 @@ var currentTheme = {};
     ValidationBundle.Helper = {};
 
     //the constructor for a Goal
+    //CONVERT TO BACKBONE MODEL
     ValidationBundle.Goal = (function(theme) {
 
-        //reference to the function space
-        //for adding methods and properties
-        //here
-        var closure = this,
         //private variables for Goal
         //instance and their default values
 
         //the name of the goal
-            name = "",
+        var name = "",
         //the type of the goal, which is from the list of 
         //goal types
             type = "Major",
@@ -91,36 +88,36 @@ var currentTheme = {};
         //so to instantiate a goal object, 
         //simply do 'new ValidationBundle.Goal()'
         //with the options passed in as the parameter
-        return function(options) {
-            if (options) {
-                name = options.name || name;
-                type = options.type || type;
-                requirements = options.requirements || requirements;
-                count = options.count || count;
-                completionMessage = options.completionMessage || completionMessage;
-            }
-            //add methods here
-            this.getName = function() {
-                return name;
-            };
-            this.getType = function() {
-                return type;
-            };
-            this.getRequirements = function() {
-                return [].slice.call(requirements);
-            };
-            this.getCount = function() {
-                return count;
-            };
-            this.isComplete = function() {
-                return count === completionCount;
-            };
-            this.message = function() {
+        return Backbone.Model.extend({
+            initialize: function(options) {
                 
+                if (options) {
+                    this.set('name', options.name || name);
+                    this.set('type', options.type || type);
+                    requirements = options.requirements || requirements;
+                    count = options.count || count;
+                    completionMessage = options.completionMessage || completionMessage;
+                }
+            },
+            getName: function() {
+                return this.get('name');
+            },
+            getRequirements: function() {
+                return [].slice.call(requirements);
+            },
+            requirementsCount: function() {
+                return count;
+            },
+            completedRequirementsCount: function() {
+                return completionCount;
+            },
+            isComplete: function() {
+                return count === completionCount;
+            },
+            message: function() {
                 return (completionMessage[theme] === undefined) ? completionMessage['Default'] : completionMessage[theme];
-            };
-
-        };
+            }
+        });
 
     //assuming there is a currentTheme
     //variable in the global namespace to extract
