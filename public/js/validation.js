@@ -113,12 +113,22 @@ var currentTheme = 'StarWars';
     })(global.currentTheme);
 
 
+    //constructor for helper methods in validating
+    //this object is automatically bound to validate methods
+    //within a requirement
+    ValidationHelper = function() {
+        //check for new keyword
+        if (!(this instanceof ValidationHelper)) {
+            return new ValidationHelper();
+        }
+    };
+
     //the constructor for a Requirement
     //EVENTUALLY CHANGE THIS TO TAKE ACTUAL BACKBONE COURSES
     //INSTEAD OF JUST COURSE CODES
     ValidationBundle.Requirement = (function(theme) {
         //private variables and default values
-        var closure = {},
+        var helper = new ValidationHelper(),
 
 
         //the name and description for the course requirements
@@ -211,14 +221,17 @@ var currentTheme = 'StarWars';
                 description = options.description || description;
                 relevantCourses = options.relevantCourses || relevantCourses;
                 remainingCourses = [].slice.call(relevantCourses);
-                validate = options.validate.bind(closure) || validate;
+            
+                validate = options.validate.bind(helper) || validate;
+                
+                
                 onSuccess = options.onSuccess || onSuccess;
                 onFailure = options.onFailure || onFailure;
             }
 
             //set up dynamic binding of validation methods
             for (i = 0, n = relevantCourses.length; i < n; ++i) {
-                validationFactory.call(closure, relevantCourses[i]);
+                validationFactory.call(helper, relevantCourses[i]);
             }
             this.getName = function() {
                 return name;
@@ -268,9 +281,9 @@ var currentTheme = 'StarWars';
             //of the courses, with the correct theme
             this.message = function() {
                 if (this.isComplete()) {
-                    return (onSuccess[theme] === undefined) ? onSuccess['default'] : onSuccess[theme];
+                    return (onSuccess[theme] === undefined) ? onSuccess['Default'] : onSuccess[theme];
                 } else {
-                    return (onFailure[theme] === undefined) ? onFailure['default'] : onFailure[theme];
+                    return (onFailure[theme] === undefined) ? onFailure['Default'] : onFailure[theme];
                 }
             };
             this.remainingCourses = function() {
@@ -290,9 +303,23 @@ var currentTheme = 'StarWars';
 
         };
 
-    //take the theme from the global namespace
+    //prototype methods for validation helper
+
     //for the requirement constructor
     })(global.currentTheme);
+
+    //helper methods for validation
+    //can pass in a single course code or an array of course codes
+    ValidationHelper.prototype.isTaken = function(courses) {
+        console.log("isTaken was called");
+    };
+
+    //can pass in a single course code or an array of course codes
+    ValidationHelper.prototype.hours = function(courses) {
+        console.log("Hours was called");
+    };
+
+
 
 })(this);
 
