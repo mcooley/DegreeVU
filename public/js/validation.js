@@ -23,7 +23,23 @@ var currentTheme = 'StarWars';
     //general types of goals
     ValidationBundle.GoalTypes = ["Major", "Minor", "Degree", "Graduation"]
     //can put the standard validators here
-    ValidationBundle.StdValidators = [];
+    ValidationBundle.StdValidator = {
+        takeAll: function() {
+            return function() {
+                return this.remainingCourses().length === 0;
+            };
+        },
+        takeNumber: function(number) {
+            return function() {
+                return this.takenCourses().length >= number;
+            }
+        },
+        takeHours: function(hours) {
+            return function() {
+                return true; //for now
+            }
+        }
+    };
     //stores requirements that can be shared and
     //re-used between multiple goals, such as the 
     //requirement for Engineering Modules
@@ -233,7 +249,16 @@ var currentTheme = 'StarWars';
                 //set properties of helper so 
                 //the validate method has access to some
                 //additional properties
-                helper.courses = courses.slice();
+                helper.courses = function() {
+                    return courses.slice();
+                };
+                helper.remainingCourses = function() {
+                    return remainingCourses.slice();
+                };
+
+                helper.takenCourses = function() {
+                    return _.difference(courses, remainingCourses);
+                };
             }
 
             //set up dynamic binding of validation methods
@@ -254,15 +279,16 @@ var currentTheme = 'StarWars';
                     n = remainingCourses.length,
                     length, done;
                 if (typeof course === 'string') {
-                    console.log("String");
+                    
                     for (i = 0; i < n; ++i) {
                         
                         if (remainingCourses[i] === course) {
                             remainingCourses = remainingCourses.slice(0, i).concat(remainingCourses.slice(i+1, n));
-                            console.log(remainingCourses);
                             return;
                         }
                     }
+                    
+
                 } else if (Array.isArray(course)) {
                     course.forEach(function(course) {
                         
