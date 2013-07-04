@@ -4,7 +4,7 @@
 
 
 //for testing
-var currentTheme = 'StarWars';
+var currentTheme = {};
 
 //actual implementation
 
@@ -303,8 +303,26 @@ var currentTheme = 'StarWars';
             };
             //if the course being removed cannot 
             //be found, then this method does nothing
-            this.removeCourse = function(course) {
-
+            this.remove = function(course) {
+                var i, n, found;
+                if (typeof course === "string") {
+                    if (this.isCourse(course)) {
+                        //check to see if the course is already in the list of remaining courses
+                        for (i = 0, n = remainingCourses.length, found = false; i < n && !found; ++i) {
+                            if (remainingCourses[i] === course) {
+                                found = true;
+                            }
+                        }
+                        if (!found) {
+                            remainingCourses.push(course);
+                        }
+                    }
+                } else if (Array.isArray(course)) {
+                    course.forEach(function(course) {
+                        this.remove(course);
+                    }.bind(this));
+                }
+                
             };
 
             this.isComplete = function() {
@@ -329,7 +347,13 @@ var currentTheme = 'StarWars';
                 return [].slice.call(courses);
             };
             this.isCourse = function(courseCode) {
-
+                var i,n;
+                for (i = 0, n = courses.length; i < n; ++i) {
+                    if (courses[i] === courseCode) {
+                        return true;
+                    }
+                }
+                return false;
             };
 
         };
