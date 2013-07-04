@@ -191,45 +191,11 @@ var currentTheme = {};
     //EVENTUALLY CHANGE THIS TO TAKE ACTUAL BACKBONE COURSES
     //INSTEAD OF JUST COURSE CODES
     ValidationBundle.Requirement = (function(theme) {
-        //private variables and default values
-
-        var name = "",
-
-            description = "",
-            //list of all courses that are relevant
-            //to this requirement.  This list never changes
-            //after it has been initialized. Array of courseCode strings
-            courses = [],
-            //list of courses that still need to be taken.
-            //when first initialized, this list contains the same list of
-            //courses as the relevant courses list
-            remainingCourses = [],
-            //the function that is called to check for validation
-            //this function.  Returns true if the requirements are
-            //complete and false if the requirements are not complete
-            validate = function() {
-                return true;
-            },
-            
-            onSuccess = {
-                Default: "You have completed this requirement",
-                StarWars: "Completed this requirement you have",
-                Pirate: "Drinks all around, me matey!",
-                Surfer: "Duuuuuuude! You're killin' it braw!!"
-            },
-            onFailure = {
-                Default: "You have not completed this requirement",
-                StarWars: "More you must do, young Jedi",
-                Pirate: "Aaargh! Walk the plank!",
-                Surfer: "Not chill braw!"
-            },
-
-            helper = new ValidationHelper(),
-
+        //private static variables
             //regex strings to parse the course code
 
             //checks to see if there is a plus at the end of the course code
-            plusRegexp = /.+\+$/g,
+        var plusRegexp = /.+\+$/g,
             //checks for dollar sign at end of course code
             dollarRegexp = /.+\$$/g;
 
@@ -237,18 +203,18 @@ var currentTheme = {};
         //should be bound to the object when they
         //are called for execution to work correctly
 
-        function validationFactory() {
+        function validationFactory(options) {
             var i, n, prefixes = [], prefixPattern = /[a-z]+/i, nextPattern, j, length, exist;
-            for (i = 0, n = courses.length; i < n; ++i) {
+            for (i = 0, n = options.courses.length; i < n; ++i) {
 
-                //create individual course methods
-                courseCodeFactory.call(helper, courses[i]);
+                //create individual course methods, pass private options
+                courseCodeFactory.call(options.helper, options.courses[i], options);
 
                 //locate all the prefixes for the course codes
                 if (i === 0) {
-                    prefixes.push(prefixPattern.exec(courses[i]).toString());
+                    prefixes.push(prefixPattern.exec(options.courses[i]).toString());
                 } else {
-                    for (j = 0, length = prefixes.length, exist = false, nextPattern = prefixPattern.exec(courses[i]).toString(); j < length && !exist; ++j) {
+                    for (j = 0, length = prefixes.length, exist = false, nextPattern = prefixPattern.exec(options.courses[i]).toString(); j < length && !exist; ++j) {
                         //convert object to string for comparison
                         if (prefixes[j] === nextPattern) {
                             
@@ -263,15 +229,16 @@ var currentTheme = {};
 
             for (i = 0, length = prefixes.length; i < length; ++i) {
 
-                helper[prefixes[i]] = (function(prefix) {
+                options.helper[prefixes[i]] = (function(prefix) {
 
                     //use the immediately executing function to lock in
                     //the prefix
 
                     return function(courseNumber) {
-        
+                        
+                        
                         var courseCount = 0, 
-                            takenCourses = helper.takenCourses(),
+                            takenCourses = options.helper.takenCourses(),
                             i, n
                             prefixPattern = /[a-z]+/i,
                             numberPattern = /\d+/i;
@@ -305,7 +272,7 @@ var currentTheme = {};
         //this method takes the courseCode and converts
         //it into a method that can be used
         //to validate the method was selected
-        function courseCodeFactory(courseCode) {
+        function courseCodeFactory(courseCode, options) {
             //remove all whitespace from courseCode
             var i,
                 n = courseCode.length
@@ -340,51 +307,70 @@ var currentTheme = {};
 
         //CONSTRUCTOR
         return function(options) {
-            var i, n;
-            //protect against missing new keyword
-            if (!(this instanceof ValidationBundle.Requirement)) {
-                return new ValidationBundle.Requirement(options);
-            }
-            //set the options
-            if (options) {
-                name = options.name || name;
-                description = options.description || description;
-                courses = options.courses || courses;
-                remainingCourses = [].slice.call(courses);
+
+            //private instance variables
+            var _private = {};
+
+            _private.name = options.name || "";
+
+            _private.description = options.description || "";
+                //list of all courses that are relevant
+                //to this requirement.  This list never changes
+                //after it has been initialized. Array of courseCode strings
+            _private.courses = options.courses || [];
+                //list of courses that still need to be taken.
+                //when first initialized, this list contains the same list of
+                //courses as the relevant courses list
+            _private.remainingCourses = _private.courses.slice();
+
+            _private.helper = new ValidationHelper();
+                //the function that is called to check for validation
+                //this function.  Returns true if the requirements are
+                //complete and false if the requirements are not complete
+            _private.validate = (options.validate) ? options.validate.bind(_private.helper) : function() {
+                    return true;
+                };
+                
+            _private.onSuccess = options.onSuccess || {
+                    Default: "You have completed this requirement",
+                    StarWars: "Completed this requirement you have",
+                    Pirate: "Drinks all around, me matey!",
+                    Surfer: "Duuuuuuude! You're killin' it braw!!"
+                };
+            _private.onFailure = options.onFailure || {
+                    Default: "You have not completed this requirement",
+                    StarWars: "More you must do, young Jedi",
+                    Pirate: "Aaargh! Walk the plank!",
+                    Surfer: "Not chill braw!"
+                };
+
+                //variables to help with initialization
+                var i, n;
             
-                validate = (options.validate) ? options.validate.bind(helper) : validate;
-                
-                
-                onSuccess = options.onSuccess || onSuccess;
-                onFailure = options.onFailure || onFailure;
+            
+            _private.helper.courses = function() {
+                return courses.slice();
+            };
+            _private.helper.remainingCourses = function() {
+                return _private.remainingCourses.slice();
+            };
 
-
-                //set properties of helper so 
-                //the validate method has access to some
-                //additional properties
-                helper.courses = function() {
-                    return courses.slice();
-                };
-                helper.remainingCourses = function() {
-                    return remainingCourses.slice();
-                };
-
-                helper.takenCourses = function() {
-                    return _.difference(courses, remainingCourses);
-                };
-            }
+            _private.helper.takenCourses = function() {
+                return _.difference(courses, remainingCourses);
+            };
 
             //set up dynamic binding of validation methods
             //validation factory should be called after the 
-            //helper properties are set
-            validationFactory();
+            //helper properties are set.  Pass factory method
+            //private variables to finish initialization
+            validationFactory(_private);
 
             
             this.name = function() {
-                return name;
+                return _private.name;
             };
             this.description = function() {
-                return description;
+                return _private.description;
             };
             //adds the course to the list of courses
             //taken.  If the course that is added is not
@@ -394,14 +380,14 @@ var currentTheme = {};
             this.add = function(course) {
                
                 var i, j, 
-                    n = remainingCourses.length,
+                    n = _private.remainingCourses.length,
                     length, done;
                 if (typeof course === 'string') {
                     
                     for (i = 0; i < n; ++i) {
                         
-                        if (remainingCourses[i] === course) {
-                            remainingCourses = remainingCourses.slice(0, i).concat(remainingCourses.slice(i+1, n));
+                        if (_private.remainingCourses[i] === course) {
+                            _private.remainingCourses = _private.remainingCourses.slice(0, i).concat(_private.remainingCourses.slice(i+1, n));
                             return;
                         }
                     }
@@ -417,7 +403,7 @@ var currentTheme = {};
             };
             //removes all courses from the requirement
             this.resetCourses = function() {
-                remainingCourses = courses.slice();
+                _private.remainingCourses = _private.courses.slice();
             };
             //if the course being removed cannot 
             //be found, then this method does nothing
@@ -426,13 +412,13 @@ var currentTheme = {};
                 if (typeof course === "string") {
                     if (this.isCourse(course)) {
                         //check to see if the course is already in the list of remaining courses
-                        for (i = 0, n = remainingCourses.length, found = false; i < n && !found; ++i) {
-                            if (remainingCourses[i] === course) {
+                        for (i = 0, n = _private.remainingCourses.length, found = false; i < n && !found; ++i) {
+                            if (_private.remainingCourses[i] === course) {
                                 found = true;
                             }
                         }
                         if (!found) {
-                            remainingCourses.push(course);
+                            _private.remainingCourses.push(course);
                         }
                     }
                 } else if (Array.isArray(course)) {
@@ -444,19 +430,19 @@ var currentTheme = {};
             };
 
             this.isComplete = function() {
-                return validate();
+                return _private.validate();
             };
             //displays the message for the completion
             //of the courses, with the correct theme
             this.message = function() {
                 if (this.isComplete()) {
-                    return (onSuccess[theme] === undefined) ? onSuccess['Default'] : onSuccess[theme];
+                    return (_private.onSuccess[theme] === undefined) ? _private.onSuccess['Default'] : _private.onSuccess[theme];
                 } else {
-                    return (onFailure[theme] === undefined) ? onFailure['Default'] : onFailure[theme];
+                    return (_private.onFailure[theme] === undefined) ? _private.onFailure['Default'] : _private.onFailure[theme];
                 }
             };
             this.remainingCourses = function() {
-                return [].slice.call(remainingCourses);
+                return [].slice.call(_private.remainingCourses);
             };
             this.takenCourses = function() {
                 return _.difference(courses, remainingCourses);
@@ -466,8 +452,8 @@ var currentTheme = {};
             };
             this.isCourse = function(courseCode) {
                 var i,n;
-                for (i = 0, n = courses.length; i < n; ++i) {
-                    if (courses[i] === courseCode) {
+                for (i = 0, n = _private.courses.length; i < n; ++i) {
+                    if (_private.courses[i] === courseCode) {
                         return true;
                     }
                 }
