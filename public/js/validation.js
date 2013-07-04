@@ -84,7 +84,8 @@ var currentTheme = {};
                 Surfer: "Rock on Dude!"
             }; 
 
-        //returns a constructor for the goal
+        //returns a Backbone constructor
+        // for the goal
         //so to instantiate a goal object, 
         //simply do 'new ValidationBundle.Goal()'
         //with the options passed in as the parameter
@@ -284,14 +285,16 @@ var currentTheme = {};
  
             }
 
-
-
         };
         
 
         //CONSTRUCTOR
         return function(options) {
             var i, n;
+            //protect against missing new keyword
+            if (!(this instanceof ValidationBundle.Requirement)) {
+                return new ValidationBundle.Requirement(options);
+            }
             //set the options
             if (options) {
                 name = options.name || name;
@@ -299,7 +302,7 @@ var currentTheme = {};
                 courses = options.courses || courses;
                 remainingCourses = [].slice.call(courses);
             
-                validate = options.validate.bind(helper) || validate;
+                validate = (options.validate) ? options.validate.bind(helper) : validate;
                 
                 
                 onSuccess = options.onSuccess || onSuccess;
