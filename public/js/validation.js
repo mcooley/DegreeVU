@@ -114,7 +114,7 @@ var currentTheme = 'StarWars';
 
 
         //the name and description for the course requirements
-            name = "Name here",
+            name = "",
 
             description = "",
             //list of all courses that are relevant
@@ -149,6 +149,9 @@ var currentTheme = 'StarWars';
         //should be bound to the object when they
         //are called for execution to work correctly
 
+        //this method takes the courseCode and converts
+        //it into a method that can be used
+        //to validate the method was selected
         function validationFactory(courseCode) {
             //remove all whitespace from courseCode
             var i,
@@ -179,7 +182,9 @@ var currentTheme = 'StarWars';
  
             }
         };
-        function hoursFactory() {
+        //this method takes a course code and converts it into
+        //a method that can be used to get the hours of the course
+        function hoursFactory(courseCode) {
 
         };
         //constructor
@@ -206,15 +211,30 @@ var currentTheme = 'StarWars';
             //adds the course to the list of courses
             //taken.  If the course that is added is not
             //relevant to the requirement, nothing happens 
-            //and the course is not added
+            //and the course is not added.  Note that if
+            //course is an array, the array will be manipulated
             this.add = function(course) {
-                var i, n = remainingCourses.length;
-                for (i = 0; i < n; ++i) {
-                    if (remainingCourses[i] === course) {
-                        remainingCourses = remainingCourses.slice(0, i).concat(remainingCourses.slice(i+1, n - i - 1));
-                        return;
+               
+                var i, j, 
+                    n = remainingCourses.length,
+                    length, done;
+                if (typeof course === 'string') {
+                    console.log("String");
+                    for (i = 0; i < n; ++i) {
+                        
+                        if (remainingCourses[i] === course) {
+                            remainingCourses = remainingCourses.slice(0, i).concat(remainingCourses.slice(i+1, n - i - 1));
+                            console.log(remainingCourses);
+                            return;
+                        }
                     }
+                } else if (Array.isArray(course)) {
+                    course.forEach(function(course) {
+                        
+                        this.add(course);
+                    }.bind(this));
                 }
+                
             };
             //removes all courses from the requirement
             this.resetCourses = function() {
@@ -229,7 +249,7 @@ var currentTheme = 'StarWars';
                 return validate();
             };
             //displays the message for the completion
-            //of the courses
+            //of the courses, with the correct theme
             this.message = function() {
                 if (this.isComplete()) {
                     return (onSuccess[theme] === undefined) ? onSuccess['default'] : onSuccess[theme];
@@ -238,7 +258,7 @@ var currentTheme = 'StarWars';
                 }
             };
             this.remainingCourses = function() {
-
+                return [].slice.call(remainingCourses);
             };
             this.takenCourses = function() {
 
@@ -249,7 +269,7 @@ var currentTheme = 'StarWars';
             this.isRelevantCourse = function() {
 
             };
-            this.test = function() {return closure;};
+
 
 
         };
