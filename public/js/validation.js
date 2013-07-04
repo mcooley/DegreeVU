@@ -189,10 +189,75 @@ var currentTheme = {};
         //should be bound to the object when they
         //are called for execution to work correctly
 
+        function validationFactory() {
+            var i, n, prefixes = [], prefixPattern = /[a-z]+/i, nextPattern, j, length, exist;
+            for (i = 0, n = courses.length; i < n; ++i) {
+
+                //create individual course methods
+                courseCodeFactory.call(helper, courses[i]);
+
+                //locate all the prefixes for the course codes
+                if (i === 0) {
+                    prefixes.push(prefixPattern.exec(courses[i]).toString());
+                } else {
+                    for (j = 0, length = prefixes.length, exist = false, nextPattern = prefixPattern.exec(courses[i]).toString(); j < length && !exist; ++j) {
+                        //convert object to string for comparison
+                        if (prefixes[j] === nextPattern) {
+                            
+                            exist = true;
+                        }
+                    }
+                    if (!exist) {
+                        prefixes.push(nextPattern);
+                    }
+                }
+            }
+
+            for (i = 0, length = prefixes.length; i < length; ++i) {
+
+                helper[prefixes[i]] = (function(prefix) {
+
+                    //use the immediately executing function to lock in
+                    //the prefix
+
+                    return function(courseNumber) {
+        
+                        var courseCount = 0, 
+                            takenCourses = helper.takenCourses(),
+                            i, n
+                            prefixPattern = /[a-z]+/i,
+                            numberPattern = /\d+/i;
+
+                        if (typeof courseNumber === 'number') {
+                            for (i = 0, n = takenCourses.length; i < n; ++i) {
+                                //check for the prefix
+                                if (prefixPattern.exec(takenCourses[i]).toString() === prefix) {
+                                    //check for the number
+                                    if (+numberPattern.exec(takenCourses[i]) >= courseNumber) {
+                                        courseCount++;
+                                    }
+                                }
+                            }
+                        } else {
+                            
+                            for (i = 0, n = takenCourses.length; i < n; ++i) {
+                                
+                                if (prefixPattern.exec(takenCourses[i]).toString() === prefix) {
+                                    courseCount++;
+                                }
+                            }
+                        }
+                        return courseCount;
+                    };
+
+
+                })(prefixes[i]);
+            }
+        };
         //this method takes the courseCode and converts
         //it into a method that can be used
         //to validate the method was selected
-        function validationFactory(courseCode) {
+        function courseCodeFactory(courseCode) {
             //remove all whitespace from courseCode
             var i,
                 n = courseCode.length
@@ -221,13 +286,11 @@ var currentTheme = {};
                 return true;
  
             }
+
+
+
         };
-        //this method takes a course code and converts it into
-        //a method that can be used to get the hours of the course
-        function hoursFactory(courseCode) {
-            //cannot implement until courses becomes
-            //array of backbone models
-        };
+        
 
         //CONSTRUCTOR
         return function(options) {
@@ -262,9 +325,11 @@ var currentTheme = {};
             }
 
             //set up dynamic binding of validation methods
-            for (i = 0, n = courses.length; i < n; ++i) {
-                validationFactory.call(helper, courses[i]);
-            }
+            //validation factory should be called after the 
+            //helper properties are set
+            validationFactory();
+
+            
             this.name = function() {
                 return name;
             };
