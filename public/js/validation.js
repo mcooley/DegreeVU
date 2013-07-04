@@ -65,23 +65,26 @@ var currentTheme = {};
         //with the options passed in as the parameter
         return Backbone.Model.extend({
             initialize: function(options) {
-
+                if (!options) {
+                    throw new Error('Must defined options for the goal object')
+                }
+                
+                    
                 //private variables
-
                 //the name of the goal
-                var name = "",
-                //the type of the goal, which is from the list of 
+                this.set('name', options.name || "");
+                 //the type of the goal, which is from the list of 
                 //goal types
-                    type = "Major",
+                this.set('type', options.type || "Major");
                 //requirements are the sub-routines
                 //of a validation... for example, the engineering
                 //module is a requirement of the the Computer
                 //Science major
-                    requirements = [],
+                this.set('requirements', options.requirements || []);
                 //count is the number of requirements
-                    count = 0,
+                this.set('count', options.requirements.length || 0);
                 //count of the requirements that have been completed
-                    completionCount = 0,
+                this.set('completionCount', 0);
                 //message that shows up when the 
                 //validation for the goal has been satisfied
                 //this is an object that contains messages for multiple 
@@ -89,36 +92,22 @@ var currentTheme = {};
                 //exist in the completion message, then the default
                 //theme is used, below are the default completion messages
                 //custom ones can be created for specific goals
-                    completionMessage = {
-                        Default: "You have finished all your requirements",
-                        StarWars: "The force is strong with this one",
-                        Pirates: "Arrrgh!",
-                        Surfer: "Rock on Dude!"
-                    }; 
-
-                if (options) {
-                    this.set('name', options.name || name);
-                    this.set('type', options.type || type);
-                    requirements = options.requirements || requirements;
-                    count = requirements.length || count;
-                    completionMessage = options.completionMessage || completionMessage;
-                }
+                this.set('completionMessage', options.completionMessage || {
+                                                                        Default: "You have finished all your requirements",
+                                                                        StarWars: "The force is strong with this one",
+                                                                        Pirates: "Arrrgh!",
+                                                                        Surfer: "Rock on Dude!"
+                                                                    });
             },
             getName: function() {
                 return this.get('name');
             },
-            getRequirements: function() {
-                
-                return requirements.slice();
-            },
-            requirementsCount: function() {
-                return count;
-            },
-            completedRequirementsCount: function() {
-                return completionCount;
+            getReqs: function() {
+                //copy 
+                return this.get('requirements').slice();
             },
             isComplete: function() {
-                return count === completionCount;
+                return this.get('count') === this.get('completionCount');
             },
             //completion message for goal
             message: function() {
@@ -127,21 +116,22 @@ var currentTheme = {};
             //returns the completion message for the requirement in the
             //specified index
             messageForReq: function(index) {
-                return requirements[i].message();
+                return this.get('requirements')[i].message();
             },
             //eventaully change to use isCourse before using addCourse
             add: function(course) {
-                var i, n, complete;
+                var i, n, complete, requirements = this.get('requirements');
                 if (typeof course === 'string') {
 
                     for (i = 0, n = requirements.length; i < n; ++i) {
                         complete = requirements[i].isComplete();
                         requirements[i].add(course);
+                        
                         if (complete !== requirements[i].isComplete()) {
-                            console.log(requirements[i].name());
-                            completionCount++;
+                            this.set('completionCount', this.get('completionCount') + 1);
                         }
                     }
+        
                 } else if (Array.isArray(course)) {
                     for (i = 0, n = course.length; i < n; ++i) {
                         
@@ -151,7 +141,7 @@ var currentTheme = {};
                 
             },
             remove: function(course) {
-                var i, n, complete;
+                var i, n, complete, requirements = this.get('requirements');
                 if (typeof course === 'string') {
                     for (i = 0, n = requirements.length; i < n; ++i) {
                         complete = requirements[i].isComplete();
