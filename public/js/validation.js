@@ -1,3 +1,8 @@
+//dependencies include:
+    //currentTheme global object
+    //underscore library
+
+
 //for testing
 var currentTheme = 'StarWars';
 
@@ -107,7 +112,10 @@ var currentTheme = 'StarWars';
     //having to go in manually and set themes
     })(global.currentTheme);
 
+
     //the constructor for a Requirement
+    //EVENTUALLY CHANGE THIS TO TAKE ACTUAL BACKBONE COURSES
+    //INSTEAD OF JUST COURSE CODES
     ValidationBundle.Requirement = (function(theme) {
         //private variables and default values
         var closure = {},
@@ -143,7 +151,14 @@ var currentTheme = 'StarWars';
                 StarWars: "More you must do, young Jedi",
                 Pirate: "Aaargh! Walk the plank!",
                 Surfer: "Not chill braw!"
-            };
+            },
+
+            //regex strings to parse the course code
+
+            //checks to see if there is a plus at the end of the course code
+            plusRegexp = /.+\+$/g,
+            //checks for dollar sign at end of course code
+            dollarRegexp = /.+\$$/g;
 
         //private helper methods, private methods
         //should be bound to the object when they
@@ -223,7 +238,7 @@ var currentTheme = 'StarWars';
                     for (i = 0; i < n; ++i) {
                         
                         if (remainingCourses[i] === course) {
-                            remainingCourses = remainingCourses.slice(0, i).concat(remainingCourses.slice(i+1, n - i - 1));
+                            remainingCourses = remainingCourses.slice(0, i).concat(remainingCourses.slice(i+1, n));
                             console.log(remainingCourses);
                             return;
                         }
@@ -245,6 +260,7 @@ var currentTheme = 'StarWars';
             this.removeCourse = function(course) {
 
             };
+
             this.isComplete = function() {
                 return validate();
             };
@@ -261,12 +277,12 @@ var currentTheme = 'StarWars';
                 return [].slice.call(remainingCourses);
             };
             this.takenCourses = function() {
-
+                return _.difference(relevantCourses, remainingCourses);
             };
             this.allCourses = function() {
-
+                return [].slice.call(relevantCourses);
             };
-            this.isRelevantCourse = function() {
+            this.isRelevantCourse = function(courseCode) {
 
             };
 
@@ -277,20 +293,6 @@ var currentTheme = 'StarWars';
     //take the theme from the global namespace
     //for the requirement constructor
     })(global.currentTheme);
-
-    //helper methods for validation
-
-    //takes the course code and returns true if the course is taken 
-    //and false if the course is not taken
-    ValidationBundle.Requirement.prototype.take = function(courseCode) {
-        console.log("Take called");
-    };
-
-    //either takes the course code or an array of course codes and returns
-    //the total amount of hours that were taken
-    ValidationBundle.Requirement.prototype.hours = function(course) {
-        console.log("Hours called");
-    };
 
 })(this);
 
