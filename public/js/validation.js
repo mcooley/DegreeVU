@@ -96,15 +96,22 @@ var currentTheme = {};
                     this.set('name', options.name || name);
                     this.set('type', options.type || type);
                     requirements = options.requirements || requirements;
-                    count = options.count || count;
+                    count = requirements.length || count;
                     completionMessage = options.completionMessage || completionMessage;
+                    console.log(count);
                 }
+                console.log(requirements);
+                console.log(requirements[0].name());
+                console.log(requirements[1].name());
             },
             getName: function() {
                 return this.get('name');
             },
             getRequirements: function() {
-                return [].slice.call(requirements);
+                console.log(requirements);
+                console.log(requirements[0].name());
+                console.log(requirements[1].name());
+                return requirements.slice();
             },
             requirementsCount: function() {
                 return count;
@@ -115,8 +122,51 @@ var currentTheme = {};
             isComplete: function() {
                 return count === completionCount;
             },
+            //completion message for goal
             message: function() {
                 return (completionMessage[theme] === undefined) ? completionMessage['Default'] : completionMessage[theme];
+            },
+            //returns the completion message for the requirement in the
+            //specified index
+            messageForReq: function(index) {
+                return requirements[i].message();
+            },
+            //eventaully change to use isCourse before using addCourse
+            add: function(course) {
+                var i, n, complete;
+                if (typeof course === 'string') {
+
+                    for (i = 0, n = requirements.length; i < n; ++i) {
+                        complete = requirements[i].isComplete();
+                        requirements[i].add(course);
+                        if (complete !== requirements[i].isComplete()) {
+                            console.log(requirements[i].name());
+                            completionCount++;
+                        }
+                    }
+                } else if (Array.isArray(course)) {
+                    for (i = 0, n = course.length; i < n; ++i) {
+                        console.log(course[i]);
+                        this.add(course[i]);
+                    }
+                }
+                
+            },
+            remove: function(course) {
+                var i, n, complete;
+                if (typeof course === 'string') {
+                    for (i = 0, n = requirements.length; i < n; ++i) {
+                        complete = requirements[i].isComplete();
+                        requirements[i].remove(course);
+                        if (complete != requirements[i].isComplete()) {
+                            completionCount--;
+                        }
+                    }
+                } else if (Array.isArray(course)) {
+                    for (i = 0, n = course.length; i < n; ++i) {
+                        this.remove(course[i]);
+                    }
+                }
             }
         });
 
