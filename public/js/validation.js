@@ -468,6 +468,61 @@ var currentTheme = {};
     };
 
 
+    //a singleton object that stores the course codes of 
+    //all the classes to be requested, compiles them
+    //so there are no overlapping requests, not necessarily
+    //in charge of actually sending the requests and receiving
+    //the courses
+    ValidationBundle.RequestCompiler = (function() {
+
+        var tokenre = /.+[\+,~,*,\$]$/i;
+
+        function _constructor() {
+            var instance;
+
+            //redefine constructor after initial 
+            //setup to always return the same
+            //instane
+            _constructor = function() {
+                return instance;
+            }
+
+            _constructor.prototype = this;
+            instance = new _constructor();
+            instance.constructor = _constructor;
+
+            //setup properties here
+
+            //takes a parameter of either a single course code
+            //or an array of course codes.  Saves the course codes that
+            //are being requested and merges them with the existing set of 
+            //course codes
+            _constructor.cache = function(requests) {
+
+            };
+
+            //removes the course code or array of course codes 
+            //from the cached requests
+            _constructor.remove = function(requests) {
+
+            };
+
+            //resets the by removing all course codes
+            _constructor.reset = function() {
+
+            };
+
+            //returns all the course codes that are being 
+            //requested as an array
+            _constructor.get = function() {
+
+            };
+
+            return instance;
+        }
+
+        return _constructor();
+    });
+
 
 })(this);
-
