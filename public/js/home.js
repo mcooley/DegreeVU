@@ -74,7 +74,7 @@ var Schedule = Backbone.Collection.extend({
 	},
 	
 	//Validation stuff
-	hasCourses: function(courseArray) {
+	has: function(courseArray) {
 		return _.every(courseArray, function(coursePattern) {
 			return this.some(function(course) {
 				return CourseCodeTokenizer.matches(course.get('courseCode'), coursePattern);
@@ -122,7 +122,7 @@ var Schedule = Backbone.Collection.extend({
 		}, 0);
 	},
 	
-	getHoursOfAllCourses: function() {
+	getAllHours: function() {
 		return this.reduce(function(memo, course) {
 			return memo + course.getHours();
 		}, 0);

@@ -40,7 +40,7 @@
             //of validation as easy as possible
             validate: function() {
                 //underscore in a method name indicates hours
-                return this._PSY(200) >= 10 && this.complete(2, this.CS() >= 2, this.take('BSCI 110a', 'BSCI 110b', 'PSY 101', 'NSC 201'), this.NSC('NSC 216') >=3);
+                return this._PSY(200) >= 10 && this.complete(2, this.CS() >= 2, this.take('BSCI 110a', 'BSCI 110b', 'PSY 101', 'NSC 201'), this.NSC() >=3);
             }
             //the onSuccess and onFailure objects
             //can be omitted, which will cause the requirement to pick up generic default values
@@ -53,3 +53,12 @@
     }
 
 }
+
+//cases that validation needs to handle
+// 1) tell if a class is selected 
+// 2) group classes into custom sets
+// 3) tell if a certain number of hours are completed in a set
+// 4) tell if a certain number of classes are completed in a set
+// 5) group sets into larger sets and perform hours and class checks on larger sets
+// 6) tell if a class is used to satisfy another requirement (for cases where classes need to be exclusively selected for certain requirements)
+
