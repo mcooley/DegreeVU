@@ -110,20 +110,21 @@ var Schedule = Backbone.Collection.extend({
 	},
 
 	countCourses: function() {
-		var courseArray = [].slice.call(arguments);
-		console.log('countCourses called');
-		return this.reduce(function(memo, course) {
-			var courseCode = course.get('courseCode');
-			var courseMatches = _.some(courseArray, function(coursePattern) {
-				return CourseCodeTokenizer.matches(courseCode, coursePattern);
+		var courseArray = [].slice.call(arguments), 
+		    result = 0,
+		    i, n;
+
+		for (i = 0, n = courseArray.length; i < n; ++i) {
+			this.each(function(course) {
+				
+				if (CourseCodeTokenizer.matches(course.get('courseCode'), courseArray[i])) {
+					result++;
+				}
 			});
-			//Wrong!
-			if (courseMatches) {
-				return memo++;
-			} else {
-				return memo;
-			}
-		}, 0);
+		}
+
+		return result;
+		
 	},
 	
 	countCoursesWithCategory: function(category) {
