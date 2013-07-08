@@ -96,8 +96,8 @@ var Schedule = Backbone.Collection.extend({
 			}
 		}, 0);
 	},
-	
-	countCourses: function(courseArray) {
+
+	countCourses: function(courseArray, options) {
 		return this.reduce(function(memo, course) {
 			var courseCode = course.get('courseCode');
 			var courseMatches = _.some(courseArray, function(coursePattern) {
@@ -121,11 +121,45 @@ var Schedule = Backbone.Collection.extend({
 			}
 		}, 0);
 	},
-	
-	getAllHours: function() {
-		return this.reduce(function(memo, course) {
-			return memo + course.getHours();
-		}, 0);
+	//accepts an optional parameter of a query, which filters
+	//some courses out of the hours count
+	getAllHours: function(query) {
+		if (!query) {
+			return this.reduce(function(memo, course) {
+				return memo + course.getHours();
+			}, 0);
+		}
+		
+
+	},
+	//accepts a variable number of course codes
+	hasTaken: function() {
+		var i, n, hasTaken = false;
+		for (i =0, n = arguments.length; i < n; ++i) {
+			this.each(function(course) {
+				if (!CourseCodeTokenizer.match(arguments[i], course.get('courseCode'))) {
+					hasTaken = false;
+					return;
+				}
+			});
+		}
+		return hasTaken;
+	},
+	//takes a single number parameter followed by a variable
+	//number of boolean parameters and returns true if the number
+	//of boolean parameters that are true is at least equal to the number
+	complete: function(number) {
+		var i, n, count = 0;
+		for (i = 1, n = arguments.length; i < n; ++i) {
+			if (arguments[i]) {
+				count++;
+			}
+
+			if (count >= number) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 },
@@ -286,8 +320,8 @@ var CourseCodeTokenizer = {
 	},
 	
 	parse:function(token) {
-		var coursePrefix = token.match(/[a-z]+/i)[0];
-		var courseNumber = token.match(/\d+/);
+		var coursePrefix = token.match(/[a-z]+/i)[0].toUpperCase();
+		var courseNumber = token.match(/\d+/)[0];
 		var courseSuffix = "";
 		var parseChar = "";
 		var temp = token[token.length - 1];
@@ -311,12 +345,15 @@ var CourseCodeTokenizer = {
 		};
 
 		if (courseNumber) {
-			course.courseNumber = parseInt(courseNumber[0]);
+			course.courseNumber = parseInt(courseNumber);
 		} else {
 			course.courseNumber = 0;
 		}
 
 		return course;
+	},
+	query: function(token, query) {
+
 	}
 	
 };
