@@ -324,7 +324,7 @@ var CourseCodeTokenizer = {
 		var courseNumber = token.match(/\d+/)[0];
 		var courseSuffix = "";
 		var parseChar = "";
-		var temp = token[token.length - 1];
+		var temp = token[token.length - 1].toUpperCase();
 
 		if (temp.match(/[+, !, ~, *]/)) {
 			parseChar = temp;
@@ -393,8 +393,29 @@ var CourseCodeTokenizer = {
 
 
 	},
-	query: function(token, query) {
+	matchQuery: function(token, query) {
+		var queryObject = CourseCodeTokenizer.parseQuery(query),
+		    tokenObject = CourseCodeTokenizer.parse(token);
 
+		if (queryObject.queryToken === '') {
+
+			return _.isEqual(tokenObject, CourseCodeTokenizer.parse(query));
+
+		} else if (queryObject.queryToken === '$') {
+
+			return queryObject.courseSuffix === tokenObject.courseSuffix;
+
+		} else if (queryObject.queryToken === '*') {
+
+			return queryObject.coursePrefix === tokenObject.coursePrefix;
+
+		} else if (queryObject.queryToken === '+') {
+
+			return queryObject.coursePrefix === tokenObject.coursePrefix && tokenObject.courseNumber >= queryObject.courseNumber;
+
+		}
+		return false;
+		
 	}
 	
 };
