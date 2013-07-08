@@ -126,7 +126,39 @@ var Schedule = Backbone.Collection.extend({
 		return result;
 		
 	},
-	
+	//counts the number of courses that satisfies
+	//the queries, can pass in multiple arguments,
+	//each of which is a query and returns the count
+	//of all the courses that match at least one of the queries
+	countQuery: function(query1) {
+		var queries = arguments, i, n, matchesAll;
+		return this.filter(function(course) {
+			for (i = 0, n = queries.length, matchesAny = false; i < n && !matchesAny; ++i) {
+				if (CourseCodeTokenizer.matchQuery(course.get('courseCode'), queries[i])) {
+					matchesAny = true;
+				}
+			}
+			return matchesAny;
+		}).length;
+	},
+	hoursQuery: function(query) {
+		var queries = arguments,
+		    totalHours = 0,
+		    courseArray = this.filter(function(course) {
+				for (i = 0, n = queries.length, matchesAny = false; i < n && !matchesAny; ++i) {
+					if (CourseCodeTokenizer.matchQuery(course.get('courseCode'), queries[i])) {
+						matchesAny = true;
+					}
+				}
+				return matchesAny;
+			});
+
+		courseArray.forEach(function(course) {
+			totalHours += course.getHours();
+		});
+
+		return totalHours;
+	},
 	countCoursesWithCategory: function(category) {
 		return this.reduce(function(memo, course) {
 			if (course.get('category') === category) {
@@ -138,12 +170,11 @@ var Schedule = Backbone.Collection.extend({
 	},
 	//accepts an optional parameter of a query, which filters
 	//some courses out of the hours count
-	getAllHours: function(query) {
-		if (!query) {
-			return this.reduce(function(memo, course) {
-				return memo + course.getHours();
-			}, 0);
-		}
+	getAllHours: function() {
+		
+		return this.reduce(function(memo, course) {
+			return memo + course.getHours();
+		}, 0);
 		
 
 	},
