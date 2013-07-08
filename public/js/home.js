@@ -74,12 +74,24 @@ var Schedule = Backbone.Collection.extend({
 	},
 	
 	//Validation stuff
-	has: function(courseArray) {
-		return _.every(courseArray, function(coursePattern) {
-			return this.some(function(course) {
-				return CourseCodeTokenizer.matches(course.get('courseCode'), coursePattern);
+
+	//takes multiple course code arguments
+	has: function() {
+		var i,n, foundCourse, args = arguments;
+		for (i=0, n = args.length; i < n; ++i) {
+			foundCourse = false;
+			this.each(function(course) {
+				
+				if (CourseCodeTokenizer.matches(args[i], course.get('courseCode'))) {
+					foundCourse = true;
+					return;
+				}
 			});
-		});
+			if (!foundCourse) {
+				return false;
+			}
+		}
+		return true;
 	},
 	
 	countHours: function(courseArray) {
@@ -97,7 +109,9 @@ var Schedule = Backbone.Collection.extend({
 		}, 0);
 	},
 
-	countCourses: function(courseArray, options) {
+	countCourses: function() {
+		var courseArray = [].slice.call(arguments);
+		console.log('countCourses called');
 		return this.reduce(function(memo, course) {
 			var courseCode = course.get('courseCode');
 			var courseMatches = _.some(courseArray, function(coursePattern) {
@@ -137,7 +151,7 @@ var Schedule = Backbone.Collection.extend({
 		var i, n, hasTaken = false;
 		for (i =0, n = arguments.length; i < n; ++i) {
 			this.each(function(course) {
-				if (!CourseCodeTokenizer.match(arguments[i], course.get('courseCode'))) {
+				if (!CourseCodeTokenizer.matches(arguments[i], course.get('courseCode'))) {
 					hasTaken = false;
 					return;
 				}
@@ -145,6 +159,7 @@ var Schedule = Backbone.Collection.extend({
 		}
 		return hasTaken;
 	},
+
 	//takes a single number parameter followed by a variable
 	//number of boolean parameters and returns true if the number
 	//of boolean parameters that are true is at least equal to the number
@@ -161,6 +176,7 @@ var Schedule = Backbone.Collection.extend({
 		}
 		return false;
 	}
+	
 	
 },
 {
@@ -308,6 +324,7 @@ var StdValidator = {
 var CourseCodeTokenizer = {
 	
 	matches:function(courseCode, pattern) {
+		
 		var myCourse = CourseCodeTokenizer.parse(courseCode);
 		var testCourse = CourseCodeTokenizer.parse(pattern);
 		if (testCourse.parseChar === '+') {
@@ -320,6 +337,7 @@ var CourseCodeTokenizer = {
 	},
 	
 	parse:function(token) {
+		
 		var coursePrefix = token.match(/[a-z]+/i)[0].toUpperCase();
 		var courseNumber = token.match(/\d+/)[0];
 		var courseSuffix = "";
@@ -349,7 +367,7 @@ var CourseCodeTokenizer = {
 		} else {
 			course.courseNumber = 0;
 		}
-
+		
 		return course;
 	},
 	parseQuery: function(query) {
