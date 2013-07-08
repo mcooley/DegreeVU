@@ -1,3 +1,5 @@
+var currentTheme = 'Default';
+
 $(document).ready(function () {
 	var getQueryString = function (key) {
 		var re=new RegExp('(?:\\?|&)'+key+'=(.*?)(?=&|$)','gi');
@@ -263,9 +265,11 @@ var Goal = Backbone.Model.extend({
 		this.on('error', function() {
 			console.log('oh, crap.');
 		});
+
 	},
 	
 	loadCourses:function() {
+
 		_.each(this.get('items'), (function(item, i, items) {
 			item.courseCollection = new CourseCollection([], {
 				url: '/courses/lookup?q=' + item.courses.map(encodeURIComponent).join(','),
@@ -300,6 +304,9 @@ var Goal = Backbone.Model.extend({
 			item.validationStatus = item.validate(Schedule.getInstance());
 		});
 		this.trigger('revalidated');
+	},
+	message: function() {
+
 	}
 });
 
@@ -315,7 +322,7 @@ var StdValidator = {
 				}
 			});
 			
-			return (remainingHours <= 0) ? true : 'Yo!! You be missin\' ' + remainingHours + ' hours in yo\' schedule';
+			return false;
 		});
 	},
 	takeCourses: function(numOfClasses) {
@@ -326,7 +333,7 @@ var StdValidator = {
 					remainingClasses--;
 				}
 			});
-			return (remainingClasses <= 0) ? true : 'Ahoy!! There be ' + remainingClasses + ' that not be taken, me matey!';
+			return false;
 		};
 	},
 	takeAll: function(schedule) {
@@ -344,11 +351,8 @@ var StdValidator = {
 		if (missingCourses.length === 0) {
 			return true;
 		} else {
-			var noun = 'course';
-			if (missingCourses.length > 1) {
-				noun += 's';
-			}
-			return 'Young Jedi! ' + missingCourses.length + ' ' + noun + ' missing you are.  Take them you must: ' + missingCourses.join(', ') + '.';
+
+			return false;
 		}
 	}
 };
@@ -439,8 +443,6 @@ var CourseCodeTokenizer = {
 		}
 
 		return parsedQuery;
-
-
 
 	},
 	matchQuery: function(token, query) {

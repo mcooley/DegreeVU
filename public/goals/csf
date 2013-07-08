@@ -7,36 +7,72 @@
 		{
 			"title": "Standard Engineering Modules (3)", 
 			"courses": ["ES 140A", "ES 140B", "ES 140C"],
-			"validator": "StdValidator.takeAll"
+			"validator": "StdValidator.takeAll",
+			"onSuccess": {
+				"Default": "This is validated"
+			},
+			"onFailure": {
+				"Default": "This is not validated"
+			}
 		},
 		{
 			"title": "Basic Science sequence (12 hours)",
 			"courses": ["BSCI 110A", "BSCI 110B", "BSCI 111A", "BSCI 111B", "BSCI 100", "BSCI 218", "BSCI 219","CHEM 102A", "CHEM 102B", "CHEM 104A", "CHEM 104B", "EES 101", "EES 111", "MSE 150", "PHYS 116A", "PHYS 116B", "PHYS 118A", "PHYS 118B"],
-			"validator": "return 'Not yet ready';"
+			"validator": "return false;",
+			"onSuccess": {
+				"Default": "This is validated"
+			},
+			"onFailure": {
+				"Default": "This is not validated"
+			}
 		},
 		{
 			"title": "Computer Science Core Curriculum (28 hours)",
 			"courses": ["CS 101", "CS 201", "CS 251", "CS 270", "EECE 116", "EECE 116L", "CS 231", "CS 281", "CS 212", "CS 250"],
-			"validator": "StdValidator.takeAll"
+			"validator": "StdValidator.takeAll",
+			"onSuccess": {
+				"Default": "This is validated"
+			},
+			"onFailure": {
+				"Default": "This is not validated"
+			}
 		},
 		{
 			"title": "Computer Science Ethics courses (3 hours)",
 			"comment": "Must take a single course that counts towards ethics",
 			"courses": ["CS 151", "PHIL 105"],
-			"validator": "StdValidator.takeCourses(1)"
+			"validator": "StdValidator.takeCourses(1)",
+			"onSuccess": {
+				"Default": "This is validated"
+			},
+			"onFailure": {
+				"Default": "This is not validated"
+			}
 		},
 		{
 			"title": "Writing course (3 hours)", 
 			"comment": "Must take 1 W designated course",
 			"courses": ["W$"],
-			"validator": "StdValidator.takeHours(3)"
+			"validator": "StdValidator.takeHours(3)",
+			"onSuccess": {
+				"Default": "This is validated"
+			},
+			"onFailure": {
+				"Default": "This is not validated"
+			}
 			
 		},
 		{
 			"title": "Technical Electives (6 hours)",
 			"comment": "Must take two courses from CS 240 or higher, a non-CS engineering major with the number 200 or higher, or Mathematical and Natural Sciences category offered in the College of Arts and Science",
 			"courses": ["EECE 200+", "ME 200+", "CE 200+", "BME 200+", "CHBE 200+", "ES 200+", "CS 240+", "MNS~"],
-			"validator": "StdValidator.takeHours(6)"
+			"validator": "StdValidator.takeHours(6)",
+			"onSuccess": {
+				"Default": "This is validated"
+			},
+			"onFailure": {
+				"Default": "This is not validated"
+			}
 		}
 	]
 }
