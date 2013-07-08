@@ -352,6 +352,47 @@ var CourseCodeTokenizer = {
 
 		return course;
 	},
+	parseQuery: function(query) {
+
+		var parsedQuery = {
+		    	coursePrefix: "",
+		    	courseSuffix: "",
+		    	queryToken: "",
+		    	courseNumber: 0
+		    },
+
+		    q = query.match(/[+,$,*]$/),
+		    courseCodeToken;
+
+		    parsedQuery.queryToken = (q) ? q[0] : "";
+
+
+		if (parsedQuery.queryToken === "") {
+			
+			//then the query is just a normal course code
+			courseCodeToken = CourseCodeTokenizer.parse(query);
+			parsedQuery.coursePrefix = courseCodeToken.coursePrefix;
+			parsedQuery.courseSuffix = courseCodeToken.courseSuffix;
+			parsedQuery.courseNumber = courseCodeToken.courseNumber;
+
+		} else if (parsedQuery.queryToken === '$') {
+			parsedQuery.courseSuffix = query.match(/^[a-z]/i)[0].toUpperCase();
+			
+			
+		} else if (parsedQuery.queryToken === '+') {
+			parsedQuery.courseNumber = +query.match(/\d+/)[0];
+			parsedQuery.coursePrefix = query.match(/^[a-z]+/i)[0].toUpperCase();
+
+		}else  {
+			parsedQuery.coursePrefix = query.match(/^[a-z]+/i)[0].toUpperCase();
+			
+		}
+
+		return parsedQuery;
+
+
+
+	},
 	query: function(token, query) {
 
 	}
