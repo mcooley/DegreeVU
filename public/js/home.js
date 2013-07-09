@@ -278,13 +278,13 @@ var Goal = Backbone.Model.extend({
 			});
 
 			if (item.validator === "StdValidator.takeAll") {
-				item.validate = (StdValidator.takeAll).bind(item);
+				item.validate = (ValidationBundle.StdValidator.takeAll).bind(item);
 			} else if (item.validator.substr(0, 22) === "StdValidator.takeHours") {
 				var num = parseInt(item.validator.match(/\d+/), 10);
-				item.validate = (StdValidator.takeHours(num)).bind(item);
+				item.validate = (ValidationBundle.StdValidator.takeHours(num)).bind(item);
 			} else if (item.validator.substr(0, 24) === "StdValidator.takeCourses") {
 				var num = parseInt(item.validator.match(/\d+/), 10);
-				item.validate = (StdValidator.takeCourses(num)).bind(item);
+				item.validate = (ValidationBundle.StdValidator.takeCourses(num)).bind(item);
 			} else {
 				item.validate = (new Function('schedule', '"use strict"; ' + item.validator)).bind(item);
 			}
@@ -295,6 +295,15 @@ var Goal = Backbone.Model.extend({
 				} 
 				return item.onFailure[currentTheme];
 			};
+
+			if (!item.onSuccess) {
+				item.onSuccess = ValidationBundle.FallbackMessaging.onSuccess;
+			}
+
+			if (!item.onFailure) {
+				item.onFailure = ValidationBundle.FallbackMessaging.onFailure;
+			}
+
 			
 			item.courseCollection.on('sync', (this.onCourseCollectionLoad).bind(this));
 			item.courseCollection.fetch();
@@ -312,22 +321,15 @@ var Goal = Backbone.Model.extend({
 			item.isValidated = item.validate(Schedule.getInstance());
 		});
 		this.trigger('revalidated');
-	},
-	message: function(index) {
-		var item = this.get('items')[index];
-
-		if (item.isValidated) {
-			return item.get('onSuccess')[currentTheme];
-		} else {
-			return item.get('onFailure')[currentTheme];
-		}
 	}
 });
 
-// Factory for common validators.
-var StdValidator = {
-	takeHours: function(hours) {
 
+ValidationBundle = {};
+
+// Factory for common validators.
+ValidationBundle.StdValidator = {
+	takeHours: function(hours) {
 		return (function(schedule) {
 			var remainingHours = hours; 
 			this.courseCollection.forEach(function(course_b) {
@@ -335,8 +337,7 @@ var StdValidator = {
 					remainingHours = remainingHours - course_b.getHours();	
 				}
 			});
-			
-			return false;
+			return remainingHours <= 0;
 		});
 	},
 	takeCourses: function(numOfClasses) {
@@ -347,7 +348,7 @@ var StdValidator = {
 					remainingClasses--;
 				}
 			});
-			return false;
+			return remainingClasses <= 0;
 		};
 	},
 	takeAll: function(schedule) {
@@ -370,6 +371,22 @@ var StdValidator = {
 		}
 	}
 };
+
+ValidationBundle.FallbackMessaging = {
+	onSuccess: {
+		Default: "You have completed all the requirements for this item",
+		StarWars: "You are learning well, young jedi!",
+		Pirates: "Well done, me matey!",
+		Surfer: "Rock on duuude!"
+	},
+	onFailure: {
+		Default: "You have not completed all the requirements for this item",
+		StarWars: "Completed your requirements, you have not",
+		Pirates: "You must take ye classes, me matey!",
+		Surfer: "You need to take more broo!"
+	}
+	
+}
 
 var CourseCodeTokenizer = {
 	

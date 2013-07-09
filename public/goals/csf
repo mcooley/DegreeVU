@@ -66,13 +66,7 @@
 			"title": "Technical Electives (6 hours)",
 			"comment": "Must take two courses from CS 240 or higher, a non-CS engineering major with the number 200 or higher, or Mathematical and Natural Sciences category offered in the College of Arts and Science",
 			"courses": ["EECE 200+", "ME 200+", "CE 200+", "BME 200+", "CHBE 200+", "ES 200+", "CS 240+", "MNS~"],
-			"validator": "StdValidator.takeHours(6)",
-			"onSuccess": {
-				"Default": "This is validated"
-			},
-			"onFailure": {
-				"Default": "This is not validated"
-			}
+			"validator": "StdValidator.takeHours(6)"
 		}
 	]
 }
