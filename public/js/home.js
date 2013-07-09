@@ -91,9 +91,11 @@ var Schedule = Backbone.Collection.extend({
 				}
 			});
 			if (!foundCourse) {
+				
 				return false;
 			}
 		}
+		
 		return true;
 	},
 	
@@ -277,7 +279,9 @@ var Goal = Backbone.Model.extend({
 				url: '/courses/lookup?q=' + item.courses.map(encodeURIComponent).join(','),
 				colorId: ((i % 9) + 1)
 			});
-			
+			//preset it so the array exists at least until
+			//it is set after course collection is synced
+			item._courses = [];
 			//create an array of all course codes for easier validation
 			item.courseCollection.on('sync', function() {
 				item._courses = [].map.call(item.courseCollection.models, function(course) {
@@ -342,9 +346,9 @@ ValidationBundle.StdValidator = {
 	takeHours: function(hours) {
 		return (function(schedule) {
 			var remainingHours = hours; 
-			this.courseCollection.forEach(function(course_b) {
-				if (schedule.contains(course_b)) {
-					remainingHours = remainingHours - course_b.getHours();	
+			this._courses.forEach(function(course) {
+				if (schedule.has(course)) {
+					remainingHours = schedule.countHours(course);	
 				}
 			});
 			return remainingHours <= 0;
@@ -353,8 +357,8 @@ ValidationBundle.StdValidator = {
 	takeCourses: function(numOfClasses) {
 		return function(schedule) {
 			var remainingClasses = numOfClasses;
-			this.courseCollection.forEach(function(course) {
-				if (schedule.contains(course)) {
+			this._courses.forEach(function(course) {
+				if (schedule.has(course)) {
 					remainingClasses--;
 				}
 			});
@@ -362,23 +366,23 @@ ValidationBundle.StdValidator = {
 		};
 	},
 	takeAll: function(schedule) {
-		var missingCourses = [];
-		this.courseCollection.forEach(function(course) {
-			if (!schedule.contains(course)) {
-				missingCourses.push(course.get('courseCode'));
+		//check if any courses were defined in the file
+		//use courses instead of _courses because they are loaded
+		//faster
+		var foundAllCourses = true;
+		if (this.courses.length === 0) {
+			
+			return true;
+		}
+		this._courses.forEach(function(course) {
+			
+			if (!schedule.has(course)) {
+				foundAllCourses = false;
+				return;
 			}
 		});
-	
-		if (this.courseCollection.length === 0) {
-			return true;
-		}
 		
-		if (missingCourses.length === 0) {
-			return true;
-		} else {
-
-			return false;
-		}
+		return foundAllCourses;
 	}
 };
 
