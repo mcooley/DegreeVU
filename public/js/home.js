@@ -275,6 +275,19 @@ var Goal = Backbone.Model.extend({
 	loadCourses:function() {
 
 		_.each(this.get('items'), (function(item, i, items) {
+			if (typeof item === 'string') {
+				console.log(item);
+				//search stdItems for item
+				item = ValidationBundle.StdItem[item];
+				//replace the string with the referenced
+				//validation object
+				this.get('items')[i] = item;
+				if (item === undefined) {
+					throw new Error("Could not find the item in the StdItem bundle");
+				}
+				
+			}
+
 			item.courseCollection = new CourseCollection([], {
 				url: '/courses/lookup?q=' + item.courses.map(encodeURIComponent).join(','),
 				colorId: ((i % 9) + 1)
@@ -291,7 +304,9 @@ var Goal = Backbone.Model.extend({
 
 
 			if (item.validator === "StdValidator.takeAll") {
+				
 				item.validate = (ValidationBundle.StdValidator.takeAll).bind(item);
+				
 			} else if (item.validator.substr(0, 22) === "StdValidator.takeHours") {
 				var num = parseInt(item.validator.match(/\d+/), 10);
 				item.validate = (ValidationBundle.StdValidator.takeHours(num)).bind(item);
@@ -338,12 +353,13 @@ var Goal = Backbone.Model.extend({
 	}
 });
 
-
+//eventually move validation bundle to its own file
 ValidationBundle = {};
 
 // Factory for common validators.
 ValidationBundle.StdValidator = {
 	takeHours: function(hours) {
+
 		return (function(schedule) {
 			var remainingHours = hours; 
 			this._courses.forEach(function(course) {
@@ -396,22 +412,25 @@ ValidationBundle.FallbackMessaging = {
 	onFailure: {
 		Default: "You have not completed all the requirements for this item",
 		StarWars: "Completed your requirements, you have not",
-		Pirates: "You must take ye classes, me matey!",
+		Pirates: "You must take ye classes, or walk the plank!",
 		Surfer: "You need to take more broo!"
 	}
 	
 }
 
 ValidationBundle.StdItem = {
-/*
+
 	EngModules: {
-		name: 'Engineering Modules (3 hours)',
-		comments: 'You must complete all the engineering modules',
+		title: 'Engineering Modules (3 hours)',
+		comment: 'You must complete all the engineering modules',
 		details: 'Some more elaboration here',
 		courses: ['ES 140A', 'ES 140B', 'ES 140C'],
-		validator: 
+		validator: "StdValidator.takeAll"
+	},
+	LiberalArtsCore: {
+		//not yet implemented
 	}
-	*/
+	
 };
 
 
