@@ -389,12 +389,17 @@ ValidationBundle.FallbackMessaging = {
 }
 
 ValidationBundle.StdItem = {
-
-	AandS: {},
-	Peabody: {},
-	Engineering: {},
-	Blair: {}
+/*
+	EngModules: {
+		name: 'Engineering Modules (3 hours)',
+		comments: 'You must complete all the engineering modules',
+		details: 'Some more elaboration here',
+		courses: ['ES 140A', 'ES 140B', 'ES 140C'],
+		validator: 
+	}
+	*/
 };
+
 
 var CourseCodeTokenizer = {
 	

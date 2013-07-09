@@ -19,6 +19,15 @@
             }
         },
         {
+            "title": "Basic Science Sequence",
+            "courses": "You are required to fulfill a sequence of science courses",
+            "details": "More elaboration here",
+            "courses": ["BSCI 100", "BSCI 110A", "BSCI 110B", "BSCI 111A", "BSCI 111B", "BSCI 218", "BSCI 219", "CHEM 102A", "CHEM 102B", "CHEM 104A", "CHEM 104B", "EES 101", "EES 111", "MSE 150", "PHY 116A", "PHY 116B", "PHY 118A", "PHY 118B"],
+            "validator": function() {
+                return this.complete(1, this.has('BSCI 110A', 'BSCI 110B', 'BSCI 111A', 'BSCI 111B'), this.has('BSCI 100', 'BSCI 218', 'BSCI 219'), this.has('CHEM 102A', 'CHEM 102B', 'CHEM 104A', 'CHEM 104B'), this.has('EES 101', 'EES 111'), this.has('MSE 150'), this.has('PHY 116A', 'PHY 116B', 'PHY 118A', 'PHY 118B'));
+            }
+        },
+        {
             'title': 
             'courses':
             'validator':
