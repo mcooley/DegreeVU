@@ -1,12 +1,12 @@
-var currentTheme = 'Default';
-
-$(document).ready(function () {
-	var getQueryString = function (key) {
+var currentTheme = 'Default',
+    getQueryString = function (key) {
 		var re=new RegExp('(?:\\?|&)'+key+'=(.*?)(?=&|$)','gi');
 		var r=[], m;
 		while ((m=re.exec(document.location.search)) != null) r.push(m[1]);
 		return r;
 	}
+
+$(document).ready(function () {
 	
 	var gradYear = parseInt(getQueryString('gradYear'), 10);
 	if (!_.isFinite(gradYear) || Math.abs(gradYear - 2013) > 4) {
@@ -286,7 +286,7 @@ var Goal = Backbone.Model.extend({
 				var num = parseInt(item.validator.match(/\d+/), 10);
 				item.validate = (ValidationBundle.StdValidator.takeCourses(num)).bind(item);
 			} else {
-				item.validate = (new Function('schedule', '"use strict"; ' + item.validator)).bind(item);
+				item.validate = (new Function('schedule', '"use strict"; ' + item.validator)).bind(Schedule.getInstance(+getQueryString('gradYear')));
 			}
 
 			item.message = function() {
