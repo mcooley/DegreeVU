@@ -15,7 +15,8 @@ $(document).ready(function () {
 	
 	var scheduleView = new ScheduleView({collection: Schedule.getInstance(gradYear), el:'#scheduleGrid'});
 	
-	var goalsList = new GoalList();	
+	//TEMP GLOBAL
+	goalsList = new GoalList();	
 	var goalsListView = new GoalListView({collection:goalsList, el:'#goals'});
 	
 	$.getJSON('/ejs/templates', function(data) {
@@ -287,6 +288,13 @@ var Goal = Backbone.Model.extend({
 			} else {
 				item.validate = (new Function('schedule', '"use strict"; ' + item.validator)).bind(item);
 			}
+
+			item.message = function() {
+				if (item.isValidated) {
+					return item.onSuccess[currentTheme];
+				} 
+				return item.onFailure[currentTheme];
+			};
 			
 			item.courseCollection.on('sync', (this.onCourseCollectionLoad).bind(this));
 			item.courseCollection.fetch();
@@ -301,12 +309,18 @@ var Goal = Backbone.Model.extend({
 	
 	updateValidation:function() {
 		_.each(this.get('items'), function(item) {
-			item.validationStatus = item.validate(Schedule.getInstance());
+			item.isValidated = item.validate(Schedule.getInstance());
 		});
 		this.trigger('revalidated');
 	},
-	message: function() {
+	message: function(index) {
+		var item = this.get('items')[index];
 
+		if (item.isValidated) {
+			return item.get('onSuccess')[currentTheme];
+		} else {
+			return item.get('onFailure')[currentTheme];
+		}
 	}
 });
 

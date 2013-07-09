@@ -205,15 +205,15 @@ var GoalView = Backbone.View.extend({
 			var sidebar = this.$el.find('a[href=\'#' + tabId + '\']').parent();
 			var statusArea = this.$el.find('#' + tabId + ' > .validationError');
 			
-			if (item.validationStatus) {
+			if (item.isValidated) {
 				heading.removeClass('no').addClass('yes');
 				sidebar.removeClass('no').addClass('yes');
-				statusArea.text('Validated');
 			} else {
 				heading.removeClass('yes').addClass('no');
 				sidebar.removeClass('yes').addClass('no');
-				statusArea.text('not validated');
+				
 			}
+			statusArea.text(item.message());
 			
 		}).bind(this));
 	}
