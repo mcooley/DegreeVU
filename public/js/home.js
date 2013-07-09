@@ -137,9 +137,14 @@ var Schedule = Backbone.Collection.extend({
 	//each of which is a query and returns the count
 	//of all the courses that match at least one of the queries
 	countQuery: function(query1) {
-		var queries = arguments, i, n, matchesAll;
+		var queries = arguments, i, n, matchesAll, queryObject;
 		return this.filter(function(course) {
 			for (i = 0, n = queries.length, matchesAny = false; i < n && !matchesAny; ++i) {
+				queryObject = CourseCodeTokenizer.parseQuery(queries[i]);
+				if (queryObject.queryToken === '~' && queryObject.category === course.get('category')) {
+					matchesAny = true;
+				}
+
 				if (CourseCodeTokenizer.matchQuery(course.get('courseCode'), queries[i])) {
 					matchesAny = true;
 				}
@@ -150,8 +155,13 @@ var Schedule = Backbone.Collection.extend({
 	hoursQuery: function(query) {
 		var queries = arguments,
 		    totalHours = 0,
+		    queryObject,
 		    courseArray = this.filter(function(course) {
 				for (i = 0, n = queries.length, matchesAny = false; i < n && !matchesAny; ++i) {
+					queryObject = CourseCodeTokenizer.parseQuery(queries[i]);
+					if (queryObject.queryToken === '~' && queryObject.category === course.get('category')) {
+						matchesAny = true;
+					}
 					if (CourseCodeTokenizer.matchQuery(course.get('courseCode'), queries[i])) {
 						matchesAny = true;
 					}
@@ -276,7 +286,6 @@ var Goal = Backbone.Model.extend({
 
 		_.each(this.get('items'), (function(item, i, items) {
 			if (typeof item === 'string') {
-				console.log(item);
 				//search stdItems for item
 				item = ValidationBundle.StdItem[item];
 				//replace the string with the referenced
@@ -422,7 +431,7 @@ ValidationBundle.StdItem = {
 
 	EngModules: {
 		title: 'Engineering Modules (3 hours)',
-		comment: 'You must complete all the engineering modules',
+		description: 'You must complete all the engineering modules',
 		details: 'Some more elaboration here',
 		courses: ['ES 140A', 'ES 140B', 'ES 140C'],
 		validator: "StdValidator.takeAll"
@@ -489,10 +498,11 @@ var CourseCodeTokenizer = {
 		    	coursePrefix: "",
 		    	courseSuffix: "",
 		    	queryToken: "",
-		    	courseNumber: 0
+		    	courseNumber: 0,
+		    	category: ""
 		    },
 
-		    q = query.match(/[+,$,*]$/),
+		    q = query.match(/[+,$,*,~]$/),
 		    courseCodeToken;
 
 		    parsedQuery.queryToken = (q) ? q[0] : "";
@@ -514,7 +524,10 @@ var CourseCodeTokenizer = {
 			parsedQuery.courseNumber = +query.match(/\d+/)[0];
 			parsedQuery.coursePrefix = query.match(/^[a-z]+/i)[0].toUpperCase();
 
-		}else  {
+		} else if (parsedQuery.queryToken === '~') {
+			parsedQuery.category = query.match(/^[a-z]+/i)[0].toUpperCase();
+
+		} else  {
 			parsedQuery.coursePrefix = query.match(/^[a-z]+/i)[0].toUpperCase();
 			
 		}
@@ -543,6 +556,7 @@ var CourseCodeTokenizer = {
 			return queryObject.coursePrefix === tokenObject.coursePrefix && tokenObject.courseNumber >= queryObject.courseNumber;
 
 		}
+
 		return false;
 		
 	}

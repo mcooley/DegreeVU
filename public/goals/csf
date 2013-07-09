@@ -39,7 +39,7 @@
         },
         {
             "title": "Computer Science Ethics courses (3 hours)",
-            "comment": "Must take a single course that counts towards ethics",
+            "description": "Must take a single course that counts towards ethics",
             "courses": ["CS 151", "PHIL 105"],
             "validator": "StdValidator.takeCourses(1)",
             "onSuccess": {
@@ -51,7 +51,7 @@
         },
         {
             "title": "Writing course (3 hours)", 
-            "comment": "Must take 1 W designated course",
+            "description": "Must take 1 W designated course",
             "courses": ["W$"],
             "validator": "StdValidator.takeHours(3)",
             "onSuccess": {
@@ -64,7 +64,7 @@
         },
         {
             "title": "Technical Electives (6 hours)",
-            "comment": "Must take two courses from CS 240 or higher, a non-CS engineering major with the number 200 or higher, or Mathematical and Natural Sciences category offered in the College of Arts and Science",
+            "description": "Must take two courses from CS 240 or higher, a non-CS engineering major with the number 200 or higher, or Mathematical and Natural Sciences category offered in the College of Arts and Science",
             "courses": ["EECE 200+", "ME 200+", "CE 200+", "BME 200+", "CHBE 200+", "ES 200+", "CS 240+", "MNS~"],
             "validator": "StdValidator.takeHours(6)"
         }

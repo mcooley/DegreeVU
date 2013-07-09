@@ -185,7 +185,7 @@ var GoalView = Backbone.View.extend({
 				
 			
 				var tabBody = $('<div class="reqPane tab-pane' + activity + '" id="' + tabId + '"><h2>' + item.title + '</h2>' + 
-								(item.comment? '<div class="description">' + item.comment + '</div>' : '') + '<div class="validationError"></div><div class="reqCourseList"></div></div>').appendTo(this.$el);
+								(item.description? '<div class="description">' + item.description + '</div>' : '') + '<div class="validationError"></div><div class="reqCourseList"></div></div>').appendTo(this.$el);
 			
 				tabBody.appendTo(this.$el.find('.tab-content'));
 				
