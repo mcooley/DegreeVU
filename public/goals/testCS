@@ -20,6 +20,7 @@
             "courses": ["BSCI 100", "BSCI 110A", "BSCI 110B", "BSCI 111A", "BSCI 111B", "BSCI 218", "BSCI 219", "CHEM 102A", "CHEM 102B", "CHEM 104A", "CHEM 104B", "EES 101", "EES 111", "MSE 150", "PHY 116A", "PHY 116B", "PHY 118A", "PHY 118B"],
             "validator": "return schedule.complete(1, schedule.has('BSCI 110A', 'BSCI 110B', 'BSCI 111A', 'BSCI 111B'), schedule.has('BSCI 100', 'BSCI 218', 'BSCI 219'), schedule.has('CHEM 102A', 'CHEM 102B', 'CHEM 104A', 'CHEM 104B'), schedule.has('EES 101', 'EES 111'), schedule.has('MSE 150'), schedule.has('PHY 116A', 'PHY 116B', 'PHY 118A', 'PHY 118B'));"
         },
+        "LiberalArtsCore",
         "EngModules",
         {
             "title": "Computer Science Core",

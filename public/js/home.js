@@ -437,7 +437,12 @@ ValidationBundle.StdItem = {
 		validator: "StdValidator.takeAll"
 	},
 	LiberalArtsCore: {
-		//not yet implemented
+		//not totally done
+		title: 'Liberal Arts Core (18 hours)',
+		description: 'Liberal arts core for engineering',
+		details: 'More elaborate description here',
+		courses: ["HCA~", "INT~", "US~", "SBS~", "P~", "MUSO*", "MUSP*", "MUSC*", "MUSE*"],
+		validator: "return false;"
 	}
 	
 };
