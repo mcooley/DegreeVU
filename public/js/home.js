@@ -277,6 +277,14 @@ var Goal = Backbone.Model.extend({
 				url: '/courses/lookup?q=' + item.courses.map(encodeURIComponent).join(','),
 				colorId: ((i % 9) + 1)
 			});
+			
+			//create an array of all course codes for easier validation
+			item.courseCollection.on('sync', function() {
+				item._courses = [].map.call(item.courseCollection.models, function(course) {
+					return course.get('courseCode');
+				});
+			});
+
 
 			if (item.validator === "StdValidator.takeAll") {
 				item.validate = (ValidationBundle.StdValidator.takeAll).bind(item);

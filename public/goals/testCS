@@ -32,7 +32,7 @@
             "comment": "In depth courses related to computer science",
             "courses": ["CS 240+", "EECE 253", "EECE 254", "EECE 276", "MATH 226", "MATH 253", "MATH 286", "MATH 288"],
             "details": "Elaborate here",
-            "validator": "console.log(this.courses); return schedule.countHours.apply(schedule, this.courses) >= 12 && schedule.countCourses('CS 258','CS 265', 'CS 269', 'CS 274', 'CS 276', 'CS 279', 'CS 282', 'CS 283', 'CS 284', 'CS 285') >= 1;"
+            "validator": "return schedule.countHours.apply(schedule, this._courses) - schedule.countHours('CS 250', 'CS 251', 'CS 281') >= 12 && schedule.countCourses('CS 258','CS 265', 'CS 269', 'CS 274', 'CS 276', 'CS 279', 'CS 282', 'CS 283', 'CS 284', 'CS 285') >= 1;"
         }
     ]
 }
