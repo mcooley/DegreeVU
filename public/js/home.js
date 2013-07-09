@@ -388,6 +388,14 @@ ValidationBundle.FallbackMessaging = {
 	
 }
 
+ValidationBundle.StdItem = {
+
+	AandS: {},
+	Peabody: {},
+	Engineering: {},
+	Blair: {}
+};
+
 var CourseCodeTokenizer = {
 	
 	matches:function(courseCode, pattern) {
