@@ -16,3 +16,4 @@ Some ideas:
     - because queries are the most time-consuming process, should create client-side functionality that examines all requirements and combines courses to reduce the amount of repetitive querying.  This function can then distribute courses to the correct requirements upon returning from the query
     - Liberal Arts Core takes about 30 seconds to load!! Try to reduce loading time.  Maybe separate LAC from Majors and make liberal arts core its own goal with
     - improve querying for more complicated operations like "q=CS200+,CS300+!" (returns all courses in between CS 200 and CS 300)
+    - authentication
