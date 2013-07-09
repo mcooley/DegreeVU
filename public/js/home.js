@@ -97,7 +97,8 @@ var Schedule = Backbone.Collection.extend({
 		return true;
 	},
 	
-	countHours: function(courseArray) {
+	countHours: function() {
+		var courseArray = [].slice.call(arguments);
 		return this.reduce(function(memo, course) {
 			var courseCode = course.get('courseCode');
 			var courseMatches = _.some(courseArray, function(coursePattern) {
@@ -286,7 +287,8 @@ var Goal = Backbone.Model.extend({
 				var num = parseInt(item.validator.match(/\d+/), 10);
 				item.validate = (ValidationBundle.StdValidator.takeCourses(num)).bind(item);
 			} else {
-				item.validate = (new Function('schedule', '"use strict"; ' + item.validator)).bind(Schedule.getInstance(+getQueryString('gradYear')));
+				item.validate = (new Function('schedule', '"use strict"; ' + item.validator)).bind(item);
+				
 			}
 
 			item.message = function() {

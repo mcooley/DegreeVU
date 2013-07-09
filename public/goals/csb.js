@@ -28,11 +28,26 @@
             }
         },
         {
-            'title': 
-            'courses':
-            'validator':
-            'onSuccess':
-            'onFailure':
+            "title": "Computer Science Core",
+            "comments": "You must complete the core requirements for the CS Major",
+            "details": "Elaborate here",
+            "courses": ["CS 101", "CS 201", "CS 212", "CS 250", "CS 251", "CS 270", "CS 281", "EECE 116", "EECE 116L"],
+            "validator": "StdValidator.takeAll"
+        },
+        {
+            "title": "Computer Science Depth",
+            "comments": "In depth courses related to computer science",
+            "courses": ["CS 240+", "EECE 253", "EECE 254", "EECE 276", "MATH 226", "MATH 253", "MATH 286", "MATH 288"]
+            "details": "Elaborate here",
+            "validator": function() {
+                return this.countHours.apply(this, this.courses) >= 12 && this.countCourses('CS 258','CS 265' 'CS 269', 'CS 274', 'CS 276', 'CS 279', 'CS 282', 'CS 283', 'CS 284', 'CS 285') >= 1;
+            }
+        },
+        {
+            "title": "Computer Science Core",
+            "courses": 
+            "details":
+            "validator":
         }
     ]
 }
