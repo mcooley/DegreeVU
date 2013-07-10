@@ -357,12 +357,14 @@ ValidationBundle.StdValidator = {
 	takeHours: function(hours) {
 
 		return (function(schedule) {
+			
 			var remainingHours = hours; 
 			this._courses.forEach(function(course) {
 				if (schedule.has(course)) {
-					remainingHours = schedule.countHours(course);	
+					remainingHours -= schedule.countHours(course);	
 				}
 			});
+			
 			return remainingHours <= 0;
 		});
 	},
@@ -424,7 +426,7 @@ ValidationBundle.StdItem = {
 		validator: "StdValidator.takeAll"
 	},
 	LiberalArtsCore: {
-		//not totally done
+		//needs a lot of work
 		title: 'Liberal Arts Core (18 hours)',
 		description: 'Liberal arts core for engineering',
 		details: 'More elaborate description here',
