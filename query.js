@@ -193,51 +193,67 @@ function getCoursesFromTokens(tokens, callback) {
 		var results = {additions:[], removals:[]};
 
 		tokens.forEach(function(token, i) {
-			var course = parseCourseToken(token);
-			if (course.parseChar === "+") {
-				getCoursesPlus(course, function(courses) {
-					if (courses.length > 0) {
-						results.additions[i] = courses;
-					}
-					checkBomb();
-				});
-			} else if (course.parseChar === "!") {
-				getCoursesByCode(course.courseCode, function(courses) {	
-
-					if (courses.length > 0) {
-						results.removals.push(courses[0]._id.toString());
-					}
-					checkBomb();
-				});
-			} else if (course.parseChar === "*") { 
-				getCoursesPlus(course, function(courses) {
-					if (courses.length > 0) {
-						results.additions[i] = courses;
-					}
-					checkBomb();
-				});
-			} else if (course.parseChar === '~') {
-				getCoursesByCategory(course.coursePrefix, function(courses) {
-					if (courses.length > 0) {
-						results.additions[i] = courses;
-					}
-					checkBomb();
-				});
-			} else if (course.parseChar === '$') {
-				getCoursesBySuffix(course.courseSuffix, function(courses) {
-					if (courses.length > 0) {
-						results.additions[i] = courses;
-					}
+			
+			var course;
+			if (token.match(/[+,~,*]!/)) {
+				
+				//then there is a double query token
+				getCoursesFromTokens([token.substr(0,token.length - 1)], function(subResults) {
+					subResults.forEach(function(removalCourse) {
+						results.removals.push(removalCourse._id.toString());
+					});
 					checkBomb();
 				});
 			} else {
-				getCoursesByCode(course.courseCode, function(courses) {
-					if (courses.length > 0) {
-						results.additions[i] = courses[0]; //Closure issues
-					}
-					checkBomb();
-				});
+
+				course = parseCourseToken(token);
+				if (course.parseChar === "+") {
+					getCoursesPlus(course, function(courses) {
+						if (courses.length > 0) {
+							results.additions[i] = courses;
+						}
+						checkBomb();
+					});
+				} else if (course.parseChar === "!") {
+					getCoursesByCode(course.courseCode, function(courses) {	
+
+						if (courses.length > 0) {
+							results.removals.push(courses[0]._id.toString());
+						}
+						checkBomb();
+					});
+				} else if (course.parseChar === "*") { 
+					getCoursesPlus(course, function(courses) {
+						if (courses.length > 0) {
+							results.additions[i] = courses;
+						}
+						checkBomb();
+					});
+				} else if (course.parseChar === '~') {
+					getCoursesByCategory(course.coursePrefix, function(courses) {
+						if (courses.length > 0) {
+							results.additions[i] = courses;
+						}
+						checkBomb();
+					});
+				} else if (course.parseChar === '$') {
+					getCoursesBySuffix(course.courseSuffix, function(courses) {
+						if (courses.length > 0) {
+							results.additions[i] = courses;
+						}
+						checkBomb();
+					});
+				} else {
+					getCoursesByCode(course.courseCode, function(courses) {
+						if (courses.length > 0) {
+							results.additions[i] = courses[0]; //Closure issues
+						}
+						checkBomb();
+					});
+				}
+
 			}
+			
 		});
 	});
 };
