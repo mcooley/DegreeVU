@@ -194,19 +194,6 @@ var Schedule = Backbone.Collection.extend({
 		
 
 	},
-	//accepts a variable number of course codes
-	hasTaken: function() {
-		var i, n, hasTaken = false;
-		for (i =0, n = arguments.length; i < n; ++i) {
-			this.each(function(course) {
-				if (!CourseCodeTokenizer.matches(arguments[i], course.get('courseCode'))) {
-					hasTaken = false;
-					return;
-				}
-			});
-		}
-		return hasTaken;
-	},
 
 	//takes a single number parameter followed by a variable
 	//number of boolean parameters and returns true if the number
