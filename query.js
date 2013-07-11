@@ -9,7 +9,10 @@ var dbPort = mongo.Connection.DEFAULT_PORT;
 var db = new mongo.Db(dbName, new mongo.Server(dbHost, dbPort), {});
 
 var schoolMap = {
-	
+	ENGINEERING: "School of Engineering",
+	AS: "College of Arts and Science",
+	BLAIR: "Blair School of Music",
+	PEABODY: "Peabody College"
 };
 
 //takes a query token and returns a parsed query object
@@ -60,7 +63,7 @@ function parseQuery(queryToken) {
 			return queryObject;
 
 		case '^':
-			queryToken.queryToken = "^";
+			queryObject.queryToken = "^";
 			queryObject.school = queryToken.match(/^[a-z]+/i)[0].toUpperCase();
 			return queryObject;
 		default:
@@ -198,7 +201,7 @@ function generatePositiveQuery(queryTokens) {
 
 	
 	schoolTokens.forEach(function(token) {
-		queryObject.$or.push({college: new RegExp("^" + token.school + "$", "i")});
+		queryObject.$or.push({college: new RegExp("^" + schoolMap[token.school] + "$", "i")});
 	});
 
 
