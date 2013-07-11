@@ -82,6 +82,7 @@ function generateDBQuery(queryTokens) {
 	var tokens = queryTokens.map(function(query) {
 			return parseQuery(query);
 		}),
+		//majors division of tokens
 		antiTokens = [],
 		singleCourseTokens = [],
 		schoolTokens = [],
@@ -90,52 +91,88 @@ function generateDBQuery(queryTokens) {
 		starTokens = [],
 		suffixTokens = [],
 
-		queryObject = {};
+		queryObject = {},
+
+		//helper variables
+		lastElement,
+		plusPrefixes = [],
+		prefixFilter,
+		tempObject;
 
 	tokens.forEach(function(token) {
-		
-		switch(token.queryToken) {
-			case "":
-				singleCourseTokens.push(token);
-				break;
-			case "+":
-				plusTokens.push(token);
-				break;
-			case "*":
-				starTokens.push(token);
-				break;
-			case "$":
-				suffixTokens.push(token);
-				break;
-			case "~":
-				categoryTokens.push(token);
-				break;
-			case "^":
-				schoolTokens.push(token);
-				break;
+		if (token.not) {
+			antiTokens.push(token);
+		} else {
 
-			default:
-				throw new Error("Token has invalid query token property");
-				break;
+			switch(token.queryToken) {
+				case "":
+					singleCourseTokens.push(token);
+					break;
+				case "+":
+					if (plusPrefixes.length) {
+						if (plusPrefixes.filter(function(prefix) {return prefix === token.coursePrefix;}).length == 0) {
+							plusPrefixes.push(token.coursePrefix);
+						}
+
+					} else {
+						plusPrefixes.push(token.coursePrefix);
+					}
+					plusTokens.push(token);
+					break;
+				case "*":
+					starTokens.push(token);
+					break;
+				case "$":
+					suffixTokens.push(token);
+					break;
+				case "~":
+					categoryTokens.push(token);
+					break;
+				case "^":
+					schoolTokens.push(token);
+					break;
+
+				default:
+					throw new Error("Token has invalid query token property");
+					break;
+			}
 		}
+		
 	});
-
+	queryObject.$or = [];
 	if (singleCourseTokens.length) {
-		queryObject.courseCode = {};
-		queryObject.courseCode.$in = singleCourseTokens.filter(function(token) {
-			return !token.not;
-		}).map(function(token) {
-			return new RegExp(token.coursePrefix + " " + token.courseNumber.toString(), "i");
-		});
 
-		queryObject.courseCode.$nin = singleCourseTokens.filter(function(token) {
-			return token.not;
+		queryObject.$or.push({courseCode: {}});
+		//keep track of the element that was just pushed
+		lastElement = queryObject.$or.length - 1;
+
+		queryObject.$or[lastElement].courseCode.$in = singleCourseTokens.filter(function(token) {
+			return !token.not;
 		}).map(function(token) {
 			return new RegExp(token.coursePrefix + " " + token.courseNumber.toString(), "i");
 		});
 
 	}
 
+	if (plusTokens.length) {
+		plusPrefixes.forEach(function(prefix) {
+			//add an or query for each prefix for 
+			//each plus query
+			queryObject.$or.push({coursePrefix: "", courseNumber: {}});
+			lastElement = queryObject.$or.length - 1;
+			prefixFilter = plusTokens.filter(function(token) {return prefix === token.coursePrefix;});
+
+			//at most 2 elements in the filtered
+			//array
+			prefixFilter.forEach(function(token) {
+				queryObject.$or[lastElement].coursePrefix = token.coursePrefix;
+				
+				tempObject = queryObject.$or[lastElement].courseNumber.$gte = token.courseNumber;
+
+	
+			});
+		});
+	}
 	return queryObject;
 };
 
@@ -293,8 +330,20 @@ function parseCourseToken(token) {
 	return course;
 };
 
+function testQueryGenerator(tokens) {
+	console.log("Testing query generator");
+	db.collection("courses", function(error, collection) {
+		collection.find(generateDBQuery(tokens), function(err,cursor) {
+			cursor.toArray(function(err, courses) {
+				console.log(courses);
+			});
+		});
+	});
+}
+
 function getCoursesFromTokens(tokens, callback) {
-	console.log(generateDBQuery(tokens));
+	//console.dir(generateDBQuery(tokens));
+	testQueryGenerator(tokens);
 	db.collection("courses", function(error, collection) {
 		if (error) {
 			console.log(error);
