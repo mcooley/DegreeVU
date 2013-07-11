@@ -1,7 +1,7 @@
 var mongo = require("mongodb");
 var fs = require("fs")
 var config = JSON.parse(fs.readFileSync("dbConfig.json"));
-
+var _ = require('underscore')._;
 
 var dbName = config.name;
 var dbHost = config.host;
