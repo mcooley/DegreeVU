@@ -78,20 +78,10 @@ function parseQuery(queryToken) {
 };
 //takes the query tokens as an array and returns a mongodb 
 //query for the courses that are being searched
-function generateDBQuery(queryTokens) {
+function generatePositiveQuery(queryTokens) {
 	var tokens = queryTokens.map(function(query) {
 			return parseQuery(query);
 		}),
-		//majors division of tokens
-
-		//anti-token divisions
-		_singleCourseTokens = [],
-		_schoolTokens = [],
-		_plusTokens = [],
-		_categoryTokens = [],
-		_starTokens = [],
-		_suffixTokens = [],
-
 
 		singleCourseTokens = [],
 		schoolTokens = [],
@@ -110,66 +100,51 @@ function generateDBQuery(queryTokens) {
 
 	tokens.forEach(function(token) {
 		
-		switch(token.queryToken) {
-			case "":
-				if (token.not) {
-					_singleCourseTokens.push(token);
-				} else {
+		if (!token.not) {
+			
+			switch(token.queryToken) {
+				case "":
 					singleCourseTokens.push(token);
-				}
-				break;
-			case "+":
-				if (plusPrefixes.length) {
-					if (plusPrefixes.filter(function(prefix) {return prefix === token.coursePrefix;}).length == 0) {
+					break;
+					
+				case "+":
+					if (plusPrefixes.length) {
+						if (plusPrefixes.filter(function(prefix) {return prefix === token.coursePrefix;}).length == 0) {
+							plusPrefixes.push(token.coursePrefix);
+						}
+
+					} else {
 						plusPrefixes.push(token.coursePrefix);
 					}
 
-				} else {
-					plusPrefixes.push(token.coursePrefix);
-				}
-
-				if (token.not) {
-					_plusTokens.push(token);
-				} else {
 					plusTokens.push(token);
-				}
-				break;
-			case "*":
-				if (token.not) {
-					_starTokens.push(token);
-				} else {
+					break;
+				case "*":
+					
 					starTokens.push(token);
-				}
-				
-				break;
+					break;
 
-			case "$":
-				if (token.not) {
-					_suffixTokens.push(token);
-				} else {
+				case "$":
+					
 					suffixTokens.push(token);
-				}
-				break;
-			case "~":
-				if (token.not) {
-					_categoryTokens.push(token);
-				} else {
+					break;
+				case "~":
+					
 					categoryTokens.push(token);
-				}
-				break;
-			case "^":
-				if (token.not) {
-					_schoolTokens.push(token);
-				} else {
+					
+					break;
+				case "^":
+					
 					schoolTokens.push(token);
-				}
-				break;
+					break;
 
-			default:
-				throw new Error("Token has invalid query token property");
-				break;
+				default:
+					throw new Error("Token has invalid query token property");
+					break;
+			}
+			
 		}
-		
+
 	});
 
 	queryObject.$or = [];
@@ -206,19 +181,6 @@ function generateDBQuery(queryTokens) {
 			});
 		});
 	}
-
-	//add anti-tokens
-
-	//single course anti-tokens
-	if (_singleCourseTokens.length) {
-		console.log("Single course anti tokens");
-		queryObject.courseCode = {};
-		queryObject.courseCode.$nin = _singleCourseTokens.map(function(token) {
-			console.log(token.coursePrefix + " " + token.courseNumber + token.courseSuffix);
-			return new RegExp(token.coursePrefix + " " + token.courseNumber + token.courseSuffix, "i");
-		});
-	}
-	console.log(queryObject);
 
 
 	return queryObject;
@@ -381,7 +343,7 @@ function parseCourseToken(token) {
 function testQueryGenerator(tokens) {
 	console.log("Testing query generator");
 	db.collection("courses", function(error, collection) {
-		collection.find(generateDBQuery(tokens), function(err,cursor) {
+		collection.find(generatePositiveQuery(tokens), function(err,cursor) {
 			cursor.toArray(function(err, courses) {
 				console.log(courses);
 			});
@@ -390,7 +352,7 @@ function testQueryGenerator(tokens) {
 }
 
 function getCoursesFromTokens(tokens, callback) {
-	//console.dir(generateDBQuery(tokens));
+	//console.dir(generatePositiveQuery(tokens));
 	testQueryGenerator(tokens);
 	db.collection("courses", function(error, collection) {
 		if (error) {
