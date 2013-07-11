@@ -8,6 +8,86 @@ var dbHost = config.host;
 var dbPort = mongo.Connection.DEFAULT_PORT;
 var db = new mongo.Db(dbName, new mongo.Server(dbHost, dbPort), {});
 
+
+//takes a query token and returns a parsed query object
+function parseQuery(queryToken) {
+	//this is what the query object looks like
+	var queryObject = {
+		coursePrefix: "",
+		courseSuffix: "",
+		courseNumber: 0,
+		queryToken: "",
+		category: "",
+		school: "",
+		//not indicates if this is an 'anti-query',
+		//or appended with ! to remove courses
+		//from the query
+		not: false
+	},
+	    lastCharacter = queryToken.charAt(queryToken.length - 1);
+
+	switch (lastCharacter) {
+		case '!':
+
+			queryObject = parseQuery(queryToken.substr(0,queryToken.length - 1));
+			queryObject.not = true;
+			return queryObject;
+
+		case '+':
+
+			queryObject.queryToken = '+';
+			queryObject.coursePrefix = queryToken.match(/^[a-z]+/i)[0].toUpperCase();
+			queryObject.courseNumber = +queryToken.match(/\d+/)[0];
+			return queryObject;
+
+		case '$':
+
+			queryObject.queryToken = '$';
+			queryObject.courseSuffix = queryToken.match(/^[a-z]+/i)[0].toUpperCase();
+			return queryObject;
+
+		case '*':
+
+			queryObject.coursePrefix = queryToken.match(/^[a-z]+/i)[0].toUpperCase();
+			return queryObject;
+
+		case '~':
+
+			queryObject.coursePrefix = queryToken.match(/^[a-z]+/i)[0].toUpperCase();
+			return queryObject;
+
+		case '^':
+
+			queryObject.school = queryToken.match(/^[a-z]+/i)[0].toUpperCase();
+			return queryObject;
+		default:
+			//this is a single course query
+			if (+lastCharacter === +lastCharacter) {
+				//last character is a number
+				queryObject.courseNumber = +queryToken.match(/\d+$/)[0];
+			} else {
+				//last character is not a number
+				queryObject.courseNumber = +queryToken.match(/\d+/)[0];
+				queryObject.courseSuffix = queryToken.match(/[a-z]+$/i)[0].toUpperCase();
+			}
+
+			queryObject.coursePrefix = queryToken.match(/^[a-z]+/i)[0].toUpperCase();
+			return queryObject;
+
+	}
+};
+//takes the query tokens as an array and returns a mongodb 
+//query for the courses that are being searched
+function generateDBQuery(queryTokens) {
+	var tokens = queryTokens.map(function(query) {
+		return parseQuery(query);
+	}),
+	queryObject = {};
+
+
+};
+
+
 // Retrns the course with the given key.
 function getGoalsByKey(key, callback) {
 	db.collection("goals", function(error, callback) {
@@ -162,6 +242,7 @@ function parseCourseToken(token) {
 };
 
 function getCoursesFromTokens(tokens, callback) {
+
 	db.collection("courses", function(error, collection) {
 		if (error) {
 			console.log(error);
@@ -193,7 +274,8 @@ function getCoursesFromTokens(tokens, callback) {
 		var results = {additions:[], removals:[]};
 
 		tokens.forEach(function(token, i) {
-			
+
+			console.log(JSON.stringify(parseQuery(token)));
 			var course;
 			if (token.match(/[+,~,*]!/)) {
 				
