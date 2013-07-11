@@ -99,44 +99,13 @@ var Schedule = Backbone.Collection.extend({
 		return true;
 	},
 	
-	countHours: function() {
-		var courseArray = [].slice.call(arguments);
-		return this.reduce(function(memo, course) {
-			var courseCode = course.get('courseCode');
-			var courseMatches = _.some(courseArray, function(coursePattern) {
-				return CourseCodeTokenizer.matches(courseCode, coursePattern);
-			});
-			
-			if (courseMatches) {
-				return memo + course.getHours();
-			} else {
-				return memo;
-			}
-		}, 0);
-	},
-
-	countCourses: function() {
-		var courseArray = [].slice.call(arguments), 
-		    result = 0,
-		    i, n;
-
-		for (i = 0, n = courseArray.length; i < n; ++i) {
-			this.each(function(course) {
-				
-				if (CourseCodeTokenizer.matches(course.get('courseCode'), courseArray[i])) {
-					result++;
-				}
-			});
-		}
-
-		return result;
-		
-	},
 	//counts the number of courses that satisfies
 	//the queries, can pass in multiple arguments,
 	//each of which is a query and returns the count
 	//of all the courses that match at least one of the queries
-	countQuery: function(query1) {
+	//if no queries are entered, then this method returns the 
+	//number of courses in the schedule
+	countCourses: function(query1) {
 		var queries = arguments, i, n, matchesAll, queryObject;
 		return this.filter(function(course) {
 			for (i = 0, n = queries.length, matchesAny = false; i < n && !matchesAny; ++i) {
@@ -152,7 +121,7 @@ var Schedule = Backbone.Collection.extend({
 			return matchesAny;
 		}).length;
 	},
-	hoursQuery: function(query) {
+	countHours: function(query) {
 		var queries = arguments,
 		    totalHours = 0,
 		    queryObject,
@@ -175,24 +144,7 @@ var Schedule = Backbone.Collection.extend({
 
 		return totalHours;
 	},
-	countCoursesWithCategory: function(category) {
-		return this.reduce(function(memo, course) {
-			if (course.get('category') === category) {
-				return memo++;
-			} else {
-				return memo;
-			}
-		}, 0);
-	},
 	
-	getAllHours: function() {
-		
-		return this.reduce(function(memo, course) {
-			return memo + course.getHours();
-		}, 0);
-		
-
-	},
 
 	//takes a single number parameter followed by a variable
 	//number of boolean parameters and returns true if the number
