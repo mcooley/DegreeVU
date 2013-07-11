@@ -1,18 +1,38 @@
-var mongo = require("mongodb");
-var fs = require("fs")
-var config = JSON.parse(fs.readFileSync("dbConfig.json"));
-var _ = require('underscore')._;
+var mongo = require("mongodb"),
+    fs = require("fs"),
+    config = JSON.parse(fs.readFileSync("dbConfig.json")),
+    _ = require('underscore')._,
 
-var dbName = config.name;
-var dbHost = config.host;
-var dbPort = mongo.Connection.DEFAULT_PORT;
-var db = new mongo.Db(dbName, new mongo.Server(dbHost, dbPort), {});
+    dbName = config.name,
+    dbHost = config.host,
+    dbPort = mongo.Connection.DEFAULT_PORT,
+    db = new mongo.Db(dbName, new mongo.Server(dbHost, dbPort), {}),
 
-var schoolMap = {
+    schoolMap = {
 	ENGINEERING: "School of Engineering",
 	AS: "College of Arts and Science",
 	BLAIR: "Blair School of Music",
 	PEABODY: "Peabody College"
+};
+
+//add some functionality missing from underscore
+//checks for deep compairson between objects when
+//computing difference array
+_.differenceDeep = function(array1, array2) {
+	var difference = [],
+	    add;
+	array1.forEach(function(obj1) {
+		add = true;
+		array2.forEach(function(obj2) {
+			if (_.isEqual(obj1, obj2)) {
+				add = false;
+			}
+		});
+		if (add) {
+			difference.push(obj1);
+		}
+	});
+	return difference;
 };
 
 //takes a query token and returns a parsed query object
@@ -85,7 +105,7 @@ function parseQuery(queryToken) {
 //takes the query tokens as an array and returns a mongodb 
 //query for the courses that are being searched
 //this method does not differentiate between positive and negative queries
-function generatePositiveQuery(queryTokens) {
+function generateDBQuery(queryTokens) {
 	var tokens = queryTokens.map(function(query) {
 			return parseQuery(query);
 		}),
@@ -111,7 +131,7 @@ function generatePositiveQuery(queryTokens) {
 
 			switch(token.queryToken) {
 				case "":
-					console.log(JSON.stringify(token));
+					
 					singleCourseTokens.push(token);
 					break;
 					
@@ -162,7 +182,8 @@ function generatePositiveQuery(queryTokens) {
 		lastElement = queryObject.$or.length - 1;
 
 		queryObject.$or[lastElement].courseCode.$in = singleCourseTokens.map(function(token) {
-			return new RegExp("^" + token.coursePrefix + " " + token.courseNumber.toString() + "$", "i");
+			
+			return new RegExp("^" + token.coursePrefix + " " + token.courseNumber.toString() + token.courseSuffix + "$", "i");
 		});
 
 	}
@@ -204,8 +225,6 @@ function generatePositiveQuery(queryTokens) {
 		queryObject.$or.push({college: new RegExp("^" + schoolMap[token.school] + "$", "i")});
 	});
 
-
-	console.log(JSON.stringify(queryObject));
 	return queryObject;
 };
 
@@ -363,115 +382,54 @@ function parseCourseToken(token) {
 	return course;
 };
 
-function testQueryGenerator(tokens) {
-	console.log("Testing query generator");
+//pass in a DB query and the courses that are
+//returned from the database are passed into the callback
+//the callback arguments are error, courses
+function queryCourses(query, callback) {
 	db.collection("courses", function(error, collection) {
-		collection.find(generatePositiveQuery(tokens), function(err,cursor) {
+		collection.find(query, function(err,cursor) {
 			cursor.toArray(function(err, courses) {
-				console.log(courses);
+				callback(err, courses);
 			});
 		});
 	});
 }
 
 function getCoursesFromTokens(tokens, callback) {
-	//console.dir(generatePositiveQuery(tokens));
-	testQueryGenerator(tokens);
-	db.collection("courses", function(error, collection) {
-		if (error) {
-			console.log(error);
+	//separate tokens into negative and positive queries
+	var positiveSet = [],
+	    negativeSet = [];
+
+	tokens.forEach(function(token) {
+		if (token.charAt(token.length - 1) === "!") {
+			negativeSet.push(token);
+		} else {
+			positiveSet.push(token);
 		}
-		var timeBomb = tokens.length;
-		var checkBomb = function() {
-			timeBomb--;
-			if (timeBomb <= 0) {
-				var flattenedResults = [];
-				results.additions.forEach(function(r) {
-					if (r && r._id) {
-						flattenedResults.push(r);
-					} else if (r && r.length) {
-						flattenedResults = flattenedResults.concat(r);
-					}
-				});
-
-				var finalResults = flattenedResults.filter(function(item) {
-					if (item) {
-						return (results.removals.indexOf(item._id.toString()) === -1);
-					}
-					return false;
-				});
-
-				callback(finalResults);
-			}
-		};
-
-		var results = {additions:[], removals:[]};
-
-		tokens.forEach(function(token, i) {
-
-			var course;
-			if (token.match(/[+,~,*]!/)) {
-				
-				//then there is a double query token
-				getCoursesFromTokens([token.substr(0,token.length - 1)], function(subResults) {
-					subResults.forEach(function(removalCourse) {
-						results.removals.push(removalCourse._id.toString());
-					});
-					checkBomb();
-				});
-			} else {
-
-				course = parseCourseToken(token);
-				if (course.parseChar === "+") {
-					getCoursesPlus(course, function(courses) {
-						if (courses.length > 0) {
-							results.additions[i] = courses;
-						}
-						checkBomb();
-					});
-				} else if (course.parseChar === "!") {
-					getCoursesByCode(course.courseCode, function(courses) {	
-
-						if (courses.length > 0) {
-							results.removals.push(courses[0]._id.toString());
-						}
-						checkBomb();
-					});
-				} else if (course.parseChar === "*") { 
-					getCoursesPlus(course, function(courses) {
-						if (courses.length > 0) {
-							results.additions[i] = courses;
-						}
-						checkBomb();
-					});
-				} else if (course.parseChar === '~') {
-					getCoursesByCategory(course.coursePrefix, function(courses) {
-						if (courses.length > 0) {
-							results.additions[i] = courses;
-						}
-						checkBomb();
-					});
-				} else if (course.parseChar === '$') {
-					getCoursesBySuffix(course.courseSuffix, function(courses) {
-						if (courses.length > 0) {
-							results.additions[i] = courses;
-						}
-						checkBomb();
-					});
-				} else {
-					getCoursesByCode(course.courseCode, function(courses) {
-						if (courses.length > 0) {
-							results.additions[i] = courses[0]; //Closure issues
-						}
-						checkBomb();
-					});
-				}
-
-			}
-			
-		});
 	});
-};
+
+	queryCourses(generateDBQuery(positiveSet), function(error, positiveCourses) {
+		if (error) {
+			
+			throw error;
+		} else if (negativeSet.length) {
+			
+			queryCourses(generateDBQuery(negativeSet), function(error, negativeCourses) {
+				if (error) {
+					
+					throw error;
+				} else {
+					callback(_.differenceDeep(positiveCourses, negativeCourses));
+				}
+			});
+		} else {
+			
+			callback(positiveCourses);
+		}
+	});
+	
+}
+
 
 function getCoursesPlus(course, callback) {
 	db.collection("courses", function(error, collection) {
