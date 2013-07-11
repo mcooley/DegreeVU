@@ -184,8 +184,7 @@ var Schedule = Backbone.Collection.extend({
 			}
 		}, 0);
 	},
-	//accepts an optional parameter of a query, which filters
-	//some courses out of the hours count
+	
 	getAllHours: function() {
 		
 		return this.reduce(function(memo, course) {

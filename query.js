@@ -50,61 +50,67 @@ function parseQuery(queryToken) {
 		//from the query
 		not: false
 	},
-	    lastCharacter = queryToken.charAt(queryToken.length - 1);
+	    lastCharacter = queryToken.charAt(queryToken.length - 1),
+	    firstCharacter = queryToken.charAt(0);
+	if (firstCharacter === '!') {
 
-	switch (lastCharacter) {
-		case '!':
+		queryObject = parseQuery(queryToken.substr(1,queryToken.length - 1));
+		queryObject.not = true;
+		return queryObject;
 
-			queryObject = parseQuery(queryToken.substr(0,queryToken.length - 1));
-			queryObject.not = true;
-			return queryObject;
+	} else {
 
-		case '+':
+		switch (lastCharacter) {
 
-			queryObject.queryToken = '+';
-			queryObject.coursePrefix = queryToken.match(/^[a-z]+/i)[0].toUpperCase();
-			queryObject.courseNumber = +queryToken.match(/\d+/)[0];
-			return queryObject;
+			case '+':
 
-		case '$':
-
-			queryObject.queryToken = '$';
-			queryObject.courseSuffix = queryToken.match(/^[a-z]+/i)[0].toUpperCase();
-			return queryObject;
-
-		case '*':
-			queryObject.queryToken = "*";
-			queryObject.coursePrefix = queryToken.match(/^[a-z]+/i)[0].toUpperCase();
-			return queryObject;
-
-		case '~':
-			queryObject.queryToken = "~";
-			queryObject.coursePrefix = queryToken.match(/^[a-z]+/i)[0].toUpperCase();
-			return queryObject;
-
-		case '^':
-			queryObject.queryToken = "^";
-			queryObject.school = queryToken.match(/^[a-z]+/i)[0].toUpperCase();
-			return queryObject;
-		default:
-			//this is a single course query
-			if (+lastCharacter === +lastCharacter) {
-				//last character is a number
-				queryObject.courseNumber = +queryToken.match(/\d+$/)[0];
-			} else {
-				//last character is not a number
+				queryObject.queryToken = '+';
+				queryObject.coursePrefix = queryToken.match(/^[a-z]+/i)[0].toUpperCase();
 				queryObject.courseNumber = +queryToken.match(/\d+/)[0];
-				queryObject.courseSuffix = queryToken.match(/[a-z]+$/i)[0].toUpperCase();
-			}
+				return queryObject;
 
-			queryObject.coursePrefix = queryToken.match(/^[a-z]+/i)[0].toUpperCase();
-			return queryObject;
+			case '$':
 
+				queryObject.queryToken = '$';
+				queryObject.courseSuffix = queryToken.match(/^[a-z]+/i)[0].toUpperCase();
+				return queryObject;
+
+			case '*':
+				queryObject.queryToken = "*";
+				queryObject.coursePrefix = queryToken.match(/^[a-z]+/i)[0].toUpperCase();
+				return queryObject;
+
+			case '~':
+				queryObject.queryToken = "~";
+				queryObject.coursePrefix = queryToken.match(/^[a-z]+/i)[0].toUpperCase();
+				return queryObject;
+
+			case '^':
+				queryObject.queryToken = "^";
+				queryObject.school = queryToken.match(/^[a-z]+/i)[0].toUpperCase();
+				return queryObject;
+			default:
+				//this is a single course query
+				if (+lastCharacter === +lastCharacter) {
+					//last character is a number, NaN is not equal to itself
+					queryObject.courseNumber = +queryToken.match(/\d+$/)[0];
+				} else {
+					//last character is not a number
+					queryObject.courseNumber = +queryToken.match(/\d+/)[0];
+					queryObject.courseSuffix = queryToken.match(/[a-z]+$/i)[0].toUpperCase();
+				}
+
+				queryObject.coursePrefix = queryToken.match(/^[a-z]+/i)[0].toUpperCase();
+				return queryObject;
+
+		}
 	}
+	
 };
 //takes the query tokens as an array and returns a mongodb 
 //query for the courses that are being searched
 //this method does not differentiate between positive and negative queries
+//NEED TO START FIXING THIS IN ORDER TO HANDLE NEGATIVE QUERIES PROPERLY
 function generateDBQuery(queryTokens) {
 	var tokens = queryTokens.map(function(query) {
 			return parseQuery(query);
@@ -367,8 +373,8 @@ function getCoursesFromTokens(tokens, callback) {
 	    negativeSet = [];
 
 	tokens.forEach(function(token) {
-		if (token.charAt(token.length - 1) === "!") {
-			negativeSet.push(token);
+		if (token.charAt(0) === "!") {
+			negativeSet.push(token.substr(1, token.length - 1));
 		} else {
 			positiveSet.push(token);
 		}
