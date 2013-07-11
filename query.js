@@ -80,11 +80,63 @@ function parseQuery(queryToken) {
 //query for the courses that are being searched
 function generateDBQuery(queryTokens) {
 	var tokens = queryTokens.map(function(query) {
-		return parseQuery(query);
-	}),
-	queryObject = {};
+			return parseQuery(query);
+		}),
+		antiTokens = [],
+		singleCourseTokens = [],
+		schoolTokens = [],
+		plusTokens = [],
+		categoryTokens = [],
+		starTokens = [],
+		suffixTokens = [],
 
+		queryObject = {};
 
+	tokens.forEach(function(token) {
+		
+		switch(token.queryToken) {
+			case "":
+				singleCourseTokens.push(token);
+				break;
+			case "+":
+				plusTokens.push(token);
+				break;
+			case "*":
+				starTokens.push(token);
+				break;
+			case "$":
+				suffixTokens.push(token);
+				break;
+			case "~":
+				categoryTokens.push(token);
+				break;
+			case "^":
+				schoolTokens.push(token);
+				break;
+
+			default:
+				throw new Error("Token has invalid query token property");
+				break;
+		}
+	});
+
+	if (singleCourseTokens.length) {
+		queryObject.courseCode = {};
+		queryObject.courseCode.$in = singleCourseTokens.filter(function(token) {
+			return !token.not;
+		}).map(function(token) {
+			return new RegExp(token.coursePrefix + " " + token.courseNumber.toString(), "i");
+		});
+
+		queryObject.courseCode.$nin = singleCourseTokens.filter(function(token) {
+			return token.not;
+		}).map(function(token) {
+			return new RegExp(token.coursePrefix + " " + token.courseNumber.toString(), "i");
+		});
+
+	}
+
+	return queryObject;
 };
 
 
@@ -242,7 +294,7 @@ function parseCourseToken(token) {
 };
 
 function getCoursesFromTokens(tokens, callback) {
-
+	console.log(generateDBQuery(tokens));
 	db.collection("courses", function(error, collection) {
 		if (error) {
 			console.log(error);
@@ -275,7 +327,6 @@ function getCoursesFromTokens(tokens, callback) {
 
 		tokens.forEach(function(token, i) {
 
-			console.log(JSON.stringify(parseQuery(token)));
 			var course;
 			if (token.match(/[+,~,*]!/)) {
 				
