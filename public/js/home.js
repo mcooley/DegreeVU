@@ -171,6 +171,7 @@ var Schedule = Backbone.Collection.extend({
 	//takes a single number parameter followed by a variable
 	//number of boolean parameters and returns true if the number
 	//of boolean parameters that are true is at least equal to the number
+	//in the first parameter
 	complete: function(number) {
 		var i, n, count = 0;
 		for (i = 1, n = arguments.length; i < n; ++i) {
@@ -326,6 +327,8 @@ var Goal = Backbone.Model.extend({
 ValidationBundle = {};
 
 // Factory for common validators.
+
+//StdValidator methods utilize the helper method "has"
 ValidationBundle.StdValidator = {
 	takeHours: function(hours) {
 
