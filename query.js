@@ -8,6 +8,9 @@ var dbHost = config.host;
 var dbPort = mongo.Connection.DEFAULT_PORT;
 var db = new mongo.Db(dbName, new mongo.Server(dbHost, dbPort), {});
 
+var schoolMap = {
+	
+};
 
 //takes a query token and returns a parsed query object
 function parseQuery(queryToken) {
@@ -47,17 +50,17 @@ function parseQuery(queryToken) {
 			return queryObject;
 
 		case '*':
-
+			queryObject.queryToken = "*";
 			queryObject.coursePrefix = queryToken.match(/^[a-z]+/i)[0].toUpperCase();
 			return queryObject;
 
 		case '~':
-
+			queryObject.queryToken = "~";
 			queryObject.coursePrefix = queryToken.match(/^[a-z]+/i)[0].toUpperCase();
 			return queryObject;
 
 		case '^':
-
+			queryToken.queryToken = "^";
 			queryObject.school = queryToken.match(/^[a-z]+/i)[0].toUpperCase();
 			return queryObject;
 		default:
@@ -78,6 +81,7 @@ function parseQuery(queryToken) {
 };
 //takes the query tokens as an array and returns a mongodb 
 //query for the courses that are being searched
+//this method does not differentiate between positive and negative queries
 function generatePositiveQuery(queryTokens) {
 	var tokens = queryTokens.map(function(query) {
 			return parseQuery(query);
@@ -100,10 +104,11 @@ function generatePositiveQuery(queryTokens) {
 
 	tokens.forEach(function(token) {
 		
-		if (!token.not) {
-			
+		
+
 			switch(token.queryToken) {
 				case "":
+					console.log(JSON.stringify(token));
 					singleCourseTokens.push(token);
 					break;
 					
@@ -141,7 +146,6 @@ function generatePositiveQuery(queryTokens) {
 				default:
 					throw new Error("Token has invalid query token property");
 					break;
-			}
 			
 		}
 
@@ -154,35 +158,51 @@ function generatePositiveQuery(queryTokens) {
 		//keep track of the element that was just pushed
 		lastElement = queryObject.$or.length - 1;
 
-		queryObject.$or[lastElement].courseCode.$in = singleCourseTokens.filter(function(token) {
-			return !token.not;
-		}).map(function(token) {
-			return new RegExp(token.coursePrefix + " " + token.courseNumber.toString(), "i");
+		queryObject.$or[lastElement].courseCode.$in = singleCourseTokens.map(function(token) {
+			return new RegExp("^" + token.coursePrefix + " " + token.courseNumber.toString() + "$", "i");
 		});
 
 	}
-
-	if (plusTokens.length) {
-		plusPrefixes.forEach(function(prefix) {
-			//add an or query for each prefix for 
-			//each plus query
-			queryObject.$or.push({coursePrefix: "", courseNumber: {}});
-			lastElement = queryObject.$or.length - 1;
-			prefixFilter = plusTokens.filter(function(token) {return prefix === token.coursePrefix;});
-
-			//at most 2 elements in the filtered
-			//array
-			prefixFilter.forEach(function(token) {
-				queryObject.$or[lastElement].coursePrefix = token.coursePrefix;
-				
-				tempObject = queryObject.$or[lastElement].courseNumber.$gte = token.courseNumber;
 
 	
-			});
+	plusPrefixes.forEach(function(prefix) {
+		//add an or query for each prefix for 
+		//each plus query
+		queryObject.$or.push({coursePrefix: "", courseNumber: {}});
+		lastElement = queryObject.$or.length - 1;
+		prefixFilter = plusTokens.filter(function(token) {return prefix === token.coursePrefix;});
+
+		//at most 2 elements in the filtered
+		//array
+		prefixFilter.forEach(function(token) {
+			queryObject.$or[lastElement].coursePrefix = token.coursePrefix;
+			
+			tempObject = queryObject.$or[lastElement].courseNumber.$gte = token.courseNumber;
+
+
 		});
-	}
+	});
+	
+
+	
+	starTokens.forEach(function(token) {
+		queryObject.$or.push({coursePrefix: new RegExp("^" + token.coursePrefix + "$", "i")});
+	});
+	
+
+	
+	suffixTokens.forEach(function(token) {
+		queryObject.$or.push({courseSuffix: new RegExp("^" + token.courseSuffix + "$", "i")});
+	});
+	
+
+	
+	schoolTokens.forEach(function(token) {
+		queryObject.$or.push({college: new RegExp("^" + token.school + "$", "i")});
+	});
 
 
+	console.log(JSON.stringify(queryObject));
 	return queryObject;
 };
 
