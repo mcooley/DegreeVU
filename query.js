@@ -83,7 +83,16 @@ function generateDBQuery(queryTokens) {
 			return parseQuery(query);
 		}),
 		//majors division of tokens
-		antiTokens = [],
+
+		//anti-token divisions
+		_singleCourseTokens = [],
+		_schoolTokens = [],
+		_plusTokens = [],
+		_categoryTokens = [],
+		_starTokens = [],
+		_suffixTokens = [],
+
+
 		singleCourseTokens = [],
 		schoolTokens = [],
 		plusTokens = [],
@@ -100,45 +109,69 @@ function generateDBQuery(queryTokens) {
 		tempObject;
 
 	tokens.forEach(function(token) {
-		if (token.not) {
-			antiTokens.push(token);
-		} else {
-
-			switch(token.queryToken) {
-				case "":
+		
+		switch(token.queryToken) {
+			case "":
+				if (token.not) {
+					_singleCourseTokens.push(token);
+				} else {
 					singleCourseTokens.push(token);
-					break;
-				case "+":
-					if (plusPrefixes.length) {
-						if (plusPrefixes.filter(function(prefix) {return prefix === token.coursePrefix;}).length == 0) {
-							plusPrefixes.push(token.coursePrefix);
-						}
-
-					} else {
+				}
+				break;
+			case "+":
+				if (plusPrefixes.length) {
+					if (plusPrefixes.filter(function(prefix) {return prefix === token.coursePrefix;}).length == 0) {
 						plusPrefixes.push(token.coursePrefix);
 					}
-					plusTokens.push(token);
-					break;
-				case "*":
-					starTokens.push(token);
-					break;
-				case "$":
-					suffixTokens.push(token);
-					break;
-				case "~":
-					categoryTokens.push(token);
-					break;
-				case "^":
-					schoolTokens.push(token);
-					break;
 
-				default:
-					throw new Error("Token has invalid query token property");
-					break;
-			}
+				} else {
+					plusPrefixes.push(token.coursePrefix);
+				}
+
+				if (token.not) {
+					_plusTokens.push(token);
+				} else {
+					plusTokens.push(token);
+				}
+				break;
+			case "*":
+				if (token.not) {
+					_starTokens.push(token);
+				} else {
+					starTokens.push(token);
+				}
+				
+				break;
+
+			case "$":
+				if (token.not) {
+					_suffixTokens.push(token);
+				} else {
+					suffixTokens.push(token);
+				}
+				break;
+			case "~":
+				if (token.not) {
+					_categoryTokens.push(token);
+				} else {
+					categoryTokens.push(token);
+				}
+				break;
+			case "^":
+				if (token.not) {
+					_schoolTokens.push(token);
+				} else {
+					schoolTokens.push(token);
+				}
+				break;
+
+			default:
+				throw new Error("Token has invalid query token property");
+				break;
 		}
 		
 	});
+
 	queryObject.$or = [];
 	if (singleCourseTokens.length) {
 
@@ -173,6 +206,21 @@ function generateDBQuery(queryTokens) {
 			});
 		});
 	}
+
+	//add anti-tokens
+
+	//single course anti-tokens
+	if (_singleCourseTokens.length) {
+		console.log("Single course anti tokens");
+		queryObject.courseCode = {};
+		queryObject.courseCode.$nin = _singleCourseTokens.map(function(token) {
+			console.log(token.coursePrefix + " " + token.courseNumber + token.courseSuffix);
+			return new RegExp(token.coursePrefix + " " + token.courseNumber + token.courseSuffix, "i");
+		});
+	}
+	console.log(queryObject);
+
+
 	return queryObject;
 };
 
