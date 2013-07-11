@@ -107,40 +107,62 @@ var Schedule = Backbone.Collection.extend({
 	//number of courses in the schedule
 	countCourses: function(query1) {
 		var queries = arguments, i, n, matchesAll, queryObject;
-		return this.filter(function(course) {
-			for (i = 0, n = queries.length, matchesAny = false; i < n && !matchesAny; ++i) {
-				queryObject = CourseCodeTokenizer.parseQuery(queries[i]);
-				if (queryObject.queryToken === '~' && queryObject.category === course.get('category')) {
-					matchesAny = true;
-				}
+		if (arguments.length) {
 
-				if (CourseCodeTokenizer.matchQuery(course.get('courseCode'), queries[i])) {
-					matchesAny = true;
-				}
-			}
-			return matchesAny;
-		}).length;
-	},
-	countHours: function(query) {
-		var queries = arguments,
-		    totalHours = 0,
-		    queryObject,
-		    courseArray = this.filter(function(course) {
+			return this.filter(function(course) {
 				for (i = 0, n = queries.length, matchesAny = false; i < n && !matchesAny; ++i) {
 					queryObject = CourseCodeTokenizer.parseQuery(queries[i]);
 					if (queryObject.queryToken === '~' && queryObject.category === course.get('category')) {
 						matchesAny = true;
 					}
+
 					if (CourseCodeTokenizer.matchQuery(course.get('courseCode'), queries[i])) {
 						matchesAny = true;
 					}
 				}
 				return matchesAny;
-			});
+			}).length;
+		} else {
 
-		courseArray.forEach(function(course) {
-			totalHours += course.getHours();
-		});
+			return this.models.length;
+		}
+			
+	},
+	//similar to countCourses method, except the number of hours are returned instead
+	//of the number of courses
+	countHours: function(query) {
+		var queries = arguments,
+		    totalHours = 0,
+		    queryObject,
+		    courseArray;
+
+		    if (arguments.length) {
+
+
+		    	courseArray = this.filter(function(course) {
+					for (i = 0, n = queries.length, matchesAny = false; i < n && !matchesAny; ++i) {
+						queryObject = CourseCodeTokenizer.parseQuery(queries[i]);
+						if (queryObject.queryToken === '~' && queryObject.category === course.get('category')) {
+							matchesAny = true;
+						}
+						if (CourseCodeTokenizer.matchQuery(course.get('courseCode'), queries[i])) {
+							matchesAny = true;
+						}
+					}
+					return matchesAny;
+				});
+
+				courseArray.forEach(function(course) {
+					totalHours += course.getHours();
+				});
+
+		    } else {
+
+		    	this.each(function(course) {
+		    		totalHours += course.getHours();
+		    	});
+		    }
+			    
 
 		return totalHours;
 	},
