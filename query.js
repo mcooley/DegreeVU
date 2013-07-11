@@ -348,40 +348,6 @@ function getCoursesLike(str, numResults, callback) {
 	});
 };
 
-function parseCourseToken(token) {
-	var coursePrefix = token.match(/[a-z]+/i)[0];
-	var courseNumber = token.match(/\d+/);
-	var courseSuffix = "";
-	var parseChar = "";
-	var temp = token[token.length - 1];
-
-	if (temp.match(/[+, !, ~, *, $]/)) {
-		parseChar = temp;
-	}
-	if (temp.match(/[a-z]/i)) {
-		courseSuffix = temp;
-	}
-	var temp2 = token[token.length - 2];
-	if (temp2.match(/[a-z]/i)) {
-		var courseSuffix = temp2;
-	}
-	var courseCode = coursePrefix + " " + courseNumber + courseSuffix;
-	var course = {
-		"coursePrefix" : coursePrefix,
-		"courseSuffix" : courseSuffix,
-		"courseCode" : courseCode,
-		"parseChar" : parseChar
-	};
-
-	if (courseNumber) {
-		course.courseNumber = parseInt(courseNumber[0]);
-	} else {
-		course.courseNumber = 0;
-	}
-
-	return course;
-};
-
 //pass in a DB query and the courses that are
 //returned from the database are passed into the callback
 //the callback arguments are error, courses
