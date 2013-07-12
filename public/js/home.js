@@ -469,10 +469,11 @@ var CourseCodeTokenizer = {
 		    	courseSuffix: "",
 		    	queryToken: "",
 		    	courseNumber: 0,
-		    	category: ""
+		    	category: "",
+		    	school: "",
 		    },
 
-		    q = query.match(/[+,$,*,~]$/),
+		    q = query.match(/[+,$,*,~,^]$/),
 		    courseCodeToken;
 
 		    parsedQuery.queryToken = (q) ? q[0] : "";
@@ -496,6 +497,9 @@ var CourseCodeTokenizer = {
 
 		} else if (parsedQuery.queryToken === '~') {
 			parsedQuery.category = query.match(/^[a-z]+/i)[0].toUpperCase();
+
+		} else if (parsedQuery.queryToken === '^') {
+			parsedQuery.school = query.match(/^[a-z]+/i)[0].toUpperCase();
 
 		} else  {
 			parsedQuery.coursePrefix = query.match(/^[a-z]+/i)[0].toUpperCase();
