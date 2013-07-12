@@ -240,6 +240,78 @@ function generateDBQuery(queryTokens) {
 
 
 
+
+
+//pass in a DB query and the courses that are
+//returned from the database are passed into the callback
+//the callback arguments are error, courses
+function queryCourses(query, callback) {
+	db.collection("courses", function(error, collection) {
+		collection.find(query, function(err,cursor) {
+			cursor.toArray(function(err, courses) {
+				callback(err, courses);
+			});
+		});
+	});
+}
+
+function getCoursesFromTokens(tokens, callback) {
+	//separate tokens into negative and positive queries
+	var positiveSet = [],
+	    negativeSet = [];
+
+	tokens.forEach(function(token) {
+		if (token.charAt(0) === "!") {
+			negativeSet.push(token.substr(1, token.length - 1));
+		} else {
+			positiveSet.push(token);
+		}
+	});
+
+	queryCourses(generateDBQuery(positiveSet), function(error, positiveCourses) {
+		if (error) {
+			
+			throw error;
+		} else if (negativeSet.length) {
+			
+			queryCourses(generateDBQuery(negativeSet), function(error, negativeCourses) {
+				if (error) {
+					
+					throw error;
+				} else {
+					callback(_.differenceDeep(positiveCourses, negativeCourses));
+				}
+			});
+		} else {
+			
+			callback(positiveCourses);
+		}
+	});
+	
+}
+
+
+// Open the connection
+db.open(function(error) {
+	if (!error) {
+		console.log("Connected to " + dbName + " at " + dbHost + ":" + dbPort);
+	} else {
+		console.log("Error connecting to database: " + error);
+	}
+});
+
+
+
+exports.getCoursesByKey = getCoursesByKey;
+exports.getCoursesLike = getCoursesLike;
+exports.getGoalsByType = getGoalsByType;
+exports.getGoalsByKey = getGoalsByKey;
+exports.getCoursesFromTokens = getCoursesFromTokens;
+exports.getGoalsByName = getGoalsByName;
+
+
+
+//query methods that are currently not being used
 /*
 // Retrns the course with the given key.
 function getGoalsByKey(key, callback) {
@@ -360,71 +432,3 @@ function getCoursesLike(str, numResults, callback) {
 	});
 };
 */
-
-
-//pass in a DB query and the courses that are
-//returned from the database are passed into the callback
-//the callback arguments are error, courses
-function queryCourses(query, callback) {
-	db.collection("courses", function(error, collection) {
-		collection.find(query, function(err,cursor) {
-			cursor.toArray(function(err, courses) {
-				callback(err, courses);
-			});
-		});
-	});
-}
-
-function getCoursesFromTokens(tokens, callback) {
-	//separate tokens into negative and positive queries
-	var positiveSet = [],
-	    negativeSet = [];
-
-	tokens.forEach(function(token) {
-		if (token.charAt(0) === "!") {
-			negativeSet.push(token.substr(1, token.length - 1));
-		} else {
-			positiveSet.push(token);
-		}
-	});
-
-	queryCourses(generateDBQuery(positiveSet), function(error, positiveCourses) {
-		if (error) {
-			
-			throw error;
-		} else if (negativeSet.length) {
-			
-			queryCourses(generateDBQuery(negativeSet), function(error, negativeCourses) {
-				if (error) {
-					
-					throw error;
-				} else {
-					callback(_.differenceDeep(positiveCourses, negativeCourses));
-				}
-			});
-		} else {
-			
-			callback(positiveCourses);
-		}
-	});
-	
-}
-
-
-// Open the connection
-db.open(function(error) {
-	if (!error) {
-		console.log("Connected to " + dbName + " at " + dbHost + ":" + dbPort);
-	} else {
-		console.log("Error connecting to database: " + error);
-	}
-});
-
-
-
-exports.getCoursesByKey = getCoursesByKey;
-exports.getCoursesLike = getCoursesLike;
-exports.getGoalsByType = getGoalsByType;
-exports.getGoalsByKey = getGoalsByKey;
-exports.getCoursesFromTokens = getCoursesFromTokens;
-exports.getGoalsByName = getGoalsByName;
