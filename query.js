@@ -35,6 +35,9 @@ _.differenceDeep = function(array1, array2) {
 	return difference;
 };
 
+
+//helper methods that do not interact with the database
+
 //takes a query token and returns a parsed query object
 function parseQuery(queryToken) {
 	//this is what the query object looks like
@@ -235,6 +238,9 @@ function generateDBQuery(queryTokens) {
 };
 
 
+
+
+/*
 // Retrns the course with the given key.
 function getGoalsByKey(key, callback) {
 	db.collection("goals", function(error, callback) {
@@ -353,6 +359,8 @@ function getCoursesLike(str, numResults, callback) {
 		});
 	});
 };
+*/
+
 
 //pass in a DB query and the courses that are
 //returned from the database are passed into the callback
@@ -403,51 +411,6 @@ function getCoursesFromTokens(tokens, callback) {
 }
 
 
-function getCoursesPlus(course, callback) {
-	db.collection("courses", function(error, collection) {
-		var courseNumber = course.courseNumber;
-		var coursePrefix = course.coursePrefix;
-		collection.find({"courseNumber" : {$gte: courseNumber}, "coursePrefix" : coursePrefix}, function(error, cursor) {
-			cursor.toArray(function(error, courses) {
-				callback(courses);
-			});
-		});
-	});
-}
-
-function getCoursesBySuffix(suffix, callback) {
-	db.collection("courses", function(error, collection) {
-		collection.find({"courseSuffix": suffix}, function(error, cursor) {
-			cursor.toArray(function(error, courses) {
-				callback(courses);
-			});
-		});
-	});
-
-};
-
-function getCoursesByCategory(cat, callback) {
-	db.collection("courses", function(error, collection) {
-		collection.find({"category" : cat}, function(error, cursor) {
-			cursor.toArray(function(error, courses) {
-				callback(courses);
-			});
-		});
-	});
-};
-
-function getGoalsByName(name, callback) {
-	db.collection("goals", function(error, collection) {
-		var regex = RegExp(name, "i");
-		collection.find({"name" : regex}, function(error, cursor) {
-			cursor.toArray(function(error, goals) {
-				console.log(goals);
-				callback(goals);
-			});
-		});
-	});
-};
-
 // Open the connection
 db.open(function(error) {
 	if (!error) {
@@ -456,6 +419,8 @@ db.open(function(error) {
 		console.log("Error connecting to database: " + error);
 	}
 });
+
+
 
 exports.getCoursesByKey = getCoursesByKey;
 exports.getCoursesLike = getCoursesLike;
