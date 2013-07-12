@@ -437,11 +437,14 @@ var CourseCodeTokenizer = {
 	
 	parse:function(token) {
 		
-		var coursePrefix = token.match(/[a-z]+/i)[0].toUpperCase();
-		var courseNumber = token.match(/\d+/)[0];
-		var courseSuffix = "";
-		var parseChar = "";
-		var temp = token[token.length - 1].toUpperCase();
+		var coursePrefix = token.match(/[a-z]+/i)[0].toUpperCase(),
+		    courseNumber = token.match(/\d+/)[0],
+		    courseSuffix = "",
+		    parseChar = "",
+		    temp = token[token.length - 1].toUpperCase(),
+		    courseCode,
+		    course,
+		    temp2;
 
 		if (temp.match(/[+, !, ~, *]/)) {
 			parseChar = temp;
@@ -449,12 +452,12 @@ var CourseCodeTokenizer = {
 		if (temp.match(/[a-z]/i)) {
 			courseSuffix = temp;
 		}
-		var temp2 = token[token.length - 2];
+		temp2 = token[token.length - 2];
 		if (temp2.match(/[a-z]/i)) {
-			var courseSuffix = temp2;
+			courseSuffix = temp2;
 		}
-		var courseCode = coursePrefix + " " + courseNumber + courseSuffix;
-		var course = {
+		courseCode = coursePrefix + " " + courseNumber + courseSuffix;
+		course = {
 			"coursePrefix" : coursePrefix,
 			"courseSuffix" : courseSuffix,
 			"courseCode" : courseCode,
@@ -535,6 +538,8 @@ var CourseCodeTokenizer = {
 		} else if (queryObject.queryToken === '+') {
 
 			return queryObject.coursePrefix === tokenObject.coursePrefix && tokenObject.courseNumber >= queryObject.courseNumber;
+
+		} else if (queryObject.queryToken === '^') {
 
 		}
 
