@@ -1,12 +1,14 @@
 var mongo = require("mongodb"),
-    fs = require("fs"),
-    config = JSON.parse(fs.readFileSync("dbConfig.json")),
+	Db = mongo.Db,
+   // fs = require("fs"),
+    // = JSON.parse(fs.readFileSync("dbConfig.json")),
     _ = require('underscore')._,
 
-    dbName = config.name,
-    dbHost = config.host,
-    dbPort = mongo.Connection.DEFAULT_PORT,
-    db = new mongo.Db(dbName, new mongo.Server(dbHost, dbPort), {}),
+    //dbName = config.name,
+    //dbHost = config.host,
+    //dbPort = mongo.Connection.DEFAULT_PORT,
+    //db = new mongo.Db(dbName, new mongo.Server(dbHost, dbPort), {}),
+    MONGODB_URL;
 
     schoolMap = {
 	ENGINEERING: "School of Engineering",
@@ -35,6 +37,13 @@ _.differenceDeep = function(array1, array2) {
 	return difference;
 };
 
+
+//initial setup here
+if (process.env.MONGOHQ_URL) {
+	MONGODB_URL = process.env.MONGOHQ_URL;
+} else {
+	MONGODB_URL = "mongodb://localhost:27017/degreeVU";
+}
 
 //helper methods that do not interact with the database
 
@@ -239,20 +248,23 @@ function generateDBQuery(queryTokens) {
 
 
 
-
-
-
 //pass in a DB query and the courses that are
 //returned from the database are passed into the callback
 //the callback arguments are error, courses
 function queryCourses(query, callback) {
-	db.collection("courses", function(error, collection) {
-		collection.find(query, function(err,cursor) {
-			cursor.toArray(function(err, courses) {
-				callback(err, courses);
+	Db.connect(MONGODB_URL, function(err, db) {
+
+		db.collection("courses", function(error, collection) {
+			collection.find(query, function(err,cursor) {
+				cursor.toArray(function(err, courses) {
+					callback(err, courses);
+					db.close();
+				});
 			});
 		});
+
 	});
+		
 }
 
 function getCoursesFromTokens(tokens, callback) {
@@ -292,6 +304,7 @@ function getCoursesFromTokens(tokens, callback) {
 
 
 // Open the connection
+/*
 db.open(function(error) {
 	if (!error) {
 		console.log("Connected to " + dbName + " at " + dbHost + ":" + dbPort);
@@ -299,15 +312,16 @@ db.open(function(error) {
 		console.log("Error connecting to database: " + error);
 	}
 });
+*/
 
 
 
-exports.getCoursesByKey = getCoursesByKey;
-exports.getCoursesLike = getCoursesLike;
-exports.getGoalsByType = getGoalsByType;
-exports.getGoalsByKey = getGoalsByKey;
+//exports.getCoursesByKey = getCoursesByKey;
+//exports.getCoursesLike = getCoursesLike;
+//exports.getGoalsByType = getGoalsByType;
+//exports.getGoalsByKey = getGoalsByKey;
 exports.getCoursesFromTokens = getCoursesFromTokens;
-exports.getGoalsByName = getGoalsByName;
+//exports.getGoalsByName = getGoalsByName;
 
 
 
