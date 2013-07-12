@@ -95,3 +95,12 @@ ValidationBundle.isValidSchool = (function() {
 	};
 
 })();
+
+//is this the best idea?
+//could get this data from a query and load it into this
+ValidationBundle.SchoolMapping = {
+	ENGINEERING: ['BME', 'CE', 'CS', 'ME'],
+	AS: ['BSCI', 'CHEM', 'MATH', 'NSC'],
+	PEABODY: ['HOD'],
+	BLAIR: ['MUSO']
+}

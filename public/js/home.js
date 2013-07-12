@@ -1,4 +1,5 @@
-var currentTheme = 'Default',
+var currentTheme = 'StarWars',
+
     getQueryString = function (key) {
 		var re=new RegExp('(?:\\?|&)'+key+'=(.*?)(?=&|$)','gi');
 		var r=[], m;
