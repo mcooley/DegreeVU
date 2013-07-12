@@ -412,7 +412,14 @@ ValidationBundle.StdItem = {
 	
 };
 
+ValidationBundle.isValidSchool = (function() {
+	var regexp = /^(engineering)|(peabody)|(as)|(blair)$/i;
 
+	return function(school) {
+		return regexp.test(school);
+	};
+
+})();
 var CourseCodeTokenizer = {
 	
 	matches:function(courseCode, pattern) {
@@ -536,3 +543,4 @@ var CourseCodeTokenizer = {
 	}
 	
 };
+
