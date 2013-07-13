@@ -154,7 +154,10 @@ function generateDBQuery(queryTokens) {
 					break;
 					
 				case "+":
-					if (plusPrefixes.length) {
+					//only keep track of the plus prefixes that are positive,
+					//want to ignore the negation for plus prefix if it does not have
+					//a corresponding plus prefix
+					if (plusPrefixes.length && !token.not) {
 						if (plusPrefixes.filter(function(prefix) {return prefix === token.coursePrefix;}).length == 0) {
 							plusPrefixes.push(token.coursePrefix);
 						}
@@ -206,7 +209,25 @@ function generateDBQuery(queryTokens) {
 
 	}
 
-	
+	//sort the plus prefixes
+	//also filter the array so the positive and negative values of the same
+	//course prefix are always alternating; prevents ambiguous queries from
+	//poluting query object
+	plusTokens.sort(function(token1, token2) {
+		if (token1.coursePrefix !== token2.coursePrefix) {
+			return (token1.coursePrefix < token2.coursePrefix) ? -1 : 1;
+		}
+		return token1.courseNumber - token2.courseNumber;
+	}).filter(function(token, index, _array) {
+
+		if (index !== 0 && token.coursePrefix === _array[index - 1].coursePrefix) {
+			return token.not !== _array[index - 1].not;
+		}
+		return true;
+	});
+	console.log(plusTokens);
+	console.log(plusPrefixes);
+
 	plusPrefixes.forEach(function(prefix) {
 		//add an or query for each prefix for 
 		//each plus query
@@ -302,7 +323,9 @@ function getCoursesFromTokens(tokens, callback) {
 	
 }
 
-
+function getGoalsByName(callback) {
+	callback(["Computer Science", "HOD"]);
+};
 // Open the connection
 /*
 db.open(function(error) {
@@ -321,7 +344,7 @@ db.open(function(error) {
 //exports.getGoalsByType = getGoalsByType;
 //exports.getGoalsByKey = getGoalsByKey;
 exports.getCoursesFromTokens = getCoursesFromTokens;
-//exports.getGoalsByName = getGoalsByName;
+exports.getGoalsByName = getGoalsByName;
 
 
 
