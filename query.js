@@ -147,6 +147,9 @@ function generateDBQuery(queryTokens) {
 		//particularly negative plus queries
 		//these queries are saved and returned
 		//to be dealt with by some parent process
+		//only keep track of removed tokens
+		//that can make a difference if they were
+		//added to a negative query
 		removedQueries = [];
 
 	tokens.forEach(function(token) {
