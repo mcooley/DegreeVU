@@ -141,11 +141,15 @@ function generateDBQuery(queryTokens) {
 		lastElement,
 		plusPrefixes = [],
 		prefixFilter,
-		tempObject;
+		tempObject,
+		//due to some ambiguity, certain 
+		//queries are filtered out in this process
+		//particularly negative plus queries
+		//these queries are saved and returned
+		//to be dealt with by some parent process
+		removedQueries = [];
 
 	tokens.forEach(function(token) {
-		
-		
 
 			switch(token.queryToken) {
 				case "":
@@ -157,14 +161,17 @@ function generateDBQuery(queryTokens) {
 					//only keep track of the plus prefixes that are positive,
 					//want to ignore the negation for plus prefix if it does not have
 					//a corresponding plus prefix
-					if (plusPrefixes.length && !token.not) {
-						if (plusPrefixes.filter(function(prefix) {return prefix === token.coursePrefix;}).length == 0) {
+					if (!token.not) {
+						if (plusPrefixes.length) {
+							if (plusPrefixes.filter(function(prefix) {return prefix === token.coursePrefix;}).length == 0) {
+								plusPrefixes.push(token.coursePrefix);
+							}
+
+						} else {
 							plusPrefixes.push(token.coursePrefix);
 						}
-
-					} else {
-						plusPrefixes.push(token.coursePrefix);
 					}
+						
 
 					plusTokens.push(token);
 					break;
@@ -213,15 +220,23 @@ function generateDBQuery(queryTokens) {
 	//also filter the array so the positive and negative values of the same
 	//course prefix are always alternating; prevents ambiguous queries from
 	//poluting query object
-	plusTokens.sort(function(token1, token2) {
+	plusTokens = plusTokens.sort(function(token1, token2) {
 		if (token1.coursePrefix !== token2.coursePrefix) {
 			return (token1.coursePrefix < token2.coursePrefix) ? -1 : 1;
 		}
 		return token1.courseNumber - token2.courseNumber;
 	}).filter(function(token, index, _array) {
 
-		if (index !== 0 && token.coursePrefix === _array[index - 1].coursePrefix) {
+		if (index !== 0 && token.coursePrefix.toLowerCase() === _array[index - 1].coursePrefix.toLowerCase()) {
+			
 			return token.not !== _array[index - 1].not;
+		}
+		//only return elements that have a registered
+		//coursePrefix to prevent
+		//lose not queries
+		if (!_.contains(plusPrefixes, token.coursePrefix)) {
+			removedQueries.push(token);
+			return false;
 		}
 		return true;
 	});
@@ -229,21 +244,33 @@ function generateDBQuery(queryTokens) {
 	console.log(plusPrefixes);
 
 	plusPrefixes.forEach(function(prefix) {
+		var i, n;
 		//add an or query for each prefix for 
 		//each plus query
 		queryObject.$or.push({coursePrefix: "", courseNumber: {}});
 		lastElement = queryObject.$or.length - 1;
-		prefixFilter = plusTokens.filter(function(token) {return prefix === token.coursePrefix;});
+		//prefix filter should maintain the same order
+		//of the array with the exception of the missing elements
+		prefixFilter = plusTokens.filter(function(token) {return prefix === token.coursePrefix;}),
+		tempObject;
 
 		//at most 2 elements in the filtered
 		//array
-		prefixFilter.forEach(function(token) {
-			queryObject.$or[lastElement].coursePrefix = token.coursePrefix;
-			
-			tempObject = queryObject.$or[lastElement].courseNumber.$gte = token.courseNumber;
+		if (prefixFilter.length === 1) {
+			queryObject.$or[lastElement].coursePrefix = prefixFilter[0].courseNumber;
+			tempObject = queryObject.$or[lastElement].courseNumber.$gte = prefixFilter[0].courseNumber;
+		} else {
 
-
-		});
+			for (i=0, n = prefixFilter.length; i < n; ++i) {
+				queryObject.$or[lastElement].coursePrefix = prefixFilter[i].coursePrefix;
+				tempObject = queryObject.$or[lastElement].courseNumber.$gte = prefixFilter[i].courseNumber;
+				if (i < n-1) {
+					//then there is a corresponding negative query
+					tempObject = queryObject.$or[lastElement].courseNumber.$lt = prefixFilter[i+1].courseNumber;
+					i++;
+				}
+			}
+		}
 	});
 	
 
@@ -264,6 +291,7 @@ function generateDBQuery(queryTokens) {
 		queryObject.$or.push({college: new RegExp("^" + schoolMap[token.school] + "$", "i")});
 	});
 
+	console.log(removedQueries);
 	return queryObject;
 };
 
@@ -294,7 +322,7 @@ function getCoursesFromTokens(tokens, callback) {
 	    negativeSet = [];
 
 	tokens.forEach(function(token) {
-		if (token.charAt(0) === "!") {
+		if (token.charAt(0) === "!" && token.charAt(token.length - 1) !== '+') {
 			negativeSet.push(token.substr(1, token.length - 1));
 		} else {
 			positiveSet.push(token);
