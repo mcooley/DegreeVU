@@ -36,7 +36,19 @@ _.differenceDeep = function(array1, array2) {
 	});
 	return difference;
 };
-
+_.extendDeep = function(object) {
+	var copy = {};
+	for (i in object) {
+		if (object.hasOwnProperty(i)) {
+			if (typeof i === object && i !== null) {
+				copy[i] = _.extendDeep(i);
+			} else {
+				copy[i] = object[i];
+			}
+		}
+	}
+	return copy;
+};
 
 //initial setup here
 if (process.env.MONGOHQ_URL) {
@@ -94,7 +106,7 @@ function parseQuery(queryToken) {
 
 			case '~':
 				queryObject.queryToken = "~";
-				queryObject.coursePrefix = queryToken.match(/^[a-z]+/i)[0].toUpperCase();
+				queryObject.category = queryToken.match(/^[a-z]+/i)[0].toUpperCase();
 				return queryObject;
 
 			case '^':
@@ -119,16 +131,33 @@ function parseQuery(queryToken) {
 	}
 	
 };
+
+function parseQueries(queries) {
+	console.log("Parse queries was called");
+	var parsedQueries =  queries.map(function(query) {
+		return parseQuery(query);
+	});
+	console.log(parsedQueries);
+	return parsedQueries;
+}
+//takes a query object and inverts it
+//so the not variable is changed in value
+function invertQueries(queriesArray) {
+	return queriesArray.map(function(query) {
+		var copy = _.extendDeep(query);
+		console.log("extend deep: " + JSON.stringify(copy));
+		copy.not = !copy.not;
+		return copy;
+	});
+	
+};
 //takes the query tokens as an array and returns a mongodb 
 //query for the courses that are being searched
 //this method does not differentiate between positive and negative queries
 //NEED TO START FIXING THIS IN ORDER TO HANDLE NEGATIVE QUERIES PROPERLY
-function generateDBQuery(queryTokens) {
-	var tokens = queryTokens.map(function(query) {
-			return parseQuery(query);
-		}),
-
-		singleCourseTokens = [],
+function generateDBQuery(tokens) {
+	
+	var singleCourseTokens = [],
 		schoolTokens = [],
 		plusTokens = [],
 		categoryTokens = [],
@@ -157,7 +186,12 @@ function generateDBQuery(queryTokens) {
 			switch(token.queryToken) {
 				case "":
 					
-					singleCourseTokens.push(token);
+					
+					if (token.not) {
+						removedQueries.push(token);
+					} else {
+						singleCourseTokens.push(token);
+					}
 					break;
 					
 				case "+":
@@ -179,26 +213,43 @@ function generateDBQuery(queryTokens) {
 					plusTokens.push(token);
 					break;
 				case "*":
+					if (token.not) {
+						removedQueries.push(token);
+					} else {
+						starTokens.push(token);
+					}
 					
-					starTokens.push(token);
 					break;
 
 				case "$":
+					if (token.not) {
+						removedQueries.push(token);
+					} else {
+						suffixTokens.push(token);
+					}
 					
-					suffixTokens.push(token);
 					break;
 				case "~":
 					
-					categoryTokens.push(token);
+					if (token.not) {
+						removedQueries.push(token);
+					} else {
+						categoryTokens.push(token);
+					}
+					
 					
 					break;
 				case "^":
+					if (token.not) {
+						removedQueries.push(token);
+					} else {
+						schoolTokens.push(token);
+					}
 					
-					schoolTokens.push(token);
 					break;
 
 				default:
-					throw new Error("Token has invalid query token property");
+					throw new Error("Token has invalid query token property " + JSON.stringify(token));
 					break;
 			
 		}
@@ -243,8 +294,6 @@ function generateDBQuery(queryTokens) {
 		}
 		return true;
 	});
-	console.log(plusTokens);
-	console.log(plusPrefixes);
 
 	plusPrefixes.forEach(function(prefix) {
 		var i, n;
@@ -260,7 +309,7 @@ function generateDBQuery(queryTokens) {
 		//at most 2 elements in the filtered
 		//array
 		if (prefixFilter.length === 1) {
-			queryObject.$or[lastElement].coursePrefix = prefixFilter[0].courseNumber;
+			queryObject.$or[lastElement].coursePrefix = prefixFilter[0].coursePrefix;
 			tempObject = queryObject.$or[lastElement].courseNumber.$gte = prefixFilter[0].courseNumber;
 		} else {
 
@@ -294,8 +343,15 @@ function generateDBQuery(queryTokens) {
 		queryObject.$or.push({college: new RegExp("^" + schoolMap[token.school] + "$", "i")});
 	});
 
-	console.log(removedQueries);
-	return queryObject;
+	categoryTokens.forEach(function(token) {
+		queryObject.$or.push({category: new RegExp("^" + token.category + "$", "i")});
+	
+	});
+
+	return {
+		query: queryObject,
+		filter: removedQueries
+	};
 };
 
 
@@ -321,24 +377,19 @@ function queryCourses(query, callback) {
 
 function getCoursesFromTokens(tokens, callback) {
 	//separate tokens into negative and positive queries
-	var positiveSet = [],
-	    negativeSet = [];
+	
+	var processedTokens = generateDBQuery(parseQueries(tokens));
+	
+	
 
-	tokens.forEach(function(token) {
-		if (token.charAt(0) === "!" && token.charAt(token.length - 1) !== '+') {
-			negativeSet.push(token.substr(1, token.length - 1));
-		} else {
-			positiveSet.push(token);
-		}
-	});
-
-	queryCourses(generateDBQuery(positiveSet), function(error, positiveCourses) {
+	queryCourses(processedTokens.query, function(error, positiveCourses) {
 		if (error) {
 			
 			throw error;
-		} else if (negativeSet.length) {
-			
-			queryCourses(generateDBQuery(negativeSet), function(error, negativeCourses) {
+		} else if (processedTokens.filter.length) {
+
+			queryCourses(generateDBQuery(invertQueries(processedTokens.filter)).query, function(error, negativeCourses) {
+				
 				if (error) {
 					
 					throw error;
