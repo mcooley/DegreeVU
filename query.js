@@ -299,7 +299,7 @@ function generateDBQuery(tokens) {
 		var i, n;
 		//add an or query for each prefix for 
 		//each plus query
-		queryObject.$or.push({coursePrefix: "", courseNumber: {}});
+		queryObject.$or.push({coursePrefix: ""});
 		lastElement = queryObject.$or.length - 1;
 		//prefix filter should maintain the same order
 		//of the array with the exception of the missing elements
@@ -309,16 +309,20 @@ function generateDBQuery(tokens) {
 		//at most 2 elements in the filtered
 		//array
 		if (prefixFilter.length === 1) {
+			queryObject.$or[lastElement].courseNumber = {};
 			queryObject.$or[lastElement].coursePrefix = prefixFilter[0].coursePrefix;
 			tempObject = queryObject.$or[lastElement].courseNumber.$gte = prefixFilter[0].courseNumber;
 		} else {
-
+			queryObject.$or[lastElement].$or = [];
 			for (i=0, n = prefixFilter.length; i < n; ++i) {
 				queryObject.$or[lastElement].coursePrefix = prefixFilter[i].coursePrefix;
-				tempObject = queryObject.$or[lastElement].courseNumber.$gte = prefixFilter[i].courseNumber;
+				tempObject = queryObject.$or[lastElement].$or[i/2] = {
+					courseNumber: {$gte: prefixFilter[i].courseNumber}
+				};
+				
 				if (i < n-1) {
 					//then there is a corresponding negative query
-					tempObject = queryObject.$or[lastElement].courseNumber.$lt = prefixFilter[i+1].courseNumber;
+					tempObject = queryObject.$or[lastElement].$or[i/2].courseNumber.$lt = prefixFilter[i+1].courseNumber;
 					i++;
 				}
 			}
@@ -347,7 +351,8 @@ function generateDBQuery(tokens) {
 		queryObject.$or.push({category: new RegExp("^" + token.category + "$", "i")});
 	
 	});
-
+	console.log("Query");
+	console.log(JSON.stringify(queryObject));
 	return {
 		query: queryObject,
 		filter: removedQueries
