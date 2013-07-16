@@ -81,8 +81,18 @@ ValidationBundle.StdItem = {
 		title: 'Liberal Arts Core (18 hours)',
 		description: 'Liberal arts core for engineering',
 		details: 'More elaborate description here',
-		courses: ["HCA~", "INT~", "US~", "SBS~", "P~", "MUSO*", "MUSP*", "MUSC*", "MUSE*"],
-		validator: "return false;"
+		courses: ["HCA~", "ENGL 100", "INT~", "ARA 210A", "CHIN 201", "FREN 101A", "GER 101", "GRK 201", "HEBR 111A", "JAPN 200A", "JAPN 200B", "JAPN 201", "LAT 101", "PORT 100A", "RUSS 101", "SPAN 100", "SPAN 101", "US~", "SBS~", "ENGM 244", "P~", "CS 151", "MUSO*", "MUSP*", "MUSC*", "MUSE*"],
+		validator: function(schedule) {
+			var req1 = schedule.countHours('HCA~', 'ENGL 100');
+			    req2 = schedule.countHours('INT~', "ARA 210A", "CHIN 201", "FREN 101A", "GER 101", "GRK 201", "HEBR 111A", "JAPN 200A", "JAPN 200B", "JAPN 201", "LAT 101", "PORT 100A", "RUSS 101", "SPAN 100", "SPAN 101"),
+			    req3 = schedule.countHours('US~'),
+			    req4 = schedule.countHours('P~', 'CS 151'),
+			    req5 = schedule.countHours('MUSE*', 'MUSO*', 'MUSP*', 'MUSC*'),
+			    //issue with requirement 6 that needs to be addressed before coding this up
+			    req6;
+
+			return this.complete(4, req1 >=3, req2 >= 3, req3 >= 3, req4 >= 3, req5 >= 3, req6 >= 3) && this.complete(1, req1 >= 6, req2 >=6, req3 >= 6, req4 >= 6, req5 >= 6, req6 >= 6);
+		}
 	}
 	
 };
@@ -104,3 +114,101 @@ ValidationBundle.SchoolMapping = {
 	PEABODY: ['HOD'],
 	BLAIR: ['MUSO']
 }
+
+
+ValidationBundle.ValidationHelper = (function() {
+
+	var _constructor;
+
+
+	_constructor = function() {
+		var sets = [],
+		    numToComplete = 0,
+		    schedule = Schedule.getInstance(getQueryString('gradYear'));
+
+		//set-defining functions
+
+		//pass in variable number of queries
+		this.pushSet = function() {
+			var _set = [].slice.call(arguments);
+			//add properties cached on the set
+			_set.isComplete = false;
+			_set.isMandatory = false;
+			sets.push(_set);
+		};
+
+		//level 1 functions
+
+		//pass in the set number
+		this.count = function() {
+
+		};
+
+		//level 2 functions
+		this.hours = function() {
+
+		};
+
+		this.courses = function() {
+
+		};
+
+		//level 2.5 functions (optional)
+		//pass in a variable number of set indexes
+		this.diff = function() {
+
+		};
+
+		//level 3 functions 
+		//pass in the number of courses or the
+		//number of hours
+		this.is = function() {
+
+		};
+
+		this.all = function() {
+
+		};
+
+		this.has = function() {
+
+		};
+
+		//same as is and has functions
+		//but does leaves isComplete
+		//true if it is already true
+		this.orIs = function() {
+
+		};
+
+		this.orHas = function() {
+
+		};
+
+
+
+		//pass in the number of sets that need to be completed
+		this.complete = function() {
+
+		};
+		//pass in a variable number of arguments representing the 
+		//sets that are mandatory
+		//if no arguments are passed in, then all sets become
+		//mandatory
+		this.mandate = function() {
+
+		};
+
+		//getting feedback of state
+		this.isComplete = function() {
+
+		};
+
+	};
+
+	return _constructor;
+})();
+
+
+
+
