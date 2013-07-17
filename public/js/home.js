@@ -285,7 +285,8 @@ var Goal = Backbone.Model.extend({
 				var num = parseInt(item.validator.match(/\d+/), 10);
 				item.validate = (ValidationBundle.StdValidator.takeCourses(num)).bind(item);
 			} else {
-				item.validate = (new Function('schedule', '"use strict"; ' + item.validator)).bind(item);
+				//HERE
+				item.validate = (new Function('state', '"use strict"; ' + item.validator)).bind(item);
 				
 			}
 
@@ -320,7 +321,7 @@ var Goal = Backbone.Model.extend({
 
 		//HERE
 		_.each(this.get('items'), function(item) {
-			item.isValidated = item.validate(Schedule.getInstance());
+			item.isValidated = item.validate(new ValidationBundle.ValidationHelper(Schedule.getInstance(+getQueryString('gradYear'))));
 		});
 		this.trigger('revalidated');
 	}

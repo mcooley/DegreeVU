@@ -6,18 +6,9 @@ ValidationBundle = {};
 //StdValidator methods utilize the helper method "has"
 ValidationBundle.StdValidator = {
 	takeHours: function(hours) {
-		var state = new ValidationBundle.ValidationHelper();
-		return (function(schedule) {
-			/*
-			var remainingHours = hours; 
-			this._courses.forEach(function(course) {
-				if (schedule.has(course)) {
-					remainingHours -= schedule.countHours(course);	
-				}
-			});
+		
+		return (function(state) {
 			
-			return remainingHours <= 0;
-			*/
 			state.pushSet.apply(state, this.courses);
 			state.countHours(0).is(hours).mandate(0);
 
@@ -26,46 +17,19 @@ ValidationBundle.StdValidator = {
 		});
 	},
 	takeCourses: function(numOfClasses) {
-		var state = new ValidationBundle.ValidationHelper();
-		return function(schedule) {
-			/*
-			var remainingClasses = numOfClasses;
-			this._courses.forEach(function(course) {
-				if (schedule.has(course)) {
-					remainingClasses--;
-				}
-			});
-			return remainingClasses <= 0;
-			*/
+		//var state = new ValidationBundle.ValidationHelper();
+		return function(state) {
+			
 			state.pushSet.apply(state, this.courses);
 			state.countCourses(0).is(numOfClasses).mandate(0);
 			return state.isComplete();
 		};
 	},
-	takeAll: function(schedule) {
-		var state = new ValidationBundle.ValidationHelper();
-		//check if any courses were defined in the file
-		//use courses instead of _courses because they are loaded
-		//faster
-		/*
-		var foundAllCourses = true;
-		if (this.courses.length === 0) {
-			
-			return true;
-		}
-		this._courses.forEach(function(course) {
-			
-			if (!schedule.has(course)) {
-				foundAllCourses = false;
-				return;
-			}
-		});
-		
-		return foundAllCourses;
-		*/
-		state.pushSet.apply(state, this.courses);
+	takeAll: function(state) {
 
+		state.pushSet.apply(state, this.courses);
 		state.completeSets(0).mandate(0);
+		
 		return state.isComplete();
 	}
 };
@@ -140,11 +104,9 @@ ValidationBundle.ValidationHelper = (function() {
 	var _constructor;
 
 
-	_constructor = function() {
+	_constructor = function(schedule) {
 		var sets = [],
 		    numToComplete = 0,
-		    //eventually pass this in as an argument
-		    schedule = Schedule.getInstance(getQueryString('gradYear')),
 
 		    //heirarchy object to be read and parsed
 		    //by methods depending on their place in the hierarchy
