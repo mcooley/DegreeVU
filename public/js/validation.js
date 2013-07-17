@@ -9,7 +9,6 @@ ValidationBundle.StdValidator = {
 		
 		return (function(state) {
 			
-			state.pushSet.apply(state, this.courses);
 			state.hoursForSet(0).is(hours).mandate();
 
 			return state.isComplete();
@@ -20,14 +19,12 @@ ValidationBundle.StdValidator = {
 		//var state = new ValidationBundle.ValidationHelper();
 		return function(state) {
 			
-			state.pushSet.apply(state, this.courses);
 			state.coursesForSet(0).is(numOfClasses).mandate();
 			return state.isComplete();
 		};
 	},
 	takeAll: function(state) {
 
-		state.pushSet.apply(state, this.courses);
 		state.completeSet(0).mandate(0);
 
 		return state.isComplete();
@@ -99,6 +96,7 @@ ValidationBundle.SchoolMapping = {
 }
 
 ValidationBundle.DefineSingleSet = function(state) {
+	console.log("DefineSingleSet called");
 	state.pushSet.apply(state, this.courses);
 };
 

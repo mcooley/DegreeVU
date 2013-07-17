@@ -22,7 +22,8 @@
                 "MATH 205B",
                 "MATH 208+"
             ],
-            "validator": "state.pushSet('MATH 150A', 'MATH 150B', 'MATH 170', 'MATH 175').pushSet('MATH 155A', 'MATH 155B', 'MATH 175').pushSet('MATH 155A', 'MATH 155B', 'MATH 205A', 'MATH 205B').pushSet('MATH 194', 'MATH 204', 'MATH 205B').mandate().pushSet('MATH 216', 'MATH 218', 'MATH 247').mandate().pushSet('MATH 198', 'MATH 200', 'MATH 208+').mandate();state.completeSet(0).completeSet(1).completeSet(2).coursesForSet(3).is(1).coursesForSet(4).is(1).hoursForSet(5).is(3);state.complete(4);return state.isComplete();"
+            "defineSets": "state.pushSet('MATH 150A', 'MATH 150B', 'MATH 170', 'MATH 175').pushSet('MATH 155A', 'MATH 155B', 'MATH 175').pushSet('MATH 155A', 'MATH 155B', 'MATH 205A', 'MATH 205B').pushSet('MATH 194', 'MATH 204', 'MATH 205B').mandate().pushSet('MATH 216', 'MATH 218', 'MATH 247').mandate().pushSet('MATH 198', 'MATH 200', 'MATH 208+').mandate();",
+            "validator": "state.completeSet(0).completeSet(1).completeSet(2).coursesForSet(3).is(1).coursesForSet(4).is(1).hoursForSet(5).is(3);state.complete(4);return state.isComplete();"
         },
         {
             "title": "Basic Science Sequence (12 hours)",
@@ -48,7 +49,8 @@
                 "PHY 118A",
                 "PHY 118B"
             ],
-            "validator": "state.pushSet('BSCI 110A', 'BSCI 110B', 'BSCI 111A', 'BSCI 111B').pushSet('BSCI 100', 'BSCI 218', 'BSCI 219').pushSet('CHEM 102A', 'CHEM 102B', 'CHEM 104A', 'CHEM 104B').pushSet('EES 101',' EES 111').pushSet('MSE 150').pushSet('PHYS 116A', 'PHYS 116B','PHY 118A', 'PHY 118B');state.completeSet();state.complete(1);return state.isComplete();"
+            "defineSets": "state.pushSet('BSCI 110A', 'BSCI 110B', 'BSCI 111A', 'BSCI 111B').pushSet('BSCI 100', 'BSCI 218', 'BSCI 219').pushSet('CHEM 102A', 'CHEM 102B', 'CHEM 104A', 'CHEM 104B').pushSet('EES 101',' EES 111').pushSet('MSE 150').pushSet('PHYS 116A', 'PHYS 116B','PHY 118A', 'PHY 118B');",
+            "validator": "state.completeSet();state.complete(1);return state.isComplete();"
         },
         {
             "title": "Computer Science Core (28 hours)",
@@ -65,6 +67,7 @@
                 "EECE 116",
                 "EECE 116L"
             ],
+            "defineSets": "singleSet",
             "validator": "StdValidator.takeAll"
         },
         {
@@ -85,6 +88,7 @@
                 "MATH 288"
             ],
             "details": "Elaborate here",
+            "defineSets": "singleSet",
             "validator": "StdValidator.takeHours(12)"
         },
         {
@@ -95,6 +99,7 @@
                 "CS 151",
                 "PHIL 105"
             ],
+            "defineSets": "singleSet",
             "validator": "StdValidator.takeHours(3)"
         }
     ]
