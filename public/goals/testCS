@@ -85,7 +85,7 @@
                 "MATH 288"
             ],
             "details": "Elaborate here",
-            "validator": "return true;"
+            "validator": "StdValidator.takeHours(12)"
         },
         {
             "title": "Computer Ethics",
