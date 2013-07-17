@@ -160,11 +160,11 @@ ValidationBundle.ValidationHelper = (function() {
 
 		//pass in the set number
 		this.countHours = function(setIndex) {
-			_level1 = {
-				set: setIndex,
-				type: 'hours',
-				total: schedule.countHours.apply(schedule, sets[setIndex])
-			};
+			_level1.set = setIndex;
+			_level1.type = 'hours';
+			_level1.total = schedule.countHours.apply(schedule, sets[setIndex])
+			_level1.exclusiveTotal = _level1.total;
+				
 			return this;
 		};
 
@@ -181,21 +181,22 @@ ValidationBundle.ValidationHelper = (function() {
 		//a level 2 compliment, this is
 		//considered a combination of level
 		//1 and level 2
-		this.completeSet = function() {
-
-		};
-
-		//level 1.5 functions (optional)
-		//pass in a variable number of set indexes
-		this.diff = function() {
-
+		this.completeSets = function() {
+			var allCourses,
+				i, n;
+			for (i = 0, n = arguments.length; i < n; ++i) {
+				allCourses = sets[arguments[i]].length;
+				this.countCourses(arguments[i]).is(allCourses);
+			}
+				
+			return this;
 		};
 
 		//level 2 functions 
 		//pass in the number of courses or the
 		//number of hours
 		this.is = function(count) {
-			console.log(_level1.total);
+			
 			if (_level1.total >= count) {
 				sets[_level1.set].isComplete = true;
 			} else {
@@ -205,8 +206,9 @@ ValidationBundle.ValidationHelper = (function() {
 		};
 
 		//takes a variable number of course codes
-		this.has = function(course) {
-
+		this.has = function() {
+			sets[_level1.set].isComplete = schedule.has.apply(schedule, [].slice.call(arguments));
+			return this;
 		};
 
 		//same as is and has functions
@@ -214,26 +216,39 @@ ValidationBundle.ValidationHelper = (function() {
 		//true if it is already true
 		this.orIs = function() {
 
+			if (_level1.total >= count) {
+				sets[_level1.set].isComplete = true;
+			}
+
+			return this;
 		};
 
 		this.orHas = function() {
-
+			sets[_level1.set].isComplete = sets[_level1.set].isComplete || schedule.has.apply(schedule, [].slice.call(arguments));
+			return this;
 		};
-
-
 
 		//pass in the number of sets that need to be completed
 		this.complete = function(count) {
 			numToComplete = count;
+			return this;
 		};
 		//pass in a variable number of arguments representing the 
 		//sets that are mandatory
 		this.mandate = function() {
-
+			var i, n;
+			for (i = 0, n = arguments.length; i < n; ++i) {
+				sets[arguments[i]].isMandatory = true;
+			}
+			
+			return this;
 		};
 
 		this.mandateAll = function() {
-
+			sets.forEach(function(set) {
+				set.isMandatory = true;
+			});
+			return this;
 		};
 
 		//getting feedback of state,
@@ -255,7 +270,6 @@ ValidationBundle.ValidationHelper = (function() {
 			
 			return mandateComplete && count >= numToComplete;
 		};
-
 	};
 
 	return _constructor;
