@@ -10,7 +10,7 @@ ValidationBundle.StdValidator = {
 		return (function(state) {
 			
 			state.pushSet.apply(state, this.courses);
-			state.countHours(0).is(hours).mandate(0);
+			state.hoursForSet(0).is(hours).mandate();
 
 			return state.isComplete();
 
@@ -21,15 +21,15 @@ ValidationBundle.StdValidator = {
 		return function(state) {
 			
 			state.pushSet.apply(state, this.courses);
-			state.countCourses(0).is(numOfClasses).mandate(0);
+			state.coursesForSet(0).is(numOfClasses).mandate();
 			return state.isComplete();
 		};
 	},
 	takeAll: function(state) {
 
 		state.pushSet.apply(state, this.courses);
-		state.completeSets(0).mandate(0);
-		
+		state.completeSet(0).mandate(0);
+
 		return state.isComplete();
 	}
 };
@@ -141,7 +141,7 @@ ValidationBundle.ValidationHelper = (function() {
 		//level 1 functions
 
 		//pass in the set number
-		this.countHours = function(setIndex) {
+		this.hoursForSet = function(setIndex) {
 			_level1.set = setIndex;
 			_level1.type = 'hours';
 			_level1.total = schedule.countHours.apply(schedule, sets[setIndex])
@@ -150,7 +150,7 @@ ValidationBundle.ValidationHelper = (function() {
 			return this;
 		};
 
-		this.countCourses = function(setIndex) {
+		this.coursesForSet = function(setIndex) {
 			_level1 = {
 				set: setIndex,
 				type: 'hours',
@@ -163,14 +163,20 @@ ValidationBundle.ValidationHelper = (function() {
 		//a level 2 compliment, this is
 		//considered a combination of level
 		//1 and level 2
-		this.completeSets = function() {
-			var allCourses,
-				i, n;
-			for (i = 0, n = arguments.length; i < n; ++i) {
-				allCourses = sets[arguments[i]].length;
-				this.countCourses(arguments[i]).is(allCourses);
+		this.completeSet = function(index) {
+			var i, n, allCourses;
+			if (index === undefined) {
+				//register all sets to complete
+				for(i = 0, n = sets.length; i < n; ++i) {
+					allCourses = sets[i].length;
+					this.coursesForSet(i).is(allCourses);
+
+				}
+			} else {
+				allCourses = sets[index].length;
+				this.coursesForSet(index).is(allCourses);
 			}
-				
+			
 			return this;
 		};
 
