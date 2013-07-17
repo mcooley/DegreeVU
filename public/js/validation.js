@@ -98,6 +98,9 @@ ValidationBundle.SchoolMapping = {
 	BLAIR: ['MUSO']
 }
 
+ValidationBundle.DefineSingleSet = function(state) {
+	state.pushSet.apply(state, this.courses);
+};
 
 ValidationBundle.ValidationHelper = (function() {
 
