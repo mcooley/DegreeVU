@@ -277,19 +277,17 @@ var Goal = Backbone.Model.extend({
 			//for easier and more thorough validation
 			item.validationHelper = new ValidationBundle.ValidationHelper(Schedule.getInstance(getQueryString('gradYear')));
 			if (item.defineSets === "singleSet") {
-				console.log("This method is called");
+				
 				item.sets = (ValidationBundle.DefineSingleSet).bind(item);
-			} else if (item.defineSets === undefined) {
-				//don't do anything yet
 			} else {
 				item.sets = (new Function('state', '"use strict"; ' + item.defineSets)).bind(item);
 			}
-			if (item.sets) {
-				console.log("Called");
-				item.sets(item.validationHelper);
-			} else {
-				console.log("Not called yet");
+			
+			if (item.sets === undefined) {
+				throw new Error("Could not find item.sets function");
 			}
+			item.sets(item.validationHelper);
+			
 
 			if (item.validator === "StdValidator.takeAll") {
 				
