@@ -6,9 +6,9 @@ ValidationBundle = {};
 //StdValidator methods utilize the helper method "has"
 ValidationBundle.StdValidator = {
 	takeHours: function(hours) {
-
+		var state = new ValidationBundle.ValidationHelper();
 		return (function(schedule) {
-			
+			/*
 			var remainingHours = hours; 
 			this._courses.forEach(function(course) {
 				if (schedule.has(course)) {
@@ -17,10 +17,18 @@ ValidationBundle.StdValidator = {
 			});
 			
 			return remainingHours <= 0;
+			*/
+			state.pushSet.apply(state, this.courses);
+			state.countHours(0).is(hours).mandate(0);
+
+			return state.isComplete();
+
 		});
 	},
 	takeCourses: function(numOfClasses) {
+		var state = new ValidationBundle.ValidationHelper();
 		return function(schedule) {
+			/*
 			var remainingClasses = numOfClasses;
 			this._courses.forEach(function(course) {
 				if (schedule.has(course)) {
@@ -28,12 +36,18 @@ ValidationBundle.StdValidator = {
 				}
 			});
 			return remainingClasses <= 0;
+			*/
+			state.pushSet.apply(state, this.courses);
+			state.countCourses(0).is(numOfClasses).mandate(0);
+			return state.isComplete();
 		};
 	},
 	takeAll: function(schedule) {
+		var state = new ValidationBundle.ValidationHelper();
 		//check if any courses were defined in the file
 		//use courses instead of _courses because they are loaded
 		//faster
+		/*
 		var foundAllCourses = true;
 		if (this.courses.length === 0) {
 			
@@ -48,6 +62,11 @@ ValidationBundle.StdValidator = {
 		});
 		
 		return foundAllCourses;
+		*/
+		state.pushSet.apply(state, this.courses);
+
+		state.completeSets(0).mandate(0);
+		return state.isComplete();
 	}
 };
 
@@ -154,6 +173,7 @@ ValidationBundle.ValidationHelper = (function() {
 			_set.isComplete = false;
 			_set.isMandatory = false;
 			sets.push(_set);
+			return this;
 		};
 
 		//level 1 functions
@@ -237,9 +257,15 @@ ValidationBundle.ValidationHelper = (function() {
 		//sets that are mandatory
 		this.mandate = function() {
 			var i, n;
-			for (i = 0, n = arguments.length; i < n; ++i) {
-				sets[arguments[i]].isMandatory = true;
+			if (arguments.length) {
+				for (i = 0, n = arguments.length; i < n; ++i) {
+					sets[arguments[i]].isMandatory = true;
+				}
+			} else {
+				//mandate the set in the current state
+				sets[_level1.set].isMandatory = true;
 			}
+			
 			
 			return this;
 		};

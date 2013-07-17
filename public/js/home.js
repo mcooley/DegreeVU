@@ -317,6 +317,8 @@ var Goal = Backbone.Model.extend({
 	},
 	
 	updateValidation:function() {
+
+		//HERE
 		_.each(this.get('items'), function(item) {
 			item.isValidated = item.validate(Schedule.getInstance());
 		});
