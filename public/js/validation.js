@@ -11,7 +11,6 @@ ValidationBundle.StdValidator = {
 			
 			state.hoursForSet(0).is(hours).mandate();
 
-			return state.isComplete();
 
 		});
 	},
@@ -20,14 +19,13 @@ ValidationBundle.StdValidator = {
 		return function(state) {
 			
 			state.coursesForSet(0).is(numOfClasses).mandate();
-			return state.isComplete();
+			
 		};
 	},
 	takeAll: function(state) {
 
 		state.completeSet(0).mandate(0);
 
-		return state.isComplete();
 	}
 };
 

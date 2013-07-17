@@ -336,8 +336,10 @@ var Goal = Backbone.Model.extend({
 
 		//HERE
 		_.each(this.get('items'), function(item) {
-
-			item.isValidated = item.validate(item.validationHelper);
+			//update validation
+			item.validate(item.validationHelper);
+			//get the result
+			item.isValidated = item.validationHelper.isComplete();;
 		});
 		this.trigger('revalidated');
 	}
