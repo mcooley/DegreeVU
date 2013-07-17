@@ -273,7 +273,9 @@ var Goal = Backbone.Model.extend({
 				});
 			});
 
-
+			//add validation helper object to the item
+			//for easier and more thorough validation
+			item.validationHelper = new ValidationBundle.ValidationHelper(Schedule.getInstance(getQueryString('gradYear')));
 			if (item.validator === "StdValidator.takeAll") {
 				
 				item.validate = (ValidationBundle.StdValidator.takeAll).bind(item);
@@ -321,7 +323,7 @@ var Goal = Backbone.Model.extend({
 
 		//HERE
 		_.each(this.get('items'), function(item) {
-			item.isValidated = item.validate(new ValidationBundle.ValidationHelper(Schedule.getInstance(+getQueryString('gradYear'))));
+			item.isValidated = item.validate(item.validationHelper);
 		});
 		this.trigger('revalidated');
 	}
