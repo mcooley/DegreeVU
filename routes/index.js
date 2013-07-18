@@ -1,5 +1,6 @@
-var query = require('../query.js');
-var fs = require('fs');
+var query = require('../query.js'),
+	fs = require('fs'),
+    parseGoals = require('../parseGoals.js');
 
 
 exports.index = function(req, res) {
@@ -35,3 +36,8 @@ exports.templates = function(req, res) {
 		}
 	});
 }
+
+//eventually lock this with authentication
+exports.goals = function(req, res) {
+	res.render('uploadGoals');
+};
