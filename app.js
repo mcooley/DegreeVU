@@ -84,6 +84,8 @@ app.get('/home', routes.home);
 app.get('/ejs/templates', routes.templates);
 
 app.get('/goals', routes.goals);
+app.post('/goals/upload', routes.uploadGoals);
+app.get('/goals/status', routes.uploadStatus);
 
 http.createServer(app).listen(app.get('port'), function(){
   console.log("Express server listening on port " + app.get('port'));

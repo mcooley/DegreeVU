@@ -41,3 +41,30 @@ exports.templates = function(req, res) {
 exports.goals = function(req, res) {
 	res.render('uploadGoals');
 };
+
+//called during post of goals
+exports.uploadGoals = function(req, res) {
+	if (!req.files) {
+		res.redirect('/goals/status?error=true&message=' + encodeURIComponent('No file was uploaded.  You must upload before submitting'))
+	} else {
+		parseGoals = parseGoals.parseFile(req.files.goals.path, function(err, JSON) {
+			if (err) {
+				res.redirect('/goals/status?error=true&message=' + encodeURIComponent(err.message));
+			} else {
+				//redirect also
+				res.redirect('/goals/status?error=false');
+			}
+		});
+	}
+};
+
+exports.uploadStatus = function(req, res) {
+	var error = (req.query.error === "true") ? true : false,
+		title = (error) ? "Failure!" : "Success!",
+		message = req.query.message;
+
+	res.render('uploadStatus.ejs', {title: title, error: error, message: message});
+};
+
+
+

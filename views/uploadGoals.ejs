@@ -6,8 +6,8 @@
 
 	<body>
 		<h3>Upload Goals</h3>
-		<form id="uploadGoals">
-			<input type="file" name="goal" />
+		<form id="uploadGoals" enctype="multipart/form-data" method="POST" action="/goals/upload">
+			<input type="file" name="goals" />
 			<input type="submit" value="submit" />
 		</form>
 	</body>
