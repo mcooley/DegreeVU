@@ -1,4 +1,4 @@
-goals = [{
+this.goals = [{
 	name: "Computer Science",
 	type: 'major',
 	school: 'School of Engineering',
@@ -39,7 +39,7 @@ goals = [{
 	            	.pushSet('EES 101',' EES 111')
 	            	.pushSet('MSE 150')
 	            	.pushSet('PHYS 116A', 'PHYS 116B','PHY 118A', 'PHY 118B');
-            }
+            },
             validator: function(state) {
             	state.completeSet();
             	state.complete(1);

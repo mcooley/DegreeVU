@@ -44,15 +44,28 @@ exports.goals = function(req, res) {
 
 //called during post of goals
 exports.uploadGoals = function(req, res) {
+	var goals, file;
 	if (!req.files) {
 		res.redirect('/goals/status?error=true&message=' + encodeURIComponent('No file was uploaded.  You must upload before submitting'))
 	} else {
-		parseGoals = parseGoals.parseFile(req.files.goals.path, function(err, JSON) {
+		goals = parseGoals.parseFile(req.files.goals.path, function(err, JSON) {
 			if (err) {
 				res.redirect('/goals/status?error=true&message=' + encodeURIComponent(err.message));
 			} else {
 				//redirect also
-				res.redirect('/goals/status?error=false');
+				/*
+				file = fs.createWriteStream('test2.json');
+				file.write(new Buffer(JSON), function(err) {
+					if (err) {
+						res.redirect('/goals/status?error=true&message=' + encodeURIComponent(err.message));
+					} else {
+						//res.pipe(file);
+						res.send()
+					}
+				});
+				*/
+				res.send(JSON);
+				
 			}
 		});
 	}
