@@ -2,6 +2,20 @@ var util = require('vm'),
 	vm = require('vm')
 	fs = require('fs');
 
+
+generateSandbox = (function() {
+	//static helper functions
+	function diff(index) {
+
+	}
+
+	return function() {
+		return {
+			diff: diff
+		};
+	};
+})();
+
 //removes whitespace from a function with the exception of whitespace 
 //that exists within quotations
 function removeWhitespace(text) {
@@ -50,12 +64,11 @@ function goalToJSON(goal, callback) {
 	callback(null, JSON.stringify(goal));
 };
 exports.parseFile = function(file, callback) {
-	var sandbox = {};
-	
+	var sandbox = generateSandbox();
+
 	fs.readFile(file, function(err, data) {
-		console.log("data: " + typeof data);
 		vm.runInNewContext(data, sandbox);
-		goalToJSON(sandbox.goals[0], function(err, json) {
+		goalToJSON(sandbox.goal, function(err, json) {
 			callback(err, json);
 		});
 

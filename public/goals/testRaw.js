@@ -1,9 +1,9 @@
-this.goals = [{
+goal = {
 	name: "Computer Science",
 	type: 'major',
 	school: 'School of Engineering',
 	items: [
-		{
+		{ //0
             title: "Mathematics sequence (20-22 hours)",
             description: "You must take a calculus sequence, a linear algebra course, a statistics course, and a math electives course.",
             details: "Here is where you can elaborate the details",
@@ -27,7 +27,7 @@ this.goals = [{
             	state.complete(4);
             }
         },
-        {
+        { //1
             title: "Basic Science Sequence (12 hours)",
             description: "You are required to fulfill a sequence of science courses.",
             details: "More elaboration here",
@@ -38,14 +38,14 @@ this.goals = [{
 	            	.pushSet('CHEM 102A', 'CHEM 102B', 'CHEM 104A', 'CHEM 104B')
 	            	.pushSet('EES 101',' EES 111')
 	            	.pushSet('MSE 150')
-	            	.pushSet('PHYS 116A', 'PHYS 116B','PHY 118A', 'PHY 118B');
+	            	.pushSet('PHYS 116A', 'PHYS 116B','PHYS 118A', 'PHYS 118B');
             },
             validator: function(state) {
             	state.completeSet();
             	state.complete(1);
             }
         },
-        {
+        { //2
             title: "Computer Science Core (28 hours)",
             description: "You must complete the core requirements for the CS Major",
             details: "Elaborate here",
@@ -53,15 +53,15 @@ this.goals = [{
             defineSets: "singleSet",
             validator: "StdValidator.takeAll"
         },
-        {
+        { //3
             title: "Computer Science Depth (12 hours)",
             description: "In depth courses related to computer science",
-            courses: ["CS 240+", "!CS 250", "!CS 251", "!CS 270", "!CS 281", "EECE 253", "EECE 254", "EECE 276", "MATH 226", "MATH 253", "MATH 286", "MATH 288"],
+            courses: ["CS 240+", "EECE 253", "EECE 254", "EECE 276", "MATH 226", "MATH 253", "MATH 286", "MATH 288"],
             details: "Elaborate here",
             defineSets: "singleSet",
             validator: "StdValidator.takeHours(12)"
         },
-        {
+        { //4
             "title": "Computer Ethics",
             "description": "You must take 3 hours towards ethics",
             "details": "No further details needed",
@@ -71,4 +71,4 @@ this.goals = [{
             validator: "StdValidator.takeHours(3)"
         }
 	]
-}]
+};
