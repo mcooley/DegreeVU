@@ -2,9 +2,14 @@
 <html>
 	<head>
 		<title><%= title %></title>
+		<link rel="stylesheet" href="/css/goalsStyle.css" type = "text/css" />
 	</head>
 	<body>
-		<div><%= message %></div>
+		<h3><%= title %></h3>
+		<div <% if (error) {%>  class="error" <%} else {%> class="success"<%}%>><%= message %></div>
+		<a href="/goals">Return to upload page</a>
+		<a href="/">Return to splash page</a>
+
 
 	</body>
 </html>

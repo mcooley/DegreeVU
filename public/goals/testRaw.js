@@ -62,10 +62,10 @@ goal = {
             validator: "StdValidator.takeHours(12)"
         },
         { //4
-            "title": "Computer Ethics",
-            "description": "You must take 3 hours towards ethics",
-            "details": "No further details needed",
-            "courses": ["CS 151", "PHIL 105"],
+            title: "Computer Ethics",
+            description: "You must take 3 hours towards ethics",
+            details: "No further details needed",
+            courses: ["CS 151", "PHIL 105"],
             defineSets: "singleSet",
             validator: "StdValidator.takeHours(3)"
         }
