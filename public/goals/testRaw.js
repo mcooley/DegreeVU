@@ -56,7 +56,7 @@ goal = {
         { //3
             title: "Computer Science Depth (12 hours)",
             description: "In depth courses related to computer science",
-            courses: ["CS 240+", "EECE 253", "EECE 254", "EECE 276", "MATH 226", "MATH 253", "MATH 286", "MATH 288"],
+            courses: ["CS 240+", diff(2), "EECE 253", "EECE 254", "EECE 276", "MATH 226", "MATH 253", "MATH 286", "MATH 288"],
             details: "Elaborate here",
             defineSets: "singleSet",
             validator: "StdValidator.takeHours(12)"
@@ -65,8 +65,7 @@ goal = {
             "title": "Computer Ethics",
             "description": "You must take 3 hours towards ethics",
             "details": "No further details needed",
-            "courses": ["CS 151", "PHIL 105"
-            ],
+            "courses": ["CS 151", "PHIL 105"],
             defineSets: "singleSet",
             validator: "StdValidator.takeHours(3)"
         }

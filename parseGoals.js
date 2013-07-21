@@ -1,18 +1,30 @@
 var util = require('vm'),
 	vm = require('vm')
-	fs = require('fs');
+	fs = require('fs'),
+	_ = require('underscore');
 
 
 generateSandbox = (function() {
 	//static helper functions
-	function diff(index) {
-
+	function diff(itemIndex) {
+		//should be called on goal
+		return function() {
+			return this.items[itemIndex].courses.filter(function(course) {
+				return course.charAt(0) !== '!';
+			}).map(function(course) {
+				return '!' + course;
+			});
+		};
+		
 	}
 
 	return function() {
-		return {
+		var instance = {
+			goal: {},
 			diff: diff
 		};
+		return instance;
+		
 	};
 })();
 
@@ -39,14 +51,26 @@ function removeWhitespace(text) {
 	return modifiedText;
 }
 function goalToJSON(goal, callback) {
-	var stringFunction;
+	var stringFunction, i, n, nextItem, arrayFunctionCalled = false;;
+
 	goal.items.forEach(function(item, index) {
+
+		for (i = 0, n = item.courses.length; i < n; ++i) {
+			if (typeof item.courses[i] === 'function') {
+				item.courses[i] = item.courses[i].call(goal);
+				arrayFunctionCalled = true;
+			}
+		}
+		if (arrayFunctionCalled) {
+			item.courses = _.flatten(item.courses);
+		}
+
 
 		if (typeof item.defineSets === 'function') {
 			stringFunction = removeWhitespace(item.defineSets.toString());
 			if (stringFunction.substr(0, 15) === 'function(state)') {
 				item.defineSets = stringFunction.substr(16, stringFunction.length - 17);
-				console.log("Define sets: " + item.defineSets);
+				
 			} else {
 				callback(new Error("Incorrect value for defineSets field of item at index " + index), null);
 			}
@@ -60,6 +84,7 @@ function goalToJSON(goal, callback) {
 			}
 		}
 
+
 	});
 	callback(null, JSON.stringify(goal));
 };
@@ -71,6 +96,7 @@ exports.parseFile = function(file, callback) {
 		goalToJSON(sandbox.goal, function(err, json) {
 			callback(err, json);
 		});
+		
 
 	});
 	
