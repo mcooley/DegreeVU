@@ -1,10 +1,20 @@
 var util = require('vm'),
 	vm = require('vm')
 	fs = require('fs'),
-	_ = require('underscore');
+	_ = require('underscore')._;
 
 
 generateSandbox = (function() {
+
+	var StdValidator = {
+		takeAll: 'StdValidator.takeAll',
+		takeHours: function(hours) {
+			return 'StdValidator.takeHours(' + hours + ')';
+		},
+		takeCourses: function(courses) {
+			return 'StdValidator.takeCourses(' + courses + ')';
+		}
+	};
 	//static helper functions
 	function diff(itemIndex) {
 		//should be called on goal
@@ -18,10 +28,25 @@ generateSandbox = (function() {
 		
 	}
 
+	function add(itemIndex) {
+		//should be called on goal
+		return function() {
+			
+			return this.items[itemIndex].courses;
+			
+		};
+	}
+
 	return function() {
 		var instance = {
 			goal: {},
-			diff: diff
+			//helper methods
+			diff: diff,
+			add: add,
+
+			//string substitutions
+			StdValidator: StdValidator,
+			singleSet: 'singleSet'
 		};
 		return instance;
 		

@@ -50,24 +50,24 @@ goal = {
             description: "You must complete the core requirements for the CS Major",
             details: "Elaborate here",
             courses: ["CS 101", "CS 201", "CS 212", "CS 250", "CS 251", "CS 270", "CS 281", "EECE 116", "EECE 116L"],
-            defineSets: "singleSet",
-            validator: "StdValidator.takeAll"
+            defineSets: singleSet,
+            validator: StdValidator.takeAll
         },
         { //3
             title: "Computer Science Depth (12 hours)",
             description: "In depth courses related to computer science",
             courses: ["CS 240+", diff(2), "EECE 253", "EECE 254", "EECE 276", "MATH 226", "MATH 253", "MATH 286", "MATH 288"],
             details: "Elaborate here",
-            defineSets: "singleSet",
-            validator: "StdValidator.takeHours(12)"
+            defineSets: singleSet,
+            validator: StdValidator.takeHours(12)
         },
         { //4
             title: "Computer Ethics",
             description: "You must take 3 hours towards ethics",
             details: "No further details needed",
             courses: ["CS 151", "PHIL 105"],
-            defineSets: "singleSet",
-            validator: "StdValidator.takeHours(3)"
+            defineSets: singleSet,
+            validator: StdValidator.takeHours(3)
         }
 	]
 };
