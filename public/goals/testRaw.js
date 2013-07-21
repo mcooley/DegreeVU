@@ -1,3 +1,6 @@
+//this is a raw file that is converted to JSON by importing it
+//to the /goals extension to the degreeVU url
+
 goal = {
 	name: "Computer Science",
 	type: 'major',
