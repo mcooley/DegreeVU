@@ -6,7 +6,7 @@
 	</head>
 	<body>
 		<h3><%= title %></h3>
-		<div <% if (error) {%>  class="error" <%} else {%> class="success"<%}%>><%= message %></div>
+		<div <% if (error) {%>  class="error" <%} else {%> class="success"<%}%>> <% if(message) {%> <%= message %><%} else { %>There is nothing to report!<%}%> </div>
 		<a href="/goals">Return to upload page</a>
 		<a href="/">Return to splash page</a>
 
