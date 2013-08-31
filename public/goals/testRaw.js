@@ -62,7 +62,7 @@ goal = {
             courses: ["CS 240+", diff(2), "EECE 253", "EECE 254", "EECE 276", "MATH 226", "MATH 253", "MATH 286", "MATH 288"],
             details: "Elaborate here",
             defineSets: singleSet,
-            validator: StdValidator.takeHours(12)
+            validator: StdValidator.takeCourses(3)
         },
         { //4
             title: "Computer Ethics",
@@ -74,3 +74,19 @@ goal = {
         }
 	]
 };
+
+{
+    calculus: [
+        seq1: {
+            courses: [],
+            validate: function() {
+
+            }
+        },
+
+    ]
+}
+//remove repeating courses from previous course lists
+
+//1) Flash for satsified requirements
+//2) requirement hierarchy 
