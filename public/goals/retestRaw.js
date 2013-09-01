@@ -1,5 +1,5 @@
 goal = {
-	name: "Computer Science",
+	title: "Computer Science",
 	type: 'major',
 	school: 'School of Engineering',
 	requirements: 

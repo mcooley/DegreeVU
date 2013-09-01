@@ -87,6 +87,12 @@ app.get('/goals', routes.goals);
 app.post('/goals/upload', routes.uploadGoals);
 app.get('/goals/status', routes.uploadStatus);
 
+
+/*temp route*/
+app.get('/test', function(req, res) {
+  res.render('testValidation.ejs');
+});
+
 http.createServer(app).listen(app.get('port'), function(){
   console.log("Express server listening on port " + app.get('port'));
 });
