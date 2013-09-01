@@ -11,8 +11,8 @@ var Goal = (function() {
 			throw new Error("The parent must have an items property");
 		}
 		for (i = 0, n = parent.items.length; i < n; ++i) {
-			callback.call(context, parent.items[i], i, parent, parentIndex);
 			if (typeof parent.items[i] === 'object') {
+				callback.call(context, parent.items[i], i, parent, parentIndex);
 				recurseRequirement(callback, context, parent.items[i], i);
 			}
 		}
@@ -26,22 +26,40 @@ var Goal = (function() {
 
 			},
 			getTitle: function() {
-
+				return this.get('title');
 			},
 			//lazy compilation of courses
 			//returns array of all courses within the goal
 			getCourses: function() {
-
+				var courses = [];
+				if (!this.get('courses')) {
+					console.log("Iterating");
+					this.iterate(function(req) {
+						if (typeof req.items[0] === 'string') {
+							courses = courses.concat(req.items);
+						}
+					});
+					//set without calling an event
+					this.attributes.courses = courses;
+				}
+				return this.get('courses');
 			},
 			//returns array of courses that are taken
 			//lazy instantiation
 			getTakenCourses: function() {
-
+				if (!this.get('takenCourses')) {
+					//set the course without calling an event
+					this.attributes.takenCourses = [];
+				}
+				return this.get('takenCourses');
 			},
 			//returns the number of levels to the deepest leaf of
 			//the requirement structure
 			getDepth: function() {
+				if (!this.getDepth.memo) {
 
+				}
+				return this.getDepth.memo;
 			},
 
 			//adds course to the list of courses taken only if:
