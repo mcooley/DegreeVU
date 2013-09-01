@@ -1,57 +1,14 @@
 var util = require('vm'),
 	vm = require('vm')
 	fs = require('fs'),
-	_ = require('underscore')._;
+	_ = require('underscore')._,
 
 
-generateSandbox = (function() {
-
-	var StdValidator = {
-		takeAll: 'StdValidator.takeAll',
-		takeHours: function(hours) {
-			return 'StdValidator.takeHours(' + hours + ')';
-		},
-		takeCourses: function(courses) {
-			return 'StdValidator.takeCourses(' + courses + ')';
-		}
+	generateSandbox = function() {
+		//for now...
+		return {};
 	};
-	//static helper functions
-	function diff(itemIndex) {
-		//should be called on goal
-		return function() {
-			return this.items[itemIndex].courses.filter(function(course) {
-				return course.charAt(0) !== '!';
-			}).map(function(course) {
-				return '!' + course;
-			});
-		};
-		
-	}
 
-	function add(itemIndex) {
-		//should be called on goal
-		return function() {
-			
-			return this.items[itemIndex].courses;
-			
-		};
-	}
-
-	return function() {
-		var instance = {
-			goal: {},
-			//helper methods
-			diff: diff,
-			add: add,
-
-			//string substitutions
-			StdValidator: StdValidator,
-			singleSet: 'singleSet'
-		};
-		return instance;
-		
-	};
-})();
 
 //removes whitespace from a function with the exception of whitespace 
 //that exists within quotations
@@ -75,54 +32,105 @@ function removeWhitespace(text) {
 
 	return modifiedText;
 }
-function goalToJSON(goal, callback) {
-	var stringFunction, i, n, nextItem, arrayFunctionCalled = false;;
 
-	goal.items.forEach(function(item, index) {
+//returns after finding the very first error
+function findError(requirement) {
+	var itemType, i, n, recursiveError = null;
+	//check for errors
+	if (!requirement.title) {
+		return new Error("One of the items is missing a title");
+	}
 
-		for (i = 0, n = item.courses.length; i < n; ++i) {
-			if (typeof item.courses[i] === 'function') {
-				item.courses[i] = item.courses[i].call(goal);
-				arrayFunctionCalled = true;
+	if (!requirement.items) {
+		return new Error("The item titled \"" + requirement.title + "\" is missing its items");
+	}
+
+	if (!requirement.take && !requirement.takeHours) {
+		return new Error("The item titled \"" + requirement.title + "\" must either have takeHours or take defined");
+	}
+
+	if (requirement.take && requirement.takeHours) {
+		return new Error("The item titled \"" + requirement.title + "\" cannot have both take and takeHours defined");
+	}
+
+	if (requirement.take) {
+		if (typeof requirement.take === 'string' && requirement.take !== 'all') {
+			return new Error("The item titled \"" + requirement.title + "\" has an invalid value for take property");
+		}
+
+		if (typeof requirement.take !== 'string' && typeof requirement.take !== 'number') {
+			return new Error("The item titled \"" + requirement.title + "\" has an invalid value for take property");
+		}
+	}
+
+	if (requirement.takeHours && typeof requirement.takeHours !== 'number') {
+		return new Error("The item titled \"" + requirement.title + "\" has an invalid value for takeHours property");
+	} 
+
+	//check errors with items
+	if (!Array.isArray(requirement.items)) {
+		return new Error("The item titled \"" + requirement.title + "\" must have an items property of type array");
+	}
+
+	if (!requirement.items.length) {
+		return new Error("The item titled \"" + requirement.title + "\" must have at least 1 elements in the items array");
+	}
+	//check that all the types of the items are consistent
+	itemType = typeof requirement.items[0];
+	for (i = 1, n = requirement.items.length; i < n; ++i) {
+		if (itemType !== typeof requirement.items[i]) {
+			return new Error("The item titled \"" + requirement.title + "\" must have all items of a consistent type (either course codes or nested items)");
+		}
+
+		if (typeof requirement.items[i] === 'number' || Array.isArray(requirement.items[i])) {
+			return new Error("The item titled \"" + requirement.title + "\" must have all items either as a course code or nested item");
+		}
+	}
+
+	if (itemType === 'object') {
+		for (i = 0, n = requirement.items.length; i < n; ++i) {
+			recursiveError = recursiveError || findError(requirement.items[i]);
+			if (recursiveError) {
+				return recursiveError;
 			}
 		}
-		if (arrayFunctionCalled) {
-			item.courses = _.flatten(item.courses);
-		}
+	}
+
+	return recursiveError;
+	
+}
 
 
-		if (typeof item.defineSets === 'function') {
-			stringFunction = removeWhitespace(item.defineSets.toString());
-			if (stringFunction.substr(0, 15) === 'function(state)') {
-				item.defineSets = stringFunction.substr(16, stringFunction.length - 17);
-				
-			} else {
-				callback(new Error("Incorrect value for defineSets field of item at index " + index), null);
-			}
-		}
-		if (typeof item.validator === 'function') {
-			stringFunction = removeWhitespace(item.validator.toString());
-			if (stringFunction.substr(0,15) === 'function(state)') {
-				item.validator = stringFunction.substr(16, stringFunction.length - 17);
-			} else {
-				callback(new Error("Incorrect value for validator field of item at index " + index), null);
-			}
-		}
-
-
-	});
-	callback(null, JSON.stringify(goal));
-};
 exports.parseFile = function(file, callback) {
 	var sandbox = generateSandbox();
 
 	fs.readFile(file, function(err, data) {
-		vm.runInNewContext(data, sandbox);
-		goalToJSON(sandbox.goal, function(err, json) {
-			callback(err, json);
-		});
-		
+		var error = err, i, n;
+		if (!err) {
+			try {
+				vm.runInNewContext(data, sandbox);
 
+				goal = sandbox.goal;
+				//find any errors with the implementation
+				for (i = 0, n = goal.requirements.length; i < n; ++i) {
+					error = findError(goal.requirements[i]);
+					if (error) {
+						callback(error, goal);
+						return;
+					}
+				}
+				callback(error, goal);
+				
+			} catch(e) {
+				error = e;
+				callback(error, null);
+			}
+				
+				
+		} else {
+			callback(error, null);
+		}
+			
 	});
 	
 }

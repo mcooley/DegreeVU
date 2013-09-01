@@ -14,8 +14,8 @@ goal = {
 			//that are beneath this branch, both are optional and have
 			//default values
 
-			coursesLocked: true //defaults to false
-			ignoreLocked: false //defaults to false
+			coursesLocked: true, //defaults to false
+			ignoreLocked: false, //defaults to false
 
 			//items refers to the courses or nested 
 			//validation objects that are used
@@ -26,7 +26,7 @@ goal = {
 			//of the two...
 			items: 
 			[
-				'MATH 150A',
+				'MATH 155A',
 				'MATH 150B',
 				'MATH 155A',
 				'MATH 155B',
@@ -55,7 +55,7 @@ goal = {
 			[
 				//these are nested items/requirements
 				{
-					title: 'Sequence 1'
+					title: 'Sequence 1',
 					items: 
 					[
 						'CS 101', 'CS 201'
