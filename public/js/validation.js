@@ -54,39 +54,28 @@ var Requirement = Backbone.Model.extend({
 		addCourse: function(courseCode) {
 			var i, n, index, done, takenCourses;
 			if (this.isLeaf()) {
-				done = false;
-				index = -1;
+				if (this.get('takenCourses')) {
+					takenCourses = this.get('takenCourses');
+					done = false;
 
+
+					for (i = 0, n = takenCourses.length; i < n && !done; ++i) {
+						if (CourseCodeTokenizer.isEqual(courseCode, takenCourses[i])) {
+							done = true;
+						}
+					}
+
+				} else {
+					done = false;
+					takenCourses = [];
+					this.set('takenCourses', takenCourses, {silent: true});
+				}
+				
 				for (i = 0, n = this.getItems().length; i < n && !done; ++i) {
 					if (CourseCodeTokenizer.matchQuery(courseCode, this.getItems()[i])) {
 						
-						index = i;
+						takenCourses.push(courseCode);
 						done = true;
-					}
-				}
-
-				//add the course to the courses taken
-				if (index >= 0) {
-					//then the course was found and an event should be fired
-					//EVENT HERE
-
-					if (this.get('takenCourses')) {
-						
-						takenCourses = this.get('takenCourses');
-						takenCourses[index] = true;
-						
-					} else {
-						
-						takenCourses = new Array(this.getItems().length);
-						for (i = 0, n = this.getItems().length; i < n; ++i) {
-							if (i === index) {
-								takenCourses[i] = true;
-							} else {
-								takenCourses[i] = false;
-							}
-						}
-
-						this.set('takenCourses', takenCourses);
 					}
 				}
 
@@ -97,7 +86,7 @@ var Requirement = Backbone.Model.extend({
 			}
 		},
 		removeCourse: function(courseCode) {
-
+			
 		},
 		//getter methods
 
@@ -136,20 +125,14 @@ var Requirement = Backbone.Model.extend({
 					//note that the takenCourses property
 					//should only exist in requirements that are
 					//leaves
-					takenCourses = new Array(this.getItems().length);
-
-					for (i = 0, n = this.getItems().length; i < n; ++i) {
-						takenCourses[i] = false;
-					}
-					
+					takenCourses = [];
 					this.set('takenCourses', takenCourses, {silent: true});
+
 				} else {
 					takenCourses = this.get('takenCourses');
 				}
 
-				return this.getItems().filter(function(course, index) {
-					return takenCourses[index];
-				});
+				return takenCourses;
 			} else {
 				courseList = [];
 				this.getItems().forEach(function(req) {

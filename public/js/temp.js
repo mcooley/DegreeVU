@@ -50,6 +50,12 @@ var CourseCodeTokenizer = {
 		
 		return course;
 	},
+	isEqual: function(courseCode1, courseCode2) {
+		var token1 = CourseCodeTokenizer.parse(courseCode1),
+			token2 = CourseCodeTokenizer.parse(courseCode2);
+
+		return _.isEqual(token1, token2);
+	},
 	parseQuery: function(query) {
 
 		var parsedQuery = {
