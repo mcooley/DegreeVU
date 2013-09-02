@@ -52,7 +52,50 @@ var Requirement = Backbone.Model.extend({
 			}
 		},
 		addCourse: function(courseCode) {
+			var i, n, index, done, takenCourses;
+			if (this.isLeaf()) {
+				done = false;
+				index = -1;
 
+				for (i = 0, n = this.getItems().length; i < n && !done; ++i) {
+					if (CourseCodeTokenizer.matchQuery(courseCode, this.getItems()[i])) {
+						index = i;
+						done = true;
+					}
+				}
+
+				//add the course to the courses taken
+				if (index > 0) {
+					//then the course was found and an event should be fired
+					//EVENT HERE
+
+					if (this.get('takenCourses')) {
+						takenCourses = this.get('takenCourses');
+						takenCourses.forEach(function(isTaken, _index) {
+							if (index === _index) {
+								isTaken = true;
+							}
+						});
+						this.set('takenCourses', takenCourses);
+					} else {
+						takenCourses = new Array(this.getItems().length);
+						for (i = 0, n = this.getItems().length; i < n; ++i) {
+							if (i === index) {
+								takenCourses[i] = true;
+							} else {
+								takenCourses[i] = false;
+							}
+						}
+
+						this.set('takenCourses', takenCourses);
+					}
+				}
+
+			} else {
+				this.getItems().forEach(function(req) {
+					req.addCourse(courseCode);
+				});
+			}
 		},
 		removeCourse: function(courseCode) {
 
@@ -68,34 +111,16 @@ var Requirement = Backbone.Model.extend({
 		},
 		getCourses: function() {
 
-			var courses = [],
-				 i, n, j, m, token1, token2;
+			var courses, courseList;
 			if (this.isLeaf()) {
+				courses = [];
 				courses = courses.concat(this.getItems());
 			} else {
-				this.getItems().forEach(function(item) {
-					courses = courses.concat(item.getCourses());
-				});
-
-				//remove courses that are repeated
-				for(i = 0, n = courses.length; i < n; ++i) {
-					for (j = i+1, m = courses.length; j < m; ++j) {
-						//makes sure that the course was not
-						//marked false
-						if (courses[i] && courses[j]) {
-							token1 = CourseCodeTokenizer.parse(courses[i]);
-							token2 = CourseCodeTokenizer.parse(courses[j]);
-							if (_.isEqual(token1, token2)) {
-								//remove the course later using filter
-								courses[i] = false;
-							}
-						}	
-					}
-				}
-				//remove all courses that were marked false
-				courses = courses.filter(function(course) {
-					return course;
-				});
+				courseList = [];
+				this.getItems().forEach(function(req) {
+					courseList.push(req.getCourses());
+				}); 
+				courses = this.unionCourses.apply(this, courseList);
 			}
 			return courses;
 		},
@@ -105,7 +130,13 @@ var Requirement = Backbone.Model.extend({
 		//array is simply an array of booleans that can be mapped
 		//to the array of courses
 		getTakenCourses: function() {
+			var courses;
+			if (this.isLeaf()) {
 
+			} else {
+				courses = [];
+
+			}
 		},
 		//hasCourse
 		//returns true if this course is included as a course
@@ -264,7 +295,36 @@ var Requirement = Backbone.Model.extend({
 			}
 			return false;
 		},
-		
+		//a variable number of arrays are passed in
+		//this returns an array of courses such that there is no
+		//repetition of courses from any of the arrays (union of course list)
+		unionCourses: function() {
+			var i, j, m, n,
+				token1, token2,
+				courseList = [].slice.call(arguments),
+				newList = [];
+
+			newList = newList.concat.apply(newList, courseList);
+			console.log("List");
+			console.log(courseList);
+
+			for (i = 0, n = newList.length; i < n; ++i) {
+				for (j = i + 1, m = newList.length; j < m; ++j) {
+					if (newList[i] && newList[j]) {
+						token1 = CourseCodeTokenizer.parseQuery(newList[i]);
+						token2 = CourseCodeTokenizer.parseQuery(newList[j]);
+						if (_.isEqual(token1, token2)) {
+							newList[i] = false;
+						}
+					}
+				}
+			}
+			
+			return newList.filter(function(item) {
+				return item;
+			});
+
+		}
 
 	}),
 
