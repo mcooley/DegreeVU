@@ -49,6 +49,9 @@ var Requirement = Backbone.Model.extend({
 				});
 			}
 		},
+
+		//getter methods
+
 		getTitle: function() {
 			return this.get('title');
 		},
@@ -57,6 +60,7 @@ var Requirement = Backbone.Model.extend({
 			return this.get('items');
 		},
 		getCourses: function() {
+
 			var courses = [];
 			if (this.isLeaf()) {
 				courses = courses.concat(this.getItems());
@@ -67,6 +71,93 @@ var Requirement = Backbone.Model.extend({
 			}
 			return courses;
 		},
+
+		//hasCourse
+		//returns true if this course is included as a course
+		//for this requirement.  The course parameter can either
+		//be a Backbone course object, or a course code
+		hasCourse: function(course) {
+			if (typeof course === 'string') {
+				
+			} else {
+				//course is a backbone object
+				//not yet implemented
+				return false;
+			}
+		},
+		//what type of requirement?
+		completionType: function() {
+			if (this.get('takeHours')) {
+				return 'takeHours';
+			}
+
+			if (this.get('take') === 'all') {
+				return 'takeAll';
+			} else {
+				return 'takeCourses';
+			}
+		},
+		//get the hours needed for the 
+		//requirement, if the completion type
+		//is not takeHours, then this returns 0
+		hoursNeeded: function() {
+			if (this.completionType() === 'takeHours') {
+				return this.get('takeHours');
+			}
+			return 0;
+		},
+
+		//get the number of courses needed to complete
+		//this requirement, if the completion type
+		//is takeHours, this returns 0
+		coursesNeeded: function() {
+			if (this.completionType() === 'takeHours') {
+				return 0;
+			}
+
+			if (this.completionType() === 'takeAll') {
+				//cache the courses needed so that you do not 
+				//have to traverse the tree for the courses count
+				//everytime this method is called
+				if (!this.coursesNeeded.memo) {
+					this.coursesNeeded.memo = this.getCourses().length;
+				}
+				return this.coursesNeeded.memo;
+			}
+
+			if (this.completionType() === 'takeCourses') {
+				return this.get('takeCourses');
+			}
+		}
+
+		//validation-progress related methods
+		//these methods cache values so that the tree
+		//is not traversed everytime the methods are
+		//called.  When 'update' is called, these methods
+		//are flagged so that the next call will reset the cache
+		//value since the taken courses have changed
+
+
+		update: function() {},
+
+		//this method is called by update
+		//NEVER CALL THIS
+		clearValidationCache: function() {},
+		isComplete: function() {},
+		//the progress of the requirement to becoming
+		//complete, returns a decimal number indicating 
+		//the progress, progress is between 0 and 1, 1 being
+		//that the requirement is complete
+		progress: function() {
+			if (!this.progress.memo) {
+
+
+			}
+			return this.progress.memo;
+		}
+
+		//tree-related methods
+
 		getDepthFromRoot: function() {
 			return this.get('reqID').length / 2;
 		},
@@ -127,8 +218,7 @@ var Requirement = Backbone.Model.extend({
 			}
 			return false;
 		},
-		update: function() {},
-		isComplete: function() {},
+		
 
 	}),
 
