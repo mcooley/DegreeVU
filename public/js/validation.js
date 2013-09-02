@@ -1,3 +1,4 @@
+//This file uses CourseCodeTokenizer, so that object should
 
 
 
@@ -78,7 +79,7 @@ var Requirement = Backbone.Model.extend({
 		//be a Backbone course object, or a course code
 		hasCourse: function(course) {
 			if (typeof course === 'string') {
-				
+
 			} else {
 				//course is a backbone object
 				//not yet implemented
@@ -398,4 +399,9 @@ function generateRequirementID(index, parentID) {
 	} 
 
 	return parentID + appendingPortion;
+}
+
+
+if (!this.CourseCodeTokenizer) {
+	return new Error("The validation.js file cannot work without CourseCodeTokenizr")
 }
