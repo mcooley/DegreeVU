@@ -129,7 +129,7 @@ var Requirement = Backbone.Model.extend({
 			if (this.completionType() === 'takeCourses') {
 				return this.get('takeCourses');
 			}
-		}
+		},
 
 		//validation-progress related methods
 		//these methods cache values so that the tree
@@ -155,7 +155,7 @@ var Requirement = Backbone.Model.extend({
 
 			}
 			return this.progress.memo;
-		}
+		},
 
 		//tree-related methods
 
