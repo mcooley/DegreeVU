@@ -37,8 +37,8 @@ var Requirement = Backbone.Model.extend({
 				//can use the id property to infer the
 				//current depth
 				reqID = this.get('reqID');
-				currentDepth = reqID.length / 2;
-				currentIndex = parseInt(reqID.substr(reqID.length - 2, 2), 16);
+				currentDepth = this.getDepth();
+				currentIndex = this.getIndex();
 				self = this;
 
 				this.get('items').forEach(function(requirement, index) {
@@ -55,7 +55,11 @@ var Requirement = Backbone.Model.extend({
 
 		getCourses: function() {},
 		getDepth: function() {
-
+			return this.get('reqID').length / 2;
+		},
+		getIndex: function() {
+			var reqID = this.get('reqID');
+			return parseInt(reqID.substr(reqID.length - 2, 2), 16);
 		},
 		isLeaf: function() {
 			return this.get('isLeaf');
@@ -65,6 +69,18 @@ var Requirement = Backbone.Model.extend({
 		isRoot: function() {
 			return this.get('isRoot');
 		},
+
+		//check if this requirement is the child or parent
+		//of another requirement object
+		isChild: function(requirement) {
+
+		},
+		isImmediateChild: function(requirement) {
+
+		},
+		isParent: function(requirement) {
+
+		}
 
 	}),
 
