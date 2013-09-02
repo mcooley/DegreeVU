@@ -1,14 +1,14 @@
 goal = {
 	title: "Computer Science",
-	type: 'major',
-	school: 'School of Engineering',
+	type: "major",
+	school: "School of Engineering",
 	requirements: 
 	[
 		{//the first requirement
-			title: 'Math',
+			title: "Math",
 			//optional elements
-			subtitle: 'This is optional',
-			details: 'This is also optional',
+			subtitle: "This is optional",
+			details: "This is also optional",
 
 			//coursesLocked and ignoreLocked hold true for all courses
 			//that are beneath this branch, both are optional and have
@@ -26,10 +26,10 @@ goal = {
 			//of the two...
 			items: 
 			[
-				'MATH 155A',
-				'MATH 150B',
-				'MATH 155A',
-				'MATH 155B',
+				"MATH 155A",
+				"MATH 150B",
+				"MATH 155A",
+				"MATH 155B",
 			],
 
 			
@@ -39,14 +39,14 @@ goal = {
 			//properties should be set, never both
 
 			//takeHours: 6,
-			take: 'all' //or a number, such as 2
+			take: "all" //or a number, such as 2
 		},
 		{//the second requirement
-			title: 'Science',
-			subtitle: 'This is optional',
-			details: 'This is optional',
+			title: "Science",
+			subtitle: "This is optional",
+			details: "This is optional",
 
-			//these are the default values and don't have to be
+			//these are the default values and don"t have to be
 			//declared explicitly
 			coursesLocked: false,
 			ignoreLocked: false,
@@ -55,33 +55,33 @@ goal = {
 			[
 				//these are nested items/requirements
 				{
-					title: 'Sequence 1',
+					title: "Sequence 1",
 					items: 
 					[
-						'CS 101', 'CS 201'
+						"CS 101", "CS 201"
 					],
 
-					take: 'all'
+					take: "all"
 				},
 				{
-					title: 'Sequence 2',
+					title: "Sequence 2",
 					items: 
 					[
-						'BSCI 110a',
-						'BSCI 110b'
+						"BSCI 110a",
+						"BSCI 110b"
 					],
 
-					take: 'all'
+					take: "all"
 				},
 				{
-					title: 'Sequence 3',
+					title: "Sequence 3",
 					items:
 					[
-						'PHYS 116A',
-						'PHYS 116B'
+						"PHYS 116A",
+						"PHYS 116B"
 					],
 
-					take: 'all'
+					take: "all"
 				}
 			],
 

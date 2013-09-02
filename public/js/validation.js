@@ -1,29 +1,92 @@
 
-//The Requirement constructor should only ever be
-//called by the Goal Object, do not call the constructor
 
-var Goal = (function() {
 
-	//helper functions that are private
-	function recurseRequirement(callback, context, parent, parentIndex) {
-		var i, n;
-		if (!parent.items) {
-			throw new Error("The parent must have an items property");
-		}
-		for (i = 0, n = parent.items.length; i < n; ++i) {
-			if (typeof parent.items[i] === 'object') {
-				callback.call(context, parent.items[i], i, parent, parentIndex);
-				recurseRequirement(callback, context, parent.items[i], i);
+//should not  call the requirement constructor
+var Requirement = Backbone.Model.extend({
+
+		initialize: function(obj) {
+			
+			var items, i, n;
+			if (typeof obj.items[0] === 'object') {
+				items = [];
+				for (i = 0, n = obj.items.length; i < n; ++i) {
+					obj.items[i].reqID = generateRequirementID(i, this.get('reqID'));
+					items[i] = new Requirement(obj.items[i]);
+				}
+				//no events called
+				this.set('items', items, {silent: true});
+				this.set('isLeaf', false, {silent: true});
+				
+			} else {
+				//typeof items are strings
+				this.set('isLeaf', true, {silent: true});
 			}
-		}
+			
+		},
 
-	}
+		iterate: function(callback, context) {
+			var self,
+				reqID,
+				currentIndex, 
+				currentDepth;
+			if (!this.isLeaf()) {
 
-	return Backbone.Model.extend({
+				if (!context) {
+					context = this;
+				}
+				//can use the id property to infer the
+				//current depth
+				reqID = this.get('reqID');
+				currentDepth = reqID.length / 2;
+				currentIndex = parseInt(reqID.substr(reqID.length - 2, 2), 16);
+				self = this;
+
+				this.get('items').forEach(function(requirement, index) {
+					callback.call(context, requirement, index, currentDepth + 1, self, currentIndex);
+					requirement.iterate(callback, context);
+				});
+			}
+		},
+		getTitle: function() {
+			return this.get('title');
+		},
+		update: function() {},
+		isComplete: function() {},
+
+		getCourses: function() {},
+		getDepth: function() {
+
+		},
+		isLeaf: function() {
+			return this.get('isLeaf');
+		},
+		//the requirement is a root if it is not
+		//nested within any requirement object
+		isRoot: function() {
+			return this.get('isRoot');
+		},
+
+	}),
+
+	Goal = Backbone.Model.extend({
 
 			//initialize with the JSON goal object
 			initialize: function(obj) {
+				//reset the requirements object to become
+				//nested backbone objects
+				var requirements = [],
+					i, n;
 
+				for (i = 0, n = obj.requirements.length; i < n; ++i) {
+					obj.requirements[i].isRoot = true;
+					
+					obj.requirements[i].reqID = generateRequirementID(i);
+					//no parent id at the root
+					requirements[i] = new Requirement(obj.requirements[i]);
+					//requirements[i] = new Requirement(obj.requirements[i]);
+				}
+				//no events called
+				this.set('requirements', requirements, {silent: true});
 			},
 			getTitle: function() {
 				return this.get('title');
@@ -36,11 +99,13 @@ var Goal = (function() {
 					console.log("Iterating");
 					this.iterate(function(req) {
 						if (typeof req.items[0] === 'string') {
-							courses = courses.concat(req.items);
+							//come up with union that checks for the same
+							//course code instead of the same string
+							courses = _.union(courses, req.items);
 						}
 					});
 					//set without calling an event
-					this.attributes.courses = courses;
+					this.set('courses', courses, {silent: true});
 				}
 				return this.get('courses');
 			},
@@ -49,7 +114,7 @@ var Goal = (function() {
 			getTakenCourses: function() {
 				if (!this.get('takenCourses')) {
 					//set the course without calling an event
-					this.attributes.takenCourses = [];
+					this.set('takenCourses', [], {silent: true});
 				}
 				return this.get('takenCourses');
 			},
@@ -78,43 +143,33 @@ var Goal = (function() {
 			//at all levels, in a DFS-like manner. The callback parameter:
 				//requirement object
 				//index within the parent
-				//depth
+				//depth (number of levels, 1-based)
 				//parent object (null if no parent)
 				//parent index (-1 if no parent)
 			iterate: function(callback, context) {
-				var i, n,
-					reqs = this.get('requirements');
 				if (!context) {
 					context = this;
 				}
-				for (i = 0, n = reqs.length; i < n; ++i) {
-					callback.call(context, reqs[i], i, null, -1);
-					if (typeof reqs[i] === 'object') {
-						recurseRequirement(callback, context, reqs[i], i);
-					}
-						
-				}
-
+				this.get('requirements').forEach(function(requirement, index) {
+					callback.call(context, requirement, index, 1, null -1);
+					requirement.iterate(callback, context);
+				});
 			},
 
+			update: function() {},
 			isComplete: function() {
 
 			},
 			//returns a decimal number between 0 and 1
 			//1 being totally complete
 			completionProgress: function() {
+				//for now, this is the implementation
 				return (this.getTakenCourses().length) / (this.getCourses().length);
 			}
-		});
-
-})(),
-
-
-	
-
+		}),
 
 	//collection of goals
-	Validation = Backbone.Collection.extend({
+	Validator = Backbone.Collection.extend({
 
 		
 		//adds course to all goals in the collection
@@ -163,3 +218,23 @@ var Goal = (function() {
 	});
 
 
+
+//used to generate client-side id's for Requirement objects
+//nested inside the Goal Backbone object so that requirements can be
+//identified.  parentID is string or null.  This method is called by the
+//backbone objects below and not part of any API
+function generateRequirementID(index, parentID) {
+	var appendingPortion;
+
+	if (index < 16) {
+		appendingPortion = "0" + index.toString(16);
+	} else {
+		appendingPortion = index.toString(16);
+	}
+
+	if (!parentID) {
+		return appendingPortion;
+	} 
+
+	return parentID + appendingPortion;
+}
