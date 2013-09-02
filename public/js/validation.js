@@ -72,14 +72,30 @@ var Requirement = Backbone.Model.extend({
 
 		//check if this requirement is the child or parent
 		//of another requirement object
-		isChild: function(requirement) {
+		isChildOf: function(req) {
+			var parentID = req.get('reqID'),
+				myID = this.get('reqID');
+			if (myID.substr(0, parentID.length) === parentID) {
+				return true;
+			}
+			return false;
+		},
+		isImmediateChildOf: function(req) {
+			var parentID = req.get('reqID'),
+				myID = this.get('reqID');
+			if (myID.substr(0, myID.length - 2) === parentID) {
+				return true;
+			}
+			return false;
 
 		},
-		isImmediateChild: function(requirement) {
-
-		},
-		isParent: function(requirement) {
-
+		isParentOf: function(req) {
+			var childID = req.get('reqID'),
+				myID = this.get('reqID');
+			if (childID.substr(0, myID.length) === myID) {
+				return true;
+			}
+			return false;
 		}
 
 	}),
