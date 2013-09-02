@@ -73,16 +73,19 @@ var Requirement = Backbone.Model.extend({
 				
 				for (i = 0, n = this.getItems().length; i < n && !done; ++i) {
 					if (CourseCodeTokenizer.matchQuery(courseCode, this.getItems()[i])) {
-						
+
 						takenCourses.push(courseCode);
-						done = true;
+						return true;
 					}
 				}
+				return false;
 
 			} else {
+				var isAdded = false;
 				this.getItems().forEach(function(req) {
-					req.addCourse(courseCode);
+					isAdded = isAdded || req.addCourse(courseCode);
 				});
+				return isAdded;
 			}
 		},
 		removeCourse: function(courseCode) {
@@ -422,9 +425,11 @@ var Requirement = Backbone.Model.extend({
 				//2) the course is within the list of courses for this goal
 			//emits 'courseAdded' event if a course is successfully added
 			addCourse: function(courseCode) {
+				var isAdded = false;
 				this.getReqs().forEach(function(req) {
-					req.addCourse(courseCode);
+					isAdded = isAdded || req.addCourse(courseCode);
 				});
+				return isAdded;
 			},
 
 			//removes course from the list of courses taken only if:
