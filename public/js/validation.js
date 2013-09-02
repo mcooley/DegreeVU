@@ -120,7 +120,7 @@ var Requirement = Backbone.Model.extend({
 				this.getItems().forEach(function(req) {
 					courseList.push(req.getCourses());
 				}); 
-				courses = this.unionCourses.apply(this, courseList);
+				courses = Requirement.unionCourses.apply(Requirement, courseList);
 			}
 			return courses;
 		},
@@ -130,12 +130,32 @@ var Requirement = Backbone.Model.extend({
 		//array is simply an array of booleans that can be mapped
 		//to the array of courses
 		getTakenCourses: function() {
-			var courses;
+			var courseList, courses, takenCourses, i, n;
 			if (this.isLeaf()) {
+				//lazy instantiation of taken courses
+				if (!this.get('takenCourses')) {
+					//note that the takenCourses property
+					//should only exist in requirements that are
+					//leaves
+					takenCourses = new Array(this.getItems().length);
 
+					for (i = 0, n = this.getItems().length; i < n; ++i) {
+						takenCourses[i] = false;
+					}
+					
+					this.set('takenCourses', takenCourses, {silent: true});
+				} 
+				console.log(this.get('takenCourses'));
+				return this.getItems().filter(function(course, index) {
+					return takenCourses[index];
+				});
 			} else {
-				courses = [];
-
+				courseList = [];
+				this.getItems().forEach(function(req) {
+					courseList.push(req.getTakenCourses());
+				});
+				courses = Requirement.unionCourses.apply(Requirement, courseList);
+				return courses;
 			}
 		},
 		//hasCourse
@@ -294,7 +314,12 @@ var Requirement = Backbone.Model.extend({
 				return true;
 			}
 			return false;
-		},
+		}
+
+	},
+
+	{//class methods for Requirement
+
 		//a variable number of arrays are passed in
 		//this returns an array of courses such that there is no
 		//repetition of courses from any of the arrays (union of course list)
@@ -305,8 +330,6 @@ var Requirement = Backbone.Model.extend({
 				newList = [];
 
 			newList = newList.concat.apply(newList, courseList);
-			console.log("List");
-			console.log(courseList);
 
 			for (i = 0, n = newList.length; i < n; ++i) {
 				for (j = i + 1, m = newList.length; j < m; ++j) {
@@ -325,7 +348,6 @@ var Requirement = Backbone.Model.extend({
 			});
 
 		}
-
 	}),
 
 	Goal = Backbone.Model.extend({
@@ -371,10 +393,15 @@ var Requirement = Backbone.Model.extend({
 			//returns array of courses that are taken
 			//lazy instantiation
 			getTakenCourses: function() {
-				if (!this.get('takenCourses')) {
-					//set the course without calling an event
-					this.set('takenCourses', [], {silent: true});
-				}
+				//for now, nothing is cached
+				var courseList;
+				
+				courseList = [];
+				this.getReqs().forEach(function(req) {
+					courseList.push(req.getTakenCourses());
+				});
+				this.set('takenCourses', Requirement.unionCourses.apply(Requirement, courseList));
+			
 				return this.get('takenCourses');
 			},
 			//returns the number of levels to the deepest leaf of
@@ -410,7 +437,11 @@ var Requirement = Backbone.Model.extend({
 				//1) the course is not already added
 				//2) the course is within the list of courses for this goal
 			//emits 'courseAdded' event if a course is successfully added
-			addCourse: function(course) {},
+			addCourse: function(courseCode) {
+				this.getReqs().forEach(function(req) {
+					req.addCourse(courseCode);
+				});
+			},
 
 			//removes course from the list of courses taken only if:
 				//1) the course is in the list of taken courses
