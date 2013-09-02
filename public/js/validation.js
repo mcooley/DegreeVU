@@ -59,25 +59,24 @@ var Requirement = Backbone.Model.extend({
 
 				for (i = 0, n = this.getItems().length; i < n && !done; ++i) {
 					if (CourseCodeTokenizer.matchQuery(courseCode, this.getItems()[i])) {
+						
 						index = i;
 						done = true;
 					}
 				}
 
 				//add the course to the courses taken
-				if (index > 0) {
+				if (index >= 0) {
 					//then the course was found and an event should be fired
 					//EVENT HERE
 
 					if (this.get('takenCourses')) {
+						
 						takenCourses = this.get('takenCourses');
-						takenCourses.forEach(function(isTaken, _index) {
-							if (index === _index) {
-								isTaken = true;
-							}
-						});
-						this.set('takenCourses', takenCourses);
+						takenCourses[index] = true;
+						
 					} else {
+						
 						takenCourses = new Array(this.getItems().length);
 						for (i = 0, n = this.getItems().length; i < n; ++i) {
 							if (i === index) {
@@ -144,8 +143,10 @@ var Requirement = Backbone.Model.extend({
 					}
 					
 					this.set('takenCourses', takenCourses, {silent: true});
-				} 
-				console.log(this.get('takenCourses'));
+				} else {
+					takenCourses = this.get('takenCourses');
+				}
+
 				return this.getItems().filter(function(course, index) {
 					return takenCourses[index];
 				});
