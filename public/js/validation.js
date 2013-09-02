@@ -1,7 +1,9 @@
 
 
 
-//should not  call the requirement constructor
+//should not call the requirement constructor,
+//the requirements are automatically constructed
+//within the Goal object constructor
 var Requirement = Backbone.Model.extend({
 
 		initialize: function(obj) {
@@ -50,17 +52,45 @@ var Requirement = Backbone.Model.extend({
 		getTitle: function() {
 			return this.get('title');
 		},
-		update: function() {},
-		isComplete: function() {},
-
-		getCourses: function() {},
-		getDepth: function() {
+		
+		getItems: function() {
+			return this.get('items');
+		},
+		getCourses: function() {
+			var courses = [];
+			if (this.isLeaf()) {
+				courses = courses.concat(this.getItems());
+			} else {
+				this.getItems().forEach(function(item) {
+					courses = courses.concat(item.getCourses());
+				});
+			}
+			return courses;
+		},
+		getDepthFromRoot: function() {
 			return this.get('reqID').length / 2;
+		},
+		getMaxDepthOfChild: function() {
+			var maxDepth = 0;
+			if (this.isLeaf()) {
+				return this.getDepthFromRoot();
+			} 
+
+			this.getItems().forEach(function(req) {
+				var depth = req.getMaxDepthOfChild();
+				if (maxDepth < depth) {
+					maxDepth = depth;
+				}
+			});
+			return maxDepth;
+			
 		},
 		getIndex: function() {
 			var reqID = this.get('reqID');
 			return parseInt(reqID.substr(reqID.length - 2, 2), 16);
 		},
+
+
 		isLeaf: function() {
 			return this.get('isLeaf');
 		},
@@ -96,7 +126,9 @@ var Requirement = Backbone.Model.extend({
 				return true;
 			}
 			return false;
-		}
+		},
+		update: function() {},
+		isComplete: function() {},
 
 	}),
 
@@ -123,20 +155,19 @@ var Requirement = Backbone.Model.extend({
 			getTitle: function() {
 				return this.get('title');
 			},
+
+			getReqs: function() {
+				return this.get('requirements');
+			},
 			//lazy compilation of courses
 			//returns array of all courses within the goal
 			getCourses: function() {
-				var courses = [];
+				var courses;
 				if (!this.get('courses')) {
-					console.log("Iterating");
-					this.iterate(function(req) {
-						if (typeof req.items[0] === 'string') {
-							//come up with union that checks for the same
-							//course code instead of the same string
-							courses = _.union(courses, req.items);
-						}
+					courses = [];
+					this.getReqs().forEach(function(req) {
+						courses = _.union(courses, req.getCourses());
 					});
-					//set without calling an event
 					this.set('courses', courses, {silent: true});
 				}
 				return this.get('courses');
@@ -153,8 +184,16 @@ var Requirement = Backbone.Model.extend({
 			//returns the number of levels to the deepest leaf of
 			//the requirement structure
 			getDepth: function() {
+				var maxDepth;
 				if (!this.getDepth.memo) {
-
+					maxDepth = 0;
+					this.getReqs().forEach(function(req) {
+						var depth = req.getMaxDepthOfChild();
+						if (maxDepth < depth) {
+							maxDepth = depth;
+						}
+					});
+					this.getDepth.memo = maxDepth + 1;
 				}
 				return this.getDepth.memo;
 			},
