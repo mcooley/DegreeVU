@@ -68,7 +68,8 @@ goal = {
 					items: 
 					[
 						"BSCI 110a",
-						"BSCI 110b"
+						"BSCI 110b",
+						"PHYS 116a"
 					],
 
 					take: "all"

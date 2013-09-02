@@ -62,12 +62,33 @@ var Requirement = Backbone.Model.extend({
 		},
 		getCourses: function() {
 
-			var courses = [];
+			var courses = [],
+				 i, n, j, m, token1, token2;
 			if (this.isLeaf()) {
 				courses = courses.concat(this.getItems());
 			} else {
 				this.getItems().forEach(function(item) {
 					courses = courses.concat(item.getCourses());
+				});
+
+				//remove courses that are repeated
+				for(i = 0, n = courses.length; i < n; ++i) {
+					for (j = i+1, m = courses.length; j < m; ++j) {
+						//makes sure that the course was not
+						//marked false
+						if (courses[i] && courses[j]) {
+							token1 = CourseCodeTokenizer.parse(courses[i]);
+							token2 = CourseCodeTokenizer.parse(courses[j]);
+							if (_.isEqual(token1, token2)) {
+								//remove the course later using filter
+								courses[i] = false;
+							}
+						}	
+					}
+				}
+				//remove all courses that were marked false
+				courses = courses.filter(function(course) {
+					return course;
 				});
 			}
 			return courses;
@@ -399,9 +420,4 @@ function generateRequirementID(index, parentID) {
 	} 
 
 	return parentID + appendingPortion;
-}
-
-
-if (!this.CourseCodeTokenizer) {
-	return new Error("The validation.js file cannot work without CourseCodeTokenizr")
 }
