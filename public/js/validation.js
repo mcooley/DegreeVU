@@ -1,5 +1,6 @@
 //This file uses CourseCodeTokenizer, so that object should
-
+//This file uses courseCodes to represent courses in order to 
+//prevent the need for the course backbone object
 
 
 //should not call the requirement constructor,
@@ -50,7 +51,12 @@ var Requirement = Backbone.Model.extend({
 				});
 			}
 		},
+		addCourse: function(courseCode) {
 
+		},
+		removeCourse: function(courseCode) {
+
+		},
 		//getter methods
 
 		getTitle: function() {
@@ -93,19 +99,37 @@ var Requirement = Backbone.Model.extend({
 			}
 			return courses;
 		},
+		//fetch the courses that have been taken,
+		//these courses are cached at the leaves of
+		//the requirement tree. The actual taken Courses
+		//array is simply an array of booleans that can be mapped
+		//to the array of courses
+		getTakenCourses: function() {
 
+		},
 		//hasCourse
 		//returns true if this course is included as a course
-		//for this requirement.  The course parameter can either
-		//be a Backbone course object, or a course code
-		hasCourse: function(course) {
-			if (typeof course === 'string') {
+		//for this requirement.  The course parameter is the course code
+		hasCourse: function(courseCode) {
+			var i, n;
+			if (this.isLeaf()) {
+				
+				for (i = 0, n = this.getItems().length; i < n; ++i) {
+					
+					if (CourseCodeTokenizer.matchQuery(courseCode, this.getItems()[i])) {
+						return true;
+					}
+				}
 
 			} else {
-				//course is a backbone object
-				//not yet implemented
-				return false;
+				for (i = 0, n = this.getItems().length; i < n; ++i) {
+					if (this.getItems()[i].hasCourse(courseCode)) {
+						return true;
+					}
+				}
+			
 			}
+			return false;
 		},
 		//what type of requirement?
 		completionType: function() {
@@ -308,6 +332,18 @@ var Requirement = Backbone.Model.extend({
 					this.getDepth.memo = maxDepth + 1;
 				}
 				return this.getDepth.memo;
+			},
+
+			//returns true if the course is represented in the requirements
+			//does not indicate if a course is taken or not
+			hasCourse: function(courseCode) {
+				var i, n;
+				for (i = 0, n = this.getReqs().length; i < n; ++i) {
+					if (this.getReqs()[i].hasCourse(courseCode)) {
+						return true;
+					}
+				}
+				return false;
 			},
 
 			//adds course to the list of courses taken only if:
