@@ -89,7 +89,37 @@ var Requirement = Backbone.Model.extend({
 			}
 		},
 		removeCourse: function(courseCode) {
-			
+			var i, n, takenCourses, index, done;
+			if (this.isLeaf()) {
+				
+				if (this.get('takenCourses')) {
+					index = -1;
+					done = false;
+
+					takenCourses = this.get('takenCourses');
+
+					for (i = 0, n = takenCourses.length; i < n; ++i) {
+						if (CourseCodeTokenizer.isEqual(courseCode, takenCourses[i])) {
+							index = i;
+						}
+					}
+					if (index >= 0) {
+						takenCourses = takenCourses.slice(0, index).concat(takenCourses.slice(index + 1, takenCourses.length));
+						this.set('takenCourses', takenCourses);
+						return true;
+					}
+					
+				} 
+				return false;
+				
+
+			} else {
+				var isRemoved = false;
+				this.getItems().forEach(function(req) {
+					isRemoved = isRemoved || req.removeCourse(courseCode);
+				});
+				return isRemoved;
+			}
 		},
 		//getter methods
 
@@ -436,7 +466,13 @@ var Requirement = Backbone.Model.extend({
 				//1) the course is in the list of taken courses
 				//2) the course is is within the list of courses for the goal
 			//emits 'courseRemoved' event if a course is successfully removed
-			removeCourse: function(course) {},
+			removeCourse: function(courseCode) {
+				var isRemoved = false;
+				this.getReqs().forEach(function(req) {
+					isRemoved = isRemoved || req.removeCourse(courseCode);
+				});
+				return isRemoved;
+			},
 
 			//iterates through the goal object's requirements
 			//at all levels, in a DFS-like manner. The callback parameter:
