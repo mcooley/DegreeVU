@@ -427,16 +427,19 @@ var Requirement = Backbone.Model.extend({
 			//fetch courses for a Goal from the server
 			//this is temporary
 			fetch: function() {
-				var courseQueries = this.getCourses();
+				var courseQueries = this.getCourseQueries();
 				var collection = new CourseCollection([],
 				{
 					url: '/courses/lookup?q=' + courseQueries.toString()
 				});
 				collection.fetch();
-				this.set('backboneCourses', collection);
+				collection.once('sync', function() {
+					this.trigger('sync');
+				}.bind(this));
+				this.set('courses', collection);
 			},
-			getModels: function() {
-				return this.get('backboneCourses').models;
+			getCourses: function() {
+				return this.get('courses').models;
 			},
 			getTitle: function() {
 				return this.get('title');
@@ -447,16 +450,16 @@ var Requirement = Backbone.Model.extend({
 			},
 			//lazy compilation of courses
 			//returns array of all courses within the goal
-			getCourses: function() {
+			getCourseQueries: function() {
 				var courses;
-				if (!this.get('courses')) {
+				if (!this.get('courseQueries')) {
 					courses = [];
 					this.getReqs().forEach(function(req) {
 						courses = _.union(courses, req.getCourses());
 					});
-					this.set('courses', courses, {silent: true});
+					this.set('courseQueries', courses, {silent: true});
 				}
-				return this.get('courses');
+				return this.get('courseQueries');
 			},
 			//returns array of courses that are taken
 			//lazy instantiation
