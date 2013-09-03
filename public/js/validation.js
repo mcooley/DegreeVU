@@ -224,7 +224,7 @@ var Requirement = Backbone.Model.extend({
 		//get the number of courses needed to complete
 		//this requirement, if the completion type
 		//is takeHours, this returns 0
-		coursesNeeded: function() {
+		itemsNeeded: function() {
 			if (this.completionType() === 'takeHours') {
 				return 0;
 			}
@@ -233,10 +233,10 @@ var Requirement = Backbone.Model.extend({
 				//cache the courses needed so that you do not 
 				//have to traverse the tree for the courses count
 				//everytime this method is called
-				if (!this.coursesNeeded.memo) {
-					this.coursesNeeded.memo = this.getCourses().length;
+				if (!this.itemsNeeded.memo) {
+					this.itemsNeeded.memo = this.getCourses().length;
 				}
-				return this.coursesNeeded.memo;
+				return this.itemsNeeded.memo;
 			}
 
 			if (this.completionType() === 'takeItems') {
