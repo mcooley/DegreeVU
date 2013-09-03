@@ -208,7 +208,7 @@ var Requirement = Backbone.Model.extend({
 			if (this.get('take') === 'all') {
 				return 'takeAll';
 			} else {
-				return 'takeCourses';
+				return 'takeItems';
 			}
 		},
 		//get the hours needed for the 
@@ -239,8 +239,8 @@ var Requirement = Backbone.Model.extend({
 				return this.coursesNeeded.memo;
 			}
 
-			if (this.completionType() === 'takeCourses') {
-				return this.get('takeCourses');
+			if (this.completionType() === 'takeItems') {
+				return this.get('takeItems');
 			}
 		},
 
@@ -257,7 +257,10 @@ var Requirement = Backbone.Model.extend({
 		//this method is called by update
 		//NEVER CALL THIS
 		clearValidationCache: function() {},
-		isComplete: function() {},
+
+		isComplete: function() {
+
+		},
 		//the progress of the requirement to becoming
 		//complete, returns a decimal number indicating 
 		//the progress, progress is between 0 and 1, 1 being
@@ -331,6 +334,11 @@ var Requirement = Backbone.Model.extend({
 				return true;
 			}
 			return false;
+		},
+
+		//recursively converts this object to JSON
+		toJSON: function() {
+
 		}
 
 	},
