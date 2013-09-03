@@ -14,7 +14,7 @@ var Requirement = Backbone.Model.extend({
 			if (typeof obj.items[0] === 'object') {
 				items = [];
 				for (i = 0, n = obj.items.length; i < n; ++i) {
-					obj.items[i].reqID = generateRequirementID(i, this.get('reqID'));
+					obj.items[i].reqID = Requirement.generateRequirementID(i, this.get('reqID'));
 					items[i] = new Requirement(obj.items[i]);
 				}
 				//no events called
@@ -380,11 +380,32 @@ var Requirement = Backbone.Model.extend({
 				return item;
 			});
 
+		},
+		//used to generate client-side id's for Requirement objects
+		//nested inside the Goal Backbone object so that requirements can be
+		//identified.  parentID is string or null.  This method is called by the
+		//backbone objects below and not part of any API
+		generateRequirementID: function(index, parentID) {
+
+			var appendingPortion;
+
+			if (index < 16) {
+				appendingPortion = "0" + index.toString(16);
+			} else {
+				appendingPortion = index.toString(16);
+			}
+
+			if (!parentID) {
+				return appendingPortion;
+			} 
+
+			return parentID + appendingPortion;
 		}
 	}),
 
 	Goal = Backbone.Model.extend({
 
+			urlRoot: '/goals/',
 			//initialize with the JSON goal object
 			initialize: function(obj) {
 				//reset the requirements object to become
@@ -395,13 +416,27 @@ var Requirement = Backbone.Model.extend({
 				for (i = 0, n = obj.requirements.length; i < n; ++i) {
 					obj.requirements[i].isRoot = true;
 					
-					obj.requirements[i].reqID = generateRequirementID(i);
+					obj.requirements[i].reqID = Requirement.generateRequirementID(i);
 					//no parent id at the root
 					requirements[i] = new Requirement(obj.requirements[i]);
 					//requirements[i] = new Requirement(obj.requirements[i]);
 				}
 				//no events called
 				this.set('requirements', requirements, {silent: true});
+			},
+			//fetch courses for a Goal from the server
+			//this is temporary
+			fetch: function() {
+				var courseQueries = this.getCourses();
+				var collection = new CourseCollection([],
+				{
+					url: '/courses/lookup?q=' + courseQueries.toString()
+				});
+				collection.fetch();
+				this.set('backboneCourses', collection);
+			},
+			getModels: function() {
+				return this.get('backboneCourses').models;
 			},
 			getTitle: function() {
 				return this.get('title');
@@ -516,6 +551,18 @@ var Requirement = Backbone.Model.extend({
 			completionProgress: function() {
 				//for now, this is the implementation
 				return (this.getTakenCourses().length) / (this.getCourses().length);
+			},
+
+			//generates an object that can be passed to the server
+			//in order to search for suggested courses based on the
+			// current goal the person is looking at...
+			courseDiagnostic: function() {
+				//this object can include:
+					//courses that this person has already taken
+						//in this major
+					//maybe global variables such as the school this person is in
+					//the major...
+				return null;
 			}
 		}),
 
@@ -569,23 +616,3 @@ var Requirement = Backbone.Model.extend({
 	});
 
 
-
-//used to generate client-side id's for Requirement objects
-//nested inside the Goal Backbone object so that requirements can be
-//identified.  parentID is string or null.  This method is called by the
-//backbone objects below and not part of any API
-function generateRequirementID(index, parentID) {
-	var appendingPortion;
-
-	if (index < 16) {
-		appendingPortion = "0" + index.toString(16);
-	} else {
-		appendingPortion = index.toString(16);
-	}
-
-	if (!parentID) {
-		return appendingPortion;
-	} 
-
-	return parentID + appendingPortion;
-}
