@@ -252,11 +252,19 @@ var Requirement = Backbone.Model.extend({
 		//value since the taken courses have changed
 
 
-		update: function() {},
+		update: function() {
+			this.clearValidationCache();
+		},
 
 		//this method is called by update
 		//NEVER CALL THIS
-		clearValidationCache: function() {},
+		//this is where all the cached values are removed
+		//so that subsequent calls will to validation methods 
+		//will refresh data
+		clearValidationCache: function() {
+			this.progress.memo = null;
+			this.isComplete.memo = null;
+		},
 
 		isComplete: function() {
 
