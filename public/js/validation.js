@@ -41,7 +41,7 @@ var Requirement = Backbone.Model.extend({
 				//can use the id property to infer the
 				//current depth
 				reqID = this.get('reqID');
-				currentDepth = this.getDepth();
+				currentDepth = this.getDepthFromRoot();
 				currentIndex = this.getIndex();
 				self = this;
 
