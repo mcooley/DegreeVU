@@ -183,6 +183,9 @@ var Requirement = Backbone.Model.extend({
 		getTakenCourses: function() {
 			var courseList, courses, takenCourses, i, n;
 			if (this.isLeaf()) {
+				if (!this.get('courses')) {
+					throw new Error("You have to fetch courses from the server before you can get courses that you have taken");
+				}
 				//lazy instantiation of taken courses
 				if (!this.get('takenCourses')) {
 					//note that the takenCourses property
@@ -195,13 +198,21 @@ var Requirement = Backbone.Model.extend({
 					takenCourses = this.get('takenCourses');
 				}
 
-				return takenCourses;
+
+				return takenCourses.map(function(courseCode) {
+					var i, n;
+					for (i =0, n = this.get('courses').length; i < n; ++i) {
+						if (CourseCodeTokenizer.isEqual(courseCode, this.get('courses')[i].get('courseCode'))) {
+							return this.get('courses')[i];
+						}
+					}
+				}.bind(this));
 			} else {
 				courseList = [];
 				this.getItems().forEach(function(req) {
 					courseList.push(req.getTakenCourses());
 				});
-				courses = Requirement.unionCourseCodes.apply(Requirement, courseList);
+				courses = Requirement.unionCourses.apply(Requirement, courseList);
 				return courses;
 			}
 		},
@@ -471,6 +482,30 @@ var Requirement = Backbone.Model.extend({
 				return item;
 			});
 
+		},
+		unionCourses: function() {
+			var i, j, m, n,
+				token1, token2,
+				courseList = [].slice.call(arguments),
+				newList = [];
+
+			newList = newList.concat.apply(newList, courseList);
+
+			for (i = 0, n = newList.length; i < n; ++i) {
+				for (j = i + 1, m = newList.length; j < m; ++j) {
+					if (newList[i] && newList[j]) {
+						token1 = CourseCodeTokenizer.parseQuery(newList[i].get('courseCode'));
+						token2 = CourseCodeTokenizer.parseQuery(newList[j].get('courseCode'));
+						if (_.isEqual(token1, token2)) {
+							newList[i] = false;
+						}
+					}
+				}
+			}
+			
+			return newList.filter(function(item) {
+				return item;
+			});
 		},
 		//used to generate client-side id's for Requirement objects
 		//nested inside the Goal Backbone object so that requirements can be
