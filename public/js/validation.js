@@ -130,7 +130,7 @@ var Requirement = Backbone.Model.extend({
 		getItems: function() {
 			return this.get('items');
 		},
-		getCourses: function() {
+		getCourseQueries: function() {
 
 			var courses, courseList;
 			if (this.isLeaf()) {
@@ -139,7 +139,7 @@ var Requirement = Backbone.Model.extend({
 			} else {
 				courseList = [];
 				this.getItems().forEach(function(req) {
-					courseList.push(req.getCourses());
+					courseList.push(req.getCourseQueries());
 				}); 
 				courses = Requirement.unionCourses.apply(Requirement, courseList);
 			}
@@ -234,7 +234,7 @@ var Requirement = Backbone.Model.extend({
 				//have to traverse the tree for the courses count
 				//everytime this method is called
 				if (!this.itemsNeeded.memo) {
-					this.itemsNeeded.memo = this.getCourses().length;
+					this.itemsNeeded.memo = this.getCourseQueries().length;
 				}
 				return this.itemsNeeded.memo;
 			}
@@ -434,6 +434,7 @@ var Requirement = Backbone.Model.extend({
 				});
 				collection.fetch();
 				collection.once('sync', function() {
+
 					this.trigger('sync');
 				}.bind(this));
 				this.set('courseCollection', collection);
@@ -456,7 +457,7 @@ var Requirement = Backbone.Model.extend({
 				if (!this.get('courseQueries')) {
 					courses = [];
 					this.getReqs().forEach(function(req) {
-						courses = _.union(courses, req.getCourses());
+						courses = _.union(courses, req.getCourseQueries());
 					});
 					this.set('courseQueries', courses, {silent: true});
 				}
@@ -554,7 +555,7 @@ var Requirement = Backbone.Model.extend({
 			//1 being totally complete
 			completionProgress: function() {
 				//for now, this is the implementation
-				return (this.getTakenCourses().length) / (this.getCourses().length);
+				return (this.getTakenCourses().length) / (this.getCourseQueries().length);
 			},
 
 			//generates an object that can be passed to the server
