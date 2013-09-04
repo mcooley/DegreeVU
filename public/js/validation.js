@@ -436,10 +436,11 @@ var Requirement = Backbone.Model.extend({
 				collection.once('sync', function() {
 					this.trigger('sync');
 				}.bind(this));
-				this.set('courses', collection);
+				this.set('courseCollection', collection);
 			},
+			//must first fetch them
 			getCourses: function() {
-				return this.get('courses').models;
+				return this.get('courseCollection').models;
 			},
 			getTitle: function() {
 				return this.get('title');
