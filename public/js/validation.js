@@ -145,6 +145,36 @@ var Requirement = Backbone.Model.extend({
 			}
 			return courses;
 		},
+		//sets an array of backbone course objects at 
+		//the leaves of the requirements
+		setCourses: function(courses) {
+			var courses;
+
+			if (this.isLeaf()) {
+				console.log("In requirement: "+ this.getTitle());
+				_courses = [];
+				courses.forEach(function(course) {
+					var i, n, done = false;
+					for (i = 0, n = this.getItems().length; i < n && !done; ++i) {
+						
+						if (CourseCodeTokenizer.matchQuery(course.get('courseCode'), this.getItems()[i])) {
+							_courses.push(course);
+							done = true;
+							
+						}
+					}
+					
+				}.bind(this));
+				this.set('courses', _courses, {silent: true});
+				_courses.forEach(function(course, index) {
+					console.log(index + ": " + course.get('courseCode'));
+				});
+			} else {
+				this.getItems().forEach(function(req) {
+					req.setCourses(courses);
+				});
+			}
+		},
 		//fetch the courses that have been taken,
 		//these courses are cached at the leaves of
 		//the requirement tree. The actual taken Courses
@@ -434,7 +464,13 @@ var Requirement = Backbone.Model.extend({
 				});
 				collection.fetch();
 				collection.once('sync', function() {
-
+					//set the courses in the requirements
+					//the courses will trickle down to the leaves so that
+					//they have a reference to all relevant courses
+					console.log(collection.models);
+					this.getReqs().forEach(function(req) {
+						req.setCourses(collection.models);
+					});
 					this.trigger('sync');
 				}.bind(this));
 				this.set('courseCollection', collection);
