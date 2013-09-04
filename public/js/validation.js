@@ -270,7 +270,7 @@ var Requirement = Backbone.Model.extend({
 			}
 
 			if (this.completionType() === 'takeItems') {
-				return this.get('takeItems');
+				return this.get('take');
 			}
 		},
 
@@ -297,18 +297,79 @@ var Requirement = Backbone.Model.extend({
 		},
 
 		isComplete: function() {
+			var type = this.completionType(),
+				done, i, n;
+			if (type === 'takeAll') {
+				if (this.isLeaf()) {
+					if (this.get('courses') && this.get('takenCourses')) {
+						return this.get('courses').length === this.get('takenCourses').length;
+					} else {
+						return false;
+					}
+				} else {
+					for (i = 0, n = this.getItems().length; i < n; ++i) {
+						if (!this.getItems()[i].isComplete()) {
+							return false;
+						}
+					}
+					return true;
+				}
 
+			} else if (type === 'takeItems') {
+				var count;
+				if (this.itemsNeeded() === 0) {
+					return true;
+				}
+
+				if (this.isLeaf()) {
+
+					//don't forget the 0 case
+					console.log("Checking for take some");
+					console.log(this.itemsNeeded() + " items needed");
+					if (this.get('takenCourses')) {
+						if (this.get('takenCourses').length >= this.itemsNeeded()) {
+							return true;
+						}
+					}
+					return false;
+				} else {
+					count = 0;
+					this.getItems().forEach(function(req) {
+						if (req.isComplete()) {
+							count++;
+						}
+					});
+					return count >= this.itemsNeeded();
+				}
+
+			} else { //type is take hours
+				if (this.isLeaf()) {
+					console.log("Not checking for hours yet");
+					return false;
+				} else {
+					throw new Error("Cannot check the hours for a requirement without courses: in requirement titled " + this.getTitle());
+				}
+
+			}
 		},
 		//the progress of the requirement to becoming
 		//complete, returns a decimal number indicating 
 		//the progress, progress is between 0 and 1, 1 being
 		//that the requirement is complete
 		progress: function() {
-			if (!this.progress.memo) {
+			//progress is stored in the the root requirements only
+			//calculated at the leaves
+			if (this.isLeaf()) {
 
+			} else if (this.isRoot()) {
+				if (!this.progress.memo) {
+
+				}
+				return this.progress.memo;
+			} else {
 
 			}
-			return this.progress.memo;
+			
 		},
 
 		//tree-related methods
@@ -585,7 +646,16 @@ var Requirement = Backbone.Model.extend({
 
 			update: function() {},
 			isComplete: function() {
+				var i, n;
+				for (i = 0, n = this.getReqs().length; i < n; ++i) {
 
+					if (!this.getReqs()[i].isComplete()) {
+						return false;
+					} else {
+						console.log("This is valid");
+					}
+				}
+				return true;
 			},
 			//returns a decimal number between 0 and 1
 			//1 being totally complete

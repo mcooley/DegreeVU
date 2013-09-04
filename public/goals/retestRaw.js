@@ -26,7 +26,6 @@ goal = {
 			//of the two...
 			items: 
 			[
-				"MATH 155A",
 				"MATH 150B",
 				"MATH 155A",
 				"MATH 155B",
@@ -39,12 +38,13 @@ goal = {
 			//properties should be set, never both
 
 			//takeHours: 6,
-			take: "all" //or a number, such as 2
+			take: 2 //or a number, such as 2
 		},
 		{//the second requirement
 			title: "Science",
 			subtitle: "This is optional",
 			details: "This is optional",
+			warning: "This is a warning about the accuracy of this requirement",
 
 			//these are the default values and don"t have to be
 			//declared explicitly
@@ -61,7 +61,7 @@ goal = {
 						"CS 101", "CS 201"
 					],
 
-					take: "all"
+					take: 1
 				},
 				{
 					title: "Sequence 2",
@@ -72,7 +72,7 @@ goal = {
 						"PHYS 116a"
 					],
 
-					take: "all"
+					take: 0
 				},
 				{
 					title: "Sequence 3",
