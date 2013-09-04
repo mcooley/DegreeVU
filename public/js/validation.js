@@ -141,7 +141,7 @@ var Requirement = Backbone.Model.extend({
 				this.getItems().forEach(function(req) {
 					courseList.push(req.getCourseQueries());
 				}); 
-				courses = Requirement.unionCourses.apply(Requirement, courseList);
+				courses = Requirement.unionCourseCodes.apply(Requirement, courseList);
 			}
 			return courses;
 		},
@@ -201,7 +201,7 @@ var Requirement = Backbone.Model.extend({
 				this.getItems().forEach(function(req) {
 					courseList.push(req.getTakenCourses());
 				});
-				courses = Requirement.unionCourses.apply(Requirement, courseList);
+				courses = Requirement.unionCourseCodes.apply(Requirement, courseList);
 				return courses;
 			}
 		},
@@ -447,7 +447,7 @@ var Requirement = Backbone.Model.extend({
 		//a variable number of arrays are passed in
 		//this returns an array of courses such that there is no
 		//repetition of courses from any of the arrays (union of course list)
-		unionCourses: function() {
+		unionCourseCodes: function() {
 			var i, j, m, n,
 				token1, token2,
 				courseList = [].slice.call(arguments),
@@ -570,7 +570,7 @@ var Requirement = Backbone.Model.extend({
 				this.getReqs().forEach(function(req) {
 					courseList.push(req.getTakenCourses());
 				});
-				this.set('takenCourses', Requirement.unionCourses.apply(Requirement, courseList));
+				this.set('takenCourses', Requirement.unionCourseCodes.apply(Requirement, courseList));
 			
 				return this.get('takenCourses');
 			},
