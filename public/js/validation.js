@@ -578,7 +578,7 @@ var Requirement = Backbone.Model.extend({
 				}
 				//option 'showCourseCodes' allows for returning the courses
 				//by the course codes instead of the course objects themselves
-				if (options && options.showCourseCodes) {
+				if (options && options.showCodes) {
 					return ([].slice.call(this.get('courseCollection').models)).map(function(course) {
 						return course.get('courseCode');
 					});

@@ -28,7 +28,7 @@ goal = {
 			[
 				"MATH 150B",
 				"MATH 155A",
-				"MATH 155B",
+				"MATH 155B"
 			],
 
 			
@@ -87,6 +87,29 @@ goal = {
 			],
 
 			take: 1
+		},
+		{//third requirement
+			title: 'Computer Science',
+			items: [
+				{
+					title: 'CompSci 1',
+					items: [
+						"CS 101",
+						"CS 103",
+						"CS 251"
+
+					],
+					take: 1
+				},
+				{
+					title: 'CompSci 2',
+					items: [
+						"CS 151"
+					],
+					take: "all"
+				}
+			],
+			take: 'all'
 		}
 	]
 		
