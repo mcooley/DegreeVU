@@ -1,6 +1,9 @@
 //changes that were made that are not in home
 /*
 	adds an isEqual method to CourseCodeTokenizer
+	adds properties to Courses
+		- isLocked boolean, set for the client
+		- requirement list
 */
 
 getQueryString = function (key) {
@@ -150,6 +153,9 @@ var CourseCodeTokenizer = {
 
 
 var Course = Backbone.Model.extend({
+	initialize: function() {
+		this.set('isLocked', false, {silent: true});
+	},
 	url: function() {
 		return '/courses/' + this.get('_id');
 	},
@@ -158,6 +164,25 @@ var Course = Backbone.Model.extend({
 	},
 	getHours:function() {
 		return (this.get('numOfCredits'))[0];
+	},
+	//add the goals, and each goal can show you which
+	//requirements include the class, there are no goals
+	//in this course if the course is not in the schedule
+	addGoal: function(goal) {
+		if (!this.get('goals')) {
+			this.set('goal', [goal], {silent: true});
+		} else {
+			this.get('goal').push(goal);
+		}
+
+		//call events here to notify a goal has been added
+		
+	},
+	getGoals: function() {
+		if (!this.get('goals')) {
+			this.set('goals', [], {silent: true});
+		}
+		return this.get('goals');
 	}
 });
 
