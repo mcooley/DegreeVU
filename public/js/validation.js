@@ -572,8 +572,18 @@ var Requirement = Backbone.Model.extend({
 				this.set('courseCollection', collection);
 			},
 			//must first fetch them
-			getCourses: function() {
-				return this.get('courseCollection').models;
+			getCourses: function(options) {
+				if (!this.get('courseCollection')) {
+					throw new Error('Must fetch courses for goal \"' + this.getTitle() + "\" before attempting to get courses");
+				}
+				//option 'showCourseCodes' allows for returning the courses
+				//by the course codes instead of the course objects themselves
+				if (options && options.showCourseCodes) {
+					return ([].slice.call(this.get('courseCollection').models)).map(function(course) {
+						return course.get('courseCode');
+					});
+				}
+				return [].slice.call(this.get('courseCollection').models);
 			},
 			getTitle: function() {
 				return this.get('title');
