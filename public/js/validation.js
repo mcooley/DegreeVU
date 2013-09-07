@@ -668,53 +668,20 @@ var Requirement = Backbone.Model.extend({
 			}
 		}),
 
-	//collection of goals
-	Validator = Backbone.Collection.extend({
+	GoalCollection = Backbone.Collection.extend(
+		{
+			addCourse: function() {
 
-		
-		//adds course to all goals in the collection
-		addCourse: function(course) {
-
-		},
-		//removes course from all goals in the collection
-		removeCourse: function(course) {
-
-		},
-		//removes all courses from all goals
-		reset: function() {
-
-		},
-		//iterates through all the goals and the nested
-		//requirement in a DFS-like fashion,
-		//argument for the callback:
-			//requirement object
-			//index within the parent
-			//depth
-			//parent object (null if no parent)
-			//parent index (-1 if no parent)
-		iterate: function(callback, context) {
-
-		}
-		//events emitted by Validation:
-			/*
-				courseAdded:
-					event contains: "courseID" property (mongo id of course added), 
-									"goals" property (array of mongo id's of goals the course was added to)
-				courseRemoved:
-					event contains: "courseID" property (mongo id of course removed)
-									"goals" property (array of mongo id's of goals the course was removed from)
-
-			*/
-	}, 
-	{
-
-		//class properties
-		getInstance: function() {
-			if (!Validation.instance) {
-				Validation.instance = new Validation();
+			},
+			removeCourse: function() {
+				
 			}
-			return Validation.instance;
-		}
-	});
+		},
+		{
+			//singleton goal collection
+			getInstance: function() {
+
+			}
+		});
 
 
