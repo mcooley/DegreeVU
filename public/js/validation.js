@@ -175,47 +175,6 @@ var Requirement = Backbone.Model.extend({
 				});
 			}
 		},
-		//fetch the courses that have been taken,
-		//these courses are cached at the leaves of
-		//the requirement tree. The actual taken Courses
-		//array is simply an array of booleans that can be mapped
-		//to the array of courses
-		getTakenCourses: function() {
-			var courseList, courses, takenCourses, i, n;
-			if (this.isLeaf()) {
-				if (!this.get('courses')) {
-					throw new Error("You have to fetch courses from the server before you can get courses that you have taken");
-				}
-				//lazy instantiation of taken courses
-				if (!this.get('takenCourses')) {
-					//note that the takenCourses property
-					//should only exist in requirements that are
-					//leaves
-					takenCourses = [];
-					this.set('takenCourses', takenCourses, {silent: true});
-
-				} else {
-					takenCourses = this.get('takenCourses');
-				}
-
-
-				return takenCourses.map(function(courseCode) {
-					var i, n;
-					for (i =0, n = this.get('courses').length; i < n; ++i) {
-						if (CourseCodeTokenizer.isEqual(courseCode, this.get('courses')[i].get('courseCode'))) {
-							return this.get('courses')[i];
-						}
-					}
-				}.bind(this));
-			} else {
-				courseList = [];
-				this.getItems().forEach(function(req) {
-					courseList.push(req.getTakenCourses());
-				});
-				courses = Requirement.unionCourses.apply(Requirement, courseList);
-				return courses;
-			}
-		},
 		//hasCourse
 		//returns true if this course is included as a course
 		//for this requirement.  The course parameter is the course code
@@ -605,20 +564,7 @@ var Requirement = Backbone.Model.extend({
 				}
 				return this.get('courseQueries');
 			},
-			//returns array of courses that are taken
-			//lazy instantiation
-			getTakenCourses: function() {
-				//for now, nothing is cached
-				var courseList;
-				
-				courseList = [];
-				this.getReqs().forEach(function(req) {
-					courseList.push(req.getTakenCourses());
-				});
-				this.set('takenCourses', Requirement.unionCourseCodes.apply(Requirement, courseList));
 			
-				return this.get('takenCourses');
-			},
 			//returns the number of levels to the deepest leaf of
 			//the requirement structure
 			getDepth: function() {
@@ -706,7 +652,7 @@ var Requirement = Backbone.Model.extend({
 			//1 being totally complete
 			completionProgress: function() {
 				//for now, this is the implementation
-				return (this.getTakenCourses().length) / (this.getCourseQueries().length);
+				//return (this.getTakenCourses().length) / (this.getCourseQueries().length);
 			},
 
 			//generates an object that can be passed to the server

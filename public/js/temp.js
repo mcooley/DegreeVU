@@ -2,8 +2,9 @@
 /*
 	adds an isEqual method to CourseCodeTokenizer
 	adds properties to Courses
-		- isLocked boolean, set for the client
+		- isLocked boolean
 		- requirement list
+		- inSchedule boolean
 */
 
 getQueryString = function (key) {
@@ -155,6 +156,7 @@ var CourseCodeTokenizer = {
 var Course = Backbone.Model.extend({
 	initialize: function() {
 		this.set('isLocked', false, {silent: true});
+		this.set('inSchedule', false, {silent: true});
 	},
 	url: function() {
 		return '/courses/' + this.get('_id');
@@ -176,7 +178,7 @@ var Course = Backbone.Model.extend({
 		}
 
 		//call events here to notify a goal has been added
-		
+
 	},
 	getGoals: function() {
 		if (!this.get('goals')) {
