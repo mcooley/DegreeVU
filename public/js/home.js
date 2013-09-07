@@ -17,8 +17,8 @@ $(document).ready(function () {
 	var scheduleView = new ScheduleView({collection: Schedule.getInstance(gradYear), el:'#scheduleGrid'});
 	
 	//TEMP GLOBAL
-	goalsList = new GoalList();	
-	var goalsListView = new GoalListView({collection:goalsList, el:'#goals'});
+	//goalsList = new GoalList();	
+	//var goalsListView = new GoalListView({collection:goalsList, el:'#goals'});
 	
 	$.getJSON('/ejs/templates', function(data) {
 		window.templates = {};
@@ -27,9 +27,9 @@ $(document).ready(function () {
 		});
 		
 		scheduleView.render();
-		goalsListView.render();
+		//goalsListView.render();
 	});
-	
+	/*
 	var majorId = getQueryString('major');
 	if (majorId) {
 		var	major = new Goal({
@@ -41,9 +41,14 @@ $(document).ready(function () {
 		});
 		major.fetch();	
 	}
+	*/
 });
 
 var Course = Backbone.Model.extend({
+	initialize: function() {
+		this.set('isLocked', false, {silent: true});
+		this.set('inSchedule', false, {silent: true});
+	},
 	url: function() {
 		return '/courses/' + this.get('_id');
 	},
@@ -198,10 +203,11 @@ var Schedule = Backbone.Collection.extend({
 		return this._singletonInstance;
 	}
 });
-
+/*
 var GoalList = Backbone.Collection.extend({
 	model:Goal
 });
+*/
 
 var CourseCollection = Backbone.Collection.extend({
 	model:Course,
@@ -231,7 +237,7 @@ var CourseCollection = Backbone.Collection.extend({
 	}
 	
 });
-
+/*
 var Goal = Backbone.Model.extend({
 	urlRoot: '/goals',
 	
@@ -345,7 +351,7 @@ var Goal = Backbone.Model.extend({
 	}
 });
 
-
+*/
 var CourseCodeTokenizer = {
 	
 	matches:function(courseCode, pattern) {
@@ -397,6 +403,12 @@ var CourseCodeTokenizer = {
 		}
 		
 		return course;
+	},
+	isEqual: function(courseCode1, courseCode2) {
+		var token1 = CourseCodeTokenizer.parse(courseCode1),
+			token2 = CourseCodeTokenizer.parse(courseCode2);
+
+		return _.isEqual(token1, token2);
 	},
 	parseQuery: function(query) {
 
@@ -466,7 +478,7 @@ var CourseCodeTokenizer = {
 			return queryObject.coursePrefix === tokenObject.coursePrefix && tokenObject.courseNumber >= queryObject.courseNumber;
 
 		} else if (queryObject.queryToken === '^') {
-
+			
 		}
 
 		return false;
@@ -474,4 +486,3 @@ var CourseCodeTokenizer = {
 	}
 	
 };
-
