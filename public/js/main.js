@@ -13,7 +13,7 @@ require.config({
 		'jquery_ui': ['jquery'],
 		'backbone': ['underscore', 'jquery'],
 		'views': ['backbone', 'jquery_ui'],
-		'home': ['views'],
+		'home': ['backbone'],
 		'goals': ['home']
 	}
 });
@@ -21,7 +21,7 @@ require.config({
 
 
 //initial script
-define(['home','goals'], function() {
+define(['home','views', 'goals'], function() {
 
 	getQueryString = function (key) {
 		var re=new RegExp('(?:\\?|&)'+key+'=(.*?)(?=&|$)','gi');
