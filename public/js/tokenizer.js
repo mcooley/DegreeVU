@@ -128,11 +128,20 @@ Query.prototype.negate = function() {
 Query.prototype.match = function(courseCode) {
 
 }
+//takes an array of course codes and returns another array of
+//course codes with the codes that do not match 
+//the query filtered out
+Query.prototype.filter = function(courseCodeArray) {
+	
 
+}
+
+//returns true if the query is equal to the course code
 Query.prototype.isEqual = function(courseCode) {
 
 }
 
+//true if the query is just a single course code
 Query.prototype.isSingleCourse = function() {
 
 }
@@ -145,5 +154,21 @@ Query.prototype.toString = function() {
 	
 }
 
+//static methods
 
+//reformats the query string and returns another
+//query string in the new format (capitalization, proper spacing, etc)
+Query.formatQuery = function(queryString) {
+
+}
+
+Query.isEqual = function(queryString1, queryString2) {
+
+}
+
+//should not call these methods, they are "private"
+//converts a query object to a query string
+Query.objToString = function(obj) {
+
+}
 
