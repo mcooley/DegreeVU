@@ -167,6 +167,7 @@ Query.isEqual = function(queryString1, queryString2) {
 }
 
 //should not call these methods, they are "private"
+
 //converts a query object to a query string
 Query.objToString = function(obj) {
 
