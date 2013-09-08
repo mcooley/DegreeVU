@@ -117,7 +117,7 @@ var CourseCodeTokenizer = {
 
 //USE THIS CONSTRUCTOR DOWN HERE TO CONSTRUCT A QUERY
 function Query(queryToken) {
-	this.query = CourseCodeTokenizer.parse(queryToken);
+	this.obj = CourseCodeTokenizer.parse(queryToken);
 }
 
 //toggles query between query and anti query
@@ -125,7 +125,7 @@ Query.prototype.negate = function() {
 
 }
 
-Query.prototype.match = function(courseCode) {
+Query.prototype.matches = function(courseCode) {
 
 }
 //takes an array of course codes and returns another array of
