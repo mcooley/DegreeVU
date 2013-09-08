@@ -60,9 +60,9 @@ var CourseCodeTokenizer = {
 
 		return _.isEqual(token1, token2);
 	},
-	parse: function(query) {
+	parse: function(courseCode) {
 
-		var parsedQuery = {
+		var parsedToken = {
 		    	coursePrefix: "",
 		    	courseSuffix: "",
 		    	queryToken: "",
@@ -74,33 +74,33 @@ var CourseCodeTokenizer = {
 		    q = query.match(/[+,$,*,~,^]$/),
 		    courseCodeToken;
 
-		    parsedQuery.queryToken = (q) ? q[0] : "";
+		    parsedToken.queryToken = (q) ? q[0] : "";
 
 
-		if (parsedQuery.queryToken === "") {
+		if (parsedToken.queryToken === "") {
 			
 			//then the query is just a normal course code
 			courseCodeToken = CourseCodeTokenizer.parse(query);
-			parsedQuery.coursePrefix = courseCodeToken.coursePrefix;
-			parsedQuery.courseSuffix = courseCodeToken.courseSuffix;
-			parsedQuery.courseNumber = courseCodeToken.courseNumber;
+			parsedToken.coursePrefix = courseCodeToken.coursePrefix;
+			parsedToken.courseSuffix = courseCodeToken.courseSuffix;
+			parsedToken.courseNumber = courseCodeToken.courseNumber;
 
-		} else if (parsedQuery.queryToken === '$') {
-			parsedQuery.courseSuffix = query.match(/^[a-z]/i)[0].toUpperCase();
+		} else if (parsedToken.queryToken === '$') {
+			parsedToken.courseSuffix = query.match(/^[a-z]/i)[0].toUpperCase();
 			
 			
-		} else if (parsedQuery.queryToken === '+') {
-			parsedQuery.courseNumber = +query.match(/\d+/)[0];
-			parsedQuery.coursePrefix = query.match(/^[a-z]+/i)[0].toUpperCase();
+		} else if (parsedToken.queryToken === '+') {
+			parsedToken.courseNumber = +query.match(/\d+/)[0];
+			parsedToken.coursePrefix = query.match(/^[a-z]+/i)[0].toUpperCase();
 
-		} else if (parsedQuery.queryToken === '~') {
-			parsedQuery.category = query.match(/^[a-z]+/i)[0].toUpperCase();
+		} else if (parsedToken.queryToken === '~') {
+			parsedToken.category = query.match(/^[a-z]+/i)[0].toUpperCase();
 
-		} else if (parsedQuery.queryToken === '^') {
-			parsedQuery.school = query.match(/^[a-z]+/i)[0].toUpperCase();
+		} else if (parsedToken.queryToken === '^') {
+			parsedToken.school = query.match(/^[a-z]+/i)[0].toUpperCase();
 
 		} else  {
-			parsedQuery.coursePrefix = query.match(/^[a-z]+/i)[0].toUpperCase();
+			parsedToken.coursePrefix = query.match(/^[a-z]+/i)[0].toUpperCase();
 			
 		}
 
