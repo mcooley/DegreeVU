@@ -46,7 +46,7 @@ var Schedule = Backbone.Collection.extend({
 			foundCourse = false;
 			this.each(function(course) {
 				
-				if (CourseCodeTokenizer.matches(args[i], course.get('courseCode'))) {
+				if (CourseCodeTokenizer.matchQuery(course.get('courseCode'), args[i])) {
 					foundCourse = true;
 					return;
 				}

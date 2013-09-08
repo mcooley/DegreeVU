@@ -400,8 +400,8 @@ var Requirement = Backbone.Model.extend({
 			for (i = 0, n = newList.length; i < n; ++i) {
 				for (j = i + 1, m = newList.length; j < m; ++j) {
 					if (newList[i] && newList[j]) {
-						token1 = CourseCodeTokenizer.parseQuery(newList[i]);
-						token2 = CourseCodeTokenizer.parseQuery(newList[j]);
+						token1 = CourseCodeTokenizer.parse(newList[i]);
+						token2 = CourseCodeTokenizer.parse(newList[j]);
 						if (_.isEqual(token1, token2)) {
 							newList[i] = false;
 						}
@@ -425,8 +425,8 @@ var Requirement = Backbone.Model.extend({
 			for (i = 0, n = newList.length; i < n; ++i) {
 				for (j = i + 1, m = newList.length; j < m; ++j) {
 					if (newList[i] && newList[j]) {
-						token1 = CourseCodeTokenizer.parseQuery(newList[i].get('courseCode'));
-						token2 = CourseCodeTokenizer.parseQuery(newList[j].get('courseCode'));
+						token1 = CourseCodeTokenizer.parse(newList[i].get('courseCode'));
+						token2 = CourseCodeTokenizer.parse(newList[j].get('courseCode'));
 						if (_.isEqual(token1, token2)) {
 							newList[i] = false;
 						}
