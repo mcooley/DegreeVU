@@ -113,3 +113,37 @@ var CourseCodeTokenizer = {
 	}
 	
 };
+
+
+//USE THIS CONSTRUCTOR DOWN HERE TO CONSTRUCT A QUERY
+function Query(queryToken) {
+	this.query = CourseCodeTokenizer.parse(queryToken);
+}
+
+//toggles query between query and anti query
+Query.prototype.negate = function() {
+
+}
+
+Query.prototype.match = function(courseCode) {
+
+}
+
+Query.prototype.isEqual = function(courseCode) {
+
+}
+
+Query.prototype.isSingleCourse = function() {
+
+}
+
+Query.prototype.isNegated = function() {
+
+}
+
+Query.prototype.toString = function() {
+	
+}
+
+
+
