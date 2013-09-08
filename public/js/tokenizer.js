@@ -71,7 +71,7 @@ var CourseCodeTokenizer = {
 		    	school: ""
 		    },
 
-		    q = query.match(/[+,$,*,~,^]$/),
+		    q = courseCode.match(/[+,$,*,~,^]$/),
 		    courseCodeToken;
 
 		    parsedToken.queryToken = (q) ? q[0] : "";
@@ -80,31 +80,30 @@ var CourseCodeTokenizer = {
 		if (parsedToken.queryToken === "") {
 			
 			//then the query is just a normal course code
-			courseCodeToken = CourseCodeTokenizer.parse(query);
 			parsedToken.coursePrefix = courseCodeToken.coursePrefix;
 			parsedToken.courseSuffix = courseCodeToken.courseSuffix;
 			parsedToken.courseNumber = courseCodeToken.courseNumber;
 
 		} else if (parsedToken.queryToken === '$') {
-			parsedToken.courseSuffix = query.match(/^[a-z]/i)[0].toUpperCase();
+			parsedToken.courseSuffix = courseCode.match(/^[a-z]/i)[0].toUpperCase();
 			
 			
 		} else if (parsedToken.queryToken === '+') {
-			parsedToken.courseNumber = +query.match(/\d+/)[0];
-			parsedToken.coursePrefix = query.match(/^[a-z]+/i)[0].toUpperCase();
+			parsedToken.courseNumber = +courseCode.match(/\d+/)[0];
+			parsedToken.coursePrefix = courseCode.match(/^[a-z]+/i)[0].toUpperCase();
 
 		} else if (parsedToken.queryToken === '~') {
-			parsedToken.category = query.match(/^[a-z]+/i)[0].toUpperCase();
+			parsedToken.category = courseCode.match(/^[a-z]+/i)[0].toUpperCase();
 
 		} else if (parsedToken.queryToken === '^') {
-			parsedToken.school = query.match(/^[a-z]+/i)[0].toUpperCase();
+			parsedToken.school = courseCode.match(/^[a-z]+/i)[0].toUpperCase();
 
 		} else  {
-			parsedToken.coursePrefix = query.match(/^[a-z]+/i)[0].toUpperCase();
+			parsedToken.coursePrefix = courseCode.match(/^[a-z]+/i)[0].toUpperCase();
 			
 		}
 
-		return parsedQuery;
+		return parsedToken;
 
 	},
 	//returns true if the courseCode is within the query
