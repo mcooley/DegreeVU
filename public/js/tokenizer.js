@@ -107,9 +107,12 @@ var CourseCodeTokenizer = {
 		return parsedQuery;
 
 	},
-	matchQuery: function(token, query) {
-		var queryObject = CourseCodeTokenizer.parseQuery(query),
-		    tokenObject = CourseCodeTokenizer.parse(token);
+	//returns true if the courseCode is within the query
+	//automatically returns false if the course code parameter
+	//is filled with a quey (something with a query character, like +)
+	matchQuery: function(courseCode, query) {
+		var queryObject = CourseCodeTokenizer.parse(query),
+		    tokenObject = CourseCodeTokenizer.parse(courseCode);
 
 		if (queryObject.queryToken === '') {
 
