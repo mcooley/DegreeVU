@@ -83,26 +83,29 @@ var CourseCodeTokenizer = {
 	//is filled with a quey (something with a query character, like +)
 	matchQuery: function(courseCode, query) {
 		var queryObject = CourseCodeTokenizer.parse(query),
-		    tokenObject = CourseCodeTokenizer.parse(courseCode);
+		    codeObject = CourseCodeTokenizer.parse(courseCode);
 
-		if (queryObject.queryToken === '') {
+		if (!queryObject.query) {
 
-			return _.isEqual(tokenObject, CourseCodeTokenizer.parse(query));
+			return (!queryObject.not && _.isEqual(codeObject, queryObject)) || (queryObject.not && !_.isEqual(codeObject, queryObject));
 
-		} else if (queryObject.queryToken === '$') {
+		} else if (queryObject.query === '$') {
 
-			return queryObject.courseSuffix === tokenObject.courseSuffix;
+			return (!queryObject.not && queryObject.courseSuffix === codeObject.courseSuffix) || (queryObject.not && queryObject.courseSuffix !== codeObject.courseSuffix);
 
-		} else if (queryObject.queryToken === '*') {
+		} else if (queryObject.query === '*') {
 
-			return queryObject.coursePrefix === tokenObject.coursePrefix;
+			return (!queryObject.not && queryObject.coursePrefix === codeObject.coursePrefix) || (queryObject.not && queryObject.coursePrefix !== codeObject.coursePrefix);
 
-		} else if (queryObject.queryToken === '+') {
+		} else if (queryObject.query === '+') {
 
-			return queryObject.coursePrefix === tokenObject.coursePrefix && tokenObject.courseNumber >= queryObject.courseNumber;
+			return (!queryObject.not && (queryObject.coursePrefix === codeObject.coursePrefix && codeObject.courseNumber >= queryObject.courseNumber)) 
+					|| (queryObject.not && (queryObject.coursePrefix !== codeObject.coursePrefix || codeObject.courseNumber < queryObject.courseNumber));
 
-		} else if (queryObject.queryToken === '^') {
-			
+		} else if (queryObject.query === '^') {
+			throw new Error("cannot match a query to the school (^) token");
+		} else if (queryObject.query === "~") {
+			throw new Error("cannot match a query with the category (~) token");
 		}
 
 		return false;
