@@ -122,36 +122,40 @@ function Query(queryToken) {
 
 //toggles query between query and anti query
 Query.prototype.negate = function() {
-
+	this.obj.not = !this.obj.not;
 }
 
 Query.prototype.matches = function(courseCode) {
-
+	return CourseCodeTokenizer.matchQuery(courseCode, this.toString());
 }
 //takes an array of course codes and returns another array of
 //course codes with the codes that do not match 
 //the query filtered out
 Query.prototype.filter = function(courseCodeArray) {
-	
-
+	var self = this;
+	return courseCodeArray.filter(function(courseCode) {
+		return CourseCodeTokenizer.matchQuery(courseCode, self.toString());
+	}).map(function(courseCode) {
+		return Query.formatQuery(courseCode);
+	});
 }
 
 //returns true if the query is equal to the course code
 Query.prototype.isEqual = function(courseCode) {
-
+	return _.isEqual(CourseCodeTokenizer.parse(courseCode), this.obj);
 }
 
 //true if the query is just a single course code
-Query.prototype.isSingleCourse = function() {
-
+Query.prototype.isSingle = function() {
+	return !this.obj.query;
 }
 
 Query.prototype.isNegated = function() {
-
+	return this.obj.not;
 }
 
 Query.prototype.toString = function() {
-	
+	return Query.formatObject(this.obj);
 }
 
 //static methods
@@ -159,17 +163,45 @@ Query.prototype.toString = function() {
 //reformats the query string and returns another
 //query string in the new format (capitalization, proper spacing, etc)
 Query.formatQuery = function(queryString) {
-
+	return Query.formatObject(CourseCodeTokenizer.parse(queryString));
 }
 
 Query.isEqual = function(queryString1, queryString2) {
-
+	return _.isEqual(CourseCodeTokenizer(queryString1), CourseCodeTokenizer(queryString2));
 }
 
 //should not call these methods, they are "private"
 
 //converts a query object to a query string
-Query.objToString = function(obj) {
 
+Query.formatObject = function(obj) {
+	
+	var format;
+
+	if (obj.not) {
+		format = "!";
+	} else {
+		format = "";
+	}
+	if (!obj.query) {
+		format = format + obj.coursePrefix.toUpperCase() + " ";
+		format = format + obj.courseNumber.toString();
+		if (obj.courseSuffix) {
+			format = format + obj.courseSuffix.toUpperCase();
+		}
+
+	} else if (obj.query === '*') {
+		format = format + obj.coursePrefix.toUpperCase() + "*";
+	} else if (obj.query === '+') {
+		format = format + obj.coursePrefix.toUpperCase() + " ";
+		format = format + obj.courseNumber.toString() + "+";
+	} else if (obj.query === '^') {
+		format = format + obj.school.toUpperCase() + "^"
+	} else if (obj.query === '~') {
+		format = format + obj.category.toUpperCase() + "~";
+	} else if (obj.query === '$') {
+		format = format + obj.courseSuffix.toUpperCase() + "$";
+	}
+	return format;
 }
 
