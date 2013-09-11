@@ -117,7 +117,7 @@ var CourseCodeTokenizer = {
 };
 
 
-//USE THIS CONSTRUCTOR DOWN HERE TO CONSTRUCT A QUERY
+//USE THIS CONSTRUCTOR HERE TO CONSTRUCT A QUERY
 function Query(queryToken) {
 	this.obj = CourseCodeTokenizer.parse(queryToken);
 }
@@ -160,6 +160,10 @@ Query.prototype.toString = function() {
 	return Query.formatObject(this.obj);
 }
 
+//makes a deep copy and returns the copy
+Query.prototype.copy = function() {
+	return new Query(this.toString());
+}
 //static methods
 
 //reformats the query string and returns another
@@ -206,4 +210,50 @@ Query.formatObject = function(obj) {
 	}
 	return format;
 }
+
+//collection of queries that are related in some way,
+//such as queries that satisfy a single course
+//used to bundle queries and optimize processes
+//such as matching courses to a set of queries 
+//or unioning queries into 1
+//takes an array of queries as a parameter
+//parameter can either be an array of Query objects
+//or array of course code strings, but not a mix 
+//of the two, throws an error if the parameter is not
+//an array
+function QueryCollection(queries) {
+
+}
+
+//returns true if the course code matches
+//the query collection
+QueryCollection.prototype.matches = function(courseCode) {
+
+}
+
+QueryCollection.prototype.length = function() {
+
+}
+
+QueryCollection.prototype.copy = function() {
+
+}
+
+QueryCollection.prototype.toString = function() {
+
+}
+
+QueryCollection.prototype.each = function(callback, context) {
+
+}
+
+//static methods
+
+//unions queries together, removes redundant query,
+//optomizes queries and fixes anti queries in the process
+//returns a new QueryCollection object
+QueryCollection.union = function(collection1, collection2) {
+
+}
+
 
