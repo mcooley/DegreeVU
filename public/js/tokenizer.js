@@ -83,11 +83,13 @@ var CourseCodeTokenizer = {
 	//is filled with a quey (something with a query character, like +)
 	matchQuery: function(courseCode, query) {
 		var queryObject = CourseCodeTokenizer.parse(query),
+			negateQuery,
 		    codeObject = CourseCodeTokenizer.parse(courseCode);
 
 		if (!queryObject.query) {
-
-			return (!queryObject.not && _.isEqual(codeObject, queryObject)) || (queryObject.not && !_.isEqual(codeObject, queryObject));
+			negateQuery = CourseCodeTokenizer.parse(query);
+			negateQuery.not = false;
+			return (!queryObject.not && _.isEqual(codeObject, queryObject)) || (queryObject.not && !_.isEqual(codeObject, negateQuery));
 
 		} else if (queryObject.query === '$') {
 
