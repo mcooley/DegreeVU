@@ -142,6 +142,12 @@ Query.prototype.filter = function(courseCodeArray) {
 	});
 }
 
+//adds an "and" query
+//can be a query object or a course code
+Query.prototype.and = function(query) {
+
+}
+
 //returns true if the query is equal to the course code
 Query.prototype.isEqual = function(courseCode) {
 	return _.isEqual(CourseCodeTokenizer.parse(courseCode), this.obj);
