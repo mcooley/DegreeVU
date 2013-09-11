@@ -8,20 +8,22 @@ require.config({
 		underscore: '../lib/underscore/underscore-min',
 		backbone: '../lib/backbone/backbone-min'
 	},
-	//list dependencies and exports
+	//list dependencies
 	shim: {
 		'jquery_ui': ['jquery'],
 		'backbone': ['underscore', 'jquery'],
-		'views': ['backbone', 'jquery_ui'],
-		'home': ['backbone', 'tokenizer'],
-		'goals': ['home']
+		'courses': ['backbone'],
+		'home': ['backbone', 'tokenizer', 'courses'],
+		'goals': ['home'],
+		'views': ['home', 'goals', 'backbone', 'jquery_ui']
+		
 	}
 });
 
 
 
 //initial script
-define(['home','views', 'goals'], function() {
+define(['views'], function() {
 
 	getQueryString = function (key) {
 		var re=new RegExp('(?:\\?|&)'+key+'=(.*?)(?=&|$)','gi');
