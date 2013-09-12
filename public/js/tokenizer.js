@@ -119,24 +119,33 @@ var CourseCodeTokenizer = {
 
 //USE THIS CONSTRUCTOR HERE TO CONSTRUCT A QUERY
 function Query(queryToken) {
-	this.obj = CourseCodeTokenizer.parse(queryToken);
-}
-
-//toggles query between query and anti query
-Query.prototype.negate = function() {
-	this.obj.not = !this.obj.not;
+	var array = queryToken.split("&");
+	this.array = array.map(function(token) {
+		token = token.trim();
+		return CourseCodeTokenizer.parse(token);
+	});
 }
 
 Query.prototype.matches = function(courseCode) {
-	return CourseCodeTokenizer.matchQuery(courseCode, this.toString());
+	var i, n;
+	if (this.isSingleQuery()) {
+		return CourseCodeTokenizer.matchQuery(courseCode, this.toString());
+	} else {
+		for (i =0, n = this.array.length; i < n; ++i) {
+			if (!CourseCodeTokenizer.matchQuery(courseCode, Query.formatObject(this.array[i]))) {
+				return false;
+			}
+		}
+		return true;
+	}
 }
 //takes an array of course codes and returns another array of
 //course codes with the codes that do not match 
 //the query filtered out
 Query.prototype.filter = function(courseCodeArray) {
-	var self = this;
+	var matches = this.matches.bind(this);
 	return courseCodeArray.filter(function(courseCode) {
-		return CourseCodeTokenizer.matchQuery(courseCode, self.toString());
+		return matches(courseCode);
 	}).map(function(courseCode) {
 		return Query.formatQuery(courseCode);
 	});
@@ -145,25 +154,36 @@ Query.prototype.filter = function(courseCodeArray) {
 //adds an "and" query
 //can be a query object or a course code
 Query.prototype.and = function(query) {
-
+	this.array.push(CourseCodeTokenizer.parse(query));
 }
 
 //returns true if the query is equal to the course code
 Query.prototype.isEqual = function(courseCode) {
-	return _.isEqual(CourseCodeTokenizer.parse(courseCode), this.obj);
+	var query = new Query(courseCode);
+	return _.isEqual(query.array, this.array);
 }
 
 //true if the query is just a single course code
-Query.prototype.isSingle = function() {
-	return !this.obj.query;
+Query.prototype.isSingleCourse = function() {
+	return this.isSingleQuery && !this.array[0].query;
+}
+
+//true if the query is not an ampersand combo query
+Query.prototype.isSingleQuery = function() {
+	return this.array.length === 1
 }
 
 Query.prototype.isNegated = function() {
-	return this.obj.not;
+	return this.isSingleQuery() && this.array[0].not;
 }
 
 Query.prototype.toString = function() {
-	return Query.formatObject(this.obj);
+	console.log(this.array);
+	console.log(this.array.length);
+	var queries = this.array.map(function(query) {
+		return Query.formatObject(query);
+	});
+	return queries.join(" & ");
 }
 
 //makes a deep copy and returns the copy
@@ -175,17 +195,23 @@ Query.prototype.copy = function() {
 //reformats the query string and returns another
 //query string in the new format (capitalization, proper spacing, etc)
 Query.formatQuery = function(queryString) {
-	return Query.formatObject(CourseCodeTokenizer.parse(queryString));
+	var queries = queryString.split("&").map(function(query) {
+		var obj = CourseCodeTokenizer.parse(query.trim());
+		return Query.formatObject(obj);
+	});
+	return queries.join(" & ");
 }
 
 Query.isEqual = function(queryString1, queryString2) {
-	return _.isEqual(CourseCodeTokenizer(queryString1), CourseCodeTokenizer(queryString2));
+	var query1 = new Query(queryString1),
+		query2 = new Query(queryString2);
+	return _.isEqual(query1.array, query2.array);
 }
 
 //should not call these methods, they are "private"
 
 //converts a query object to a query string
-
+//this is for formatting a single query
 Query.formatObject = function(obj) {
 	
 	var format;
@@ -249,6 +275,7 @@ QueryCollection.prototype.toString = function() {
 
 }
 
+//for any unknown functionality...
 QueryCollection.prototype.each = function(callback, context) {
 
 }
