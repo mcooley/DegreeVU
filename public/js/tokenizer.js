@@ -254,39 +254,112 @@ Query.formatObject = function(obj) {
 //of the two, throws an error if the parameter is not
 //an array
 function QueryCollection(queries) {
+	if (!Array.isArray(queries)) {
+		throw new Error("parameter for QueryCollection constructor should be an array");
+	}
 
+	
+	if (queries.length === 0) {
+		this.collection = [];
+	} 
+
+	else if (typeof queries[0] === 'string') {
+		return new QueryCollection(queries.map(function(queryString) {
+			return new Query(queryString);
+		}));
+	}
+	else if (queries[0].constructor === Query) {
+
+		this.collection = this.collapseQueries(queries);
+
+	}
 }
 
 //returns true if the course code matches
 //the query collection
 QueryCollection.prototype.matches = function(courseCode) {
-
+	var i, n;
+	for (i = 0, n = this.collection.length; i < n; ++i) {
+		if (this.collection[i].matches(courseCode)) {
+			return true;
+		}
+	}
+	return false;
 }
 
-QueryCollection.prototype.length = function() {
+//accepts an array of course codes and returns another array
+//of course codes that satisfy the QueryCollection
+QueryCollection.prototype.filter = function(courseCodes) {
 
+	return courseCodes.filter(function(courseCode) {
+		return this.matches(courseCode);
+	}, this).map(function(courseCode) {
+		return Query.formatQuery(courseCode);
+	});
 }
 
 QueryCollection.prototype.copy = function() {
 
 }
 
+
 QueryCollection.prototype.toString = function() {
 
 }
 
-//for any unknown functionality...
-QueryCollection.prototype.each = function(callback, context) {
-
+//pass in either a string, query object
+QueryCollection.prototype.append = function(query) {
+	var i, n;
+	if (typeof query === 'string') {
+		this.append(new Query(query));
+	} else if (query.constructor === query) {
+		if (query.isNegated()) {
+			for (i = 0, n = this.collection.length; i < n; ++i) {
+				this.collection[i].and(query);
+			}
+		} else {
+			this.collection.push(query);
+		}
+	}
 }
 
-//static methods
+//for any unknown functionality...
+QueryCollection.prototype.each = function(callback, context) {
+	var _context = (context) ? context : this,
+	i, n;
 
-//unions queries together, removes redundant query,
-//optomizes queries and fixes anti queries in the process
-//returns a new QueryCollection object
-QueryCollection.union = function(collection1, collection2) {
+	for (i = 0, n = this.collection.length; i < n; ++i) {
+		callback.call(_context, this.collection[i], i);
+	}
+}
 
+//query collection is unioned into the current query collection
+QueryCollection.prototype.union = function(collection) {
+	collection.each(function(query) {
+		this.collection.push(query);
+	}, this);
+}
+
+
+//methods that should be "private"
+
+//takes an array of query objects
+QueryCollection.prototype.collapseQueries = function(queries) {
+	//make a copy of the queries so that they are not changed
+	console.log(queries);
+	var i, j,  _queries = queries.slice();
+
+	for (i = _queries.length - 1; i >= 0; --i) {
+		if (_queries[i].isSingleCourse() && _queries[i].isNegated()) {
+			for (j = i - 1; j >= 0; --j) {
+				_queries[j].and(_queries[i]);
+			}
+		}
+	}
+
+	return _queries.filter(function(query) {
+		return !query.isNegated();
+	});
 }
 
 
