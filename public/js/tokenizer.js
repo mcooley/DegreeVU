@@ -190,6 +190,7 @@ Query.prototype.toString = function() {
 Query.prototype.copy = function() {
 	return new Query(this.toString());
 }
+
 //static methods
 
 //reformats the query string and returns another
