@@ -337,9 +337,25 @@ QueryCollection.prototype.each = function(callback, context) {
 
 //query collection is unioned into the current query collection
 QueryCollection.prototype.union = function(collection) {
+	var i, n, j;
 	collection.each(function(query) {
-		this.collection.push(query);
+		this.collection.push(query.copy());
 	}, this);
+
+	for (i = 0, n = this.collection.length; i < n; ++i) {
+		if (this.collection[i]) {
+			for (j = i + 1; j < n; ++j) {
+				if (this.collection[j] && _.isEqual(this.collection[i], this.collection[j])) {
+					this.collection[j] = null;
+				}
+			}
+		}
+			
+	}
+	//filter out the nulled elements
+	this.collection = this.collection.filter(function(query) {
+		return query;
+	});
 }
 
 
@@ -354,7 +370,7 @@ QueryCollection.prototype.collapseQueries = function(queries) {
 	for (i = _queries.length - 1; i >= 0; --i) {
 		if (_queries[i].isSingleCourse() && _queries[i].isNegated()) {
 			for (j = i - 1; j >= 0; --j) {
-				if (!_queries[j].isNegated()) {
+				if (!_queries[j].isSingleCourse()) {
 					_queries[j].and(_queries[i].toString());
 				}
 				

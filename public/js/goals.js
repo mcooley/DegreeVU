@@ -165,7 +165,10 @@ var Requirement = Backbone.Model.extend({
 					}
 					
 				}.bind(this));
+
 				this.set('courses', _courses, {silent: true});
+
+				//to the console...
 				_courses.forEach(function(course, index) {
 					console.log(index + ": " + course.get('courseCode'));
 				});
