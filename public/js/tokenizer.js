@@ -299,12 +299,14 @@ QueryCollection.prototype.filter = function(courseCodes) {
 }
 
 QueryCollection.prototype.copy = function() {
-
+	return new QueryCollection(this.collection);
 }
 
 
-QueryCollection.prototype.toString = function() {
-
+QueryCollection.prototype.toArray = function() {
+	return this.collection.map(function(query) {
+		return query.toString();
+	});
 }
 
 //pass in either a string, query object
@@ -312,7 +314,7 @@ QueryCollection.prototype.append = function(query) {
 	var i, n;
 	if (typeof query === 'string') {
 		this.append(new Query(query));
-	} else if (query.constructor === query) {
+	} else if (query.constructor === Query) {
 		if (query.isNegated()) {
 			for (i = 0, n = this.collection.length; i < n; ++i) {
 				this.collection[i].and(query);
@@ -352,11 +354,13 @@ QueryCollection.prototype.collapseQueries = function(queries) {
 	for (i = _queries.length - 1; i >= 0; --i) {
 		if (_queries[i].isSingleCourse() && _queries[i].isNegated()) {
 			for (j = i - 1; j >= 0; --j) {
-				_queries[j].and(_queries[i]);
+				if (!_queries[j].isNegated()) {
+					_queries[j].and(_queries[i].toString());
+				}
+				
 			}
 		}
 	}
-
 	return _queries.filter(function(query) {
 		return !query.isNegated();
 	});
