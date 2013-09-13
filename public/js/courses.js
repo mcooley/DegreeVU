@@ -42,8 +42,15 @@ var CourseCollection = Backbone.Collection.extend({
 		});
 	},
 	//unioning backbone courses
-	union: function() {
-
+	//remove extra references
+	union: function(courseCollection) {
+		if (this !== courseCollection) {
+			courseCollection.models.each(function(course) {
+				if (!this.contains(course)) {
+					this.models.push(course);
+				}
+			}, this);
+		}
 	}
 	
 });
