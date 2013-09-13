@@ -6,13 +6,15 @@ require.config({
 		jquery: '../lib/jquery/jquery-1.9.1',
 		jquery_ui: '../lib/jquery-ui/jquery-ui-1.10.2.custom',
 		underscore: '../lib/underscore/underscore-min',
-		backbone: '../lib/backbone/backbone-min'
+		backbone: '../lib/backbone/backbone-min',
+		backbone_uniquemodel: '../lib/backbone-uniqueModel/backbone.uniquemodel'
 	},
 	//list dependencies
 	shim: {
 		'jquery_ui': ['jquery'],
 		'backbone': ['underscore', 'jquery'],
-		'courses': ['backbone'],
+		'backbone_uniquemodel': ['backbone'],
+		'courses': ['backbone_uniquemodel','backbone'],
 		'home': ['backbone', 'tokenizer', 'courses'],
 		'goals': ['home'],
 		'views': ['home', 'goals', 'backbone', 'jquery_ui']

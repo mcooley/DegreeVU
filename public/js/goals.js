@@ -11,7 +11,12 @@ var Requirement = Backbone.Model.extend({
 		initialize: function(obj) {
 			
 			var items, i, n;
+			if (obj.take && obj.takeHours) {
+				throw new Error("Cannot define both take and takeHours in a single requirement object");
+			}
 			if (typeof obj.items[0] === 'object') {
+				//then the item is a nested Requirement
+
 				items = [];
 				for (i = 0, n = obj.items.length; i < n; ++i) {
 					obj.items[i].reqID = Requirement.generateRequirementID(i, this.get('reqID'));
@@ -22,8 +27,11 @@ var Requirement = Backbone.Model.extend({
 				this.set('isLeaf', false, {silent: true});
 				
 			} else {
-				//typeof items are strings
+				//typeof items are strings, need to convert the items
+				//into a query collection
 				this.set('isLeaf', true, {silent: true});
+				items = new QueryCollection(obj.items);
+				this.set('items', items, {silent: true});
 			}
 			
 		},
@@ -130,20 +138,19 @@ var Requirement = Backbone.Model.extend({
 		getItems: function() {
 			return this.get('items');
 		},
-		getCourseQueries: function() {
+		getQueries: function() {
 
-			var courses, courseList;
+			var queryCollection;
 			if (this.isLeaf()) {
-				courses = [];
-				courses = courses.concat(this.getItems());
+				return this.getItems();
 			} else {
-				courseList = [];
+				queryCollection = new QueryCollection();
 				this.getItems().forEach(function(req) {
-					courseList.push(req.getCourseQueries());
+					queryCollection.union(req.getQueries());
 				}); 
-				courses = Requirement.unionCourseCodes.apply(Requirement, courseList);
+				
 			}
-			return courses;
+			return queryCollection;
 		},
 		//sets an array of backbone course objects at 
 		//the leaves of the requirements

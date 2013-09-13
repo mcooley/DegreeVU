@@ -1,4 +1,5 @@
-var Course = Backbone.Model.extend({
+var Course = Backbone.UniqueModel(Backbone.Model.extend({
+	idAttribute: '_id',
 	initialize: function() {
 		this.set('isLocked', false, {silent: true});
 		this.set('inSchedule', false, {silent: true});
@@ -12,7 +13,7 @@ var Course = Backbone.Model.extend({
 	getHours:function() {
 		return (this.get('numOfCredits'))[0];
 	}
-});
+}));
 
 var CourseCollection = Backbone.Collection.extend({
 	model:Course,
@@ -39,6 +40,10 @@ var CourseCollection = Backbone.Collection.extend({
 			});
 			return courseMatches;
 		});
+	},
+	//unioning backbone courses
+	union: function() {
+
 	}
 	
 });

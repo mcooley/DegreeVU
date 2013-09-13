@@ -337,8 +337,19 @@ QueryCollection.prototype.each = function(callback, context) {
 }
 
 //query collection is unioned into the current query collection
-QueryCollection.prototype.union = function(collection) {
-	var i, n, j;
+QueryCollection.prototype.union = function(_collection) {
+
+	var i, n, j,
+	collection;
+
+	
+	if (Array.isArray(_collection)) {
+		collection = new QueryCollection(_collection);
+	}
+	else if (_collection.constructor === QueryCollection) {
+		collection = _collection
+	}
+
 	collection.each(function(query) {
 		this.collection.push(query.copy());
 	}, this);
@@ -357,8 +368,27 @@ QueryCollection.prototype.union = function(collection) {
 	this.collection = this.collection.filter(function(query) {
 		return query;
 	});
+
+		
 }
 
+//static methods
+QueryCollection.union = function(collection1, collection2) {
+	var queries = null;
+
+	
+	//collection 1 and 2 both have values in it
+	if (Array.isArray(collection1) && typeof collection1[0] === 'string') {
+		queries = new QueryCollection(collection1);
+			
+	} else if (collection1.constructor === QueryCollection) {
+		queries = collection1;
+	}
+
+	queries.union(collection2);
+	
+	return queries;
+}
 
 //methods that should be "private"
 
