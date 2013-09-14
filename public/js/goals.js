@@ -35,98 +35,21 @@ var Requirement = Backbone.Model.extend({
 			}
 			
 		},
-
-		iterate: function(callback, context) {
-			var self,
-				reqID,
-				currentIndex, 
-				currentDepth;
-			if (!this.isLeaf()) {
-
-				if (!context) {
-					context = this;
-				}
-				//can use the id property to infer the
-				//current depth
-				reqID = this.get('reqID');
-				currentDepth = this.getDepthFromRoot();
-				currentIndex = this.getIndex();
-				self = this;
-
-				this.get('items').forEach(function(requirement, index) {
-					callback.call(context, requirement, index, currentDepth + 1, self, currentIndex);
-					requirement.iterate(callback, context);
-				});
-			}
-		},
 		addCourse: function(courseCode) {
 			var i, n, index, done, takenCourses;
 			if (this.isLeaf()) {
-				if (this.get('takenCourses')) {
-					takenCourses = this.get('takenCourses');
-					done = false;
-
-
-					for (i = 0, n = takenCourses.length; i < n && !done; ++i) {
-						if (CourseCodeTokenizer.isEqual(courseCode, takenCourses[i])) {
-							done = true;
-						}
-					}
-
-				} else {
-					done = false;
-					takenCourses = [];
-					this.set('takenCourses', takenCourses, {silent: true});
-				}
 				
-				for (i = 0, n = this.getItems().length; i < n && !done; ++i) {
-					if (CourseCodeTokenizer.matchQuery(courseCode, this.getItems()[i])) {
-
-						takenCourses.push(courseCode);
-						return true;
-					}
-				}
-				return false;
-
 			} else {
-				var isAdded = false;
-				this.getItems().forEach(function(req) {
-					isAdded = isAdded || req.addCourse(courseCode);
-				});
-				return isAdded;
+
 			}
 		},
 		removeCourse: function(courseCode) {
 			var i, n, takenCourses, index, done;
 			if (this.isLeaf()) {
 				
-				if (this.get('takenCourses')) {
-					index = -1;
-					done = false;
-
-					takenCourses = this.get('takenCourses');
-
-					for (i = 0, n = takenCourses.length; i < n; ++i) {
-						if (CourseCodeTokenizer.isEqual(courseCode, takenCourses[i])) {
-							index = i;
-						}
-					}
-					if (index >= 0) {
-						takenCourses = takenCourses.slice(0, index).concat(takenCourses.slice(index + 1, takenCourses.length));
-						this.set('takenCourses', takenCourses);
-						return true;
-					}
-					
-				} 
-				return false;
-				
 
 			} else {
-				var isRemoved = false;
-				this.getItems().forEach(function(req) {
-					isRemoved = isRemoved || req.removeCourse(courseCode);
-				});
-				return isRemoved;
+				
 			}
 		},
 		//getter methods
@@ -154,60 +77,23 @@ var Requirement = Backbone.Model.extend({
 		},
 		//sets an array of backbone course objects at 
 		//the leaves of the requirements
-		setCourses: function(courses) {
+		setCourses: function(courseCollection) {
 			var courses;
-
-			if (this.isLeaf()) {
-				console.log("In requirement: "+ this.getTitle());
-				_courses = [];
-				courses.forEach(function(course) {
-					var i, n, done = false;
-					for (i = 0, n = this.getItems().length; i < n && !done; ++i) {
-						
-						if (CourseCodeTokenizer.matchQuery(course.get('courseCode'), this.getItems()[i])) {
-							_courses.push(course);
-							done = true;
-							
-						}
-					}
-					
-				}.bind(this));
-
-				this.set('courses', _courses, {silent: true});
-
-				//to the console...
-				_courses.forEach(function(course, index) {
-					console.log(index + ": " + course.get('courseCode'));
-				});
-			} else {
-				this.getItems().forEach(function(req) {
-					req.setCourses(courses);
-				});
-			}
-		},
-		//hasCourse
-		//returns true if this course is included as a course
-		//for this requirement.  The course parameter is the course code
-		hasCourse: function(courseCode) {
-			var i, n;
 			if (this.isLeaf()) {
 				
-				for (i = 0, n = this.getItems().length; i < n; ++i) {
-					
-					if (CourseCodeTokenizer.matchQuery(courseCode, this.getItems()[i])) {
-						return true;
-					}
-				}
-
 			} else {
-				for (i = 0, n = this.getItems().length; i < n; ++i) {
-					if (this.getItems()[i].hasCourse(courseCode)) {
-						return true;
-					}
-				}
-			
+
 			}
-			return false;
+		},
+		//returns true if the Requirement already has 
+		//this course added
+		containsCourse: function(courseCode) {
+
+		},
+		//returns true if the Requirement accepts this
+		//course, ignoring if the course if already added or not
+		acceptsCourse: function(courseCode) {
+
 		},
 		//what type of requirement?
 		completionType: function() {
@@ -393,61 +279,7 @@ var Requirement = Backbone.Model.extend({
 		}
 
 	},
-
-	{//class methods for Requirement
-
-		//a variable number of arrays are passed in
-		//this returns an array of courses such that there is no
-		//repetition of courses from any of the arrays (union of course list)
-		unionCourseCodes: function() {
-			var i, j, m, n,
-				token1, token2,
-				courseList = [].slice.call(arguments),
-				newList = [];
-
-			newList = newList.concat.apply(newList, courseList);
-
-			for (i = 0, n = newList.length; i < n; ++i) {
-				for (j = i + 1, m = newList.length; j < m; ++j) {
-					if (newList[i] && newList[j]) {
-						token1 = CourseCodeTokenizer.parse(newList[i]);
-						token2 = CourseCodeTokenizer.parse(newList[j]);
-						if (_.isEqual(token1, token2)) {
-							newList[i] = false;
-						}
-					}
-				}
-			}
-			
-			return newList.filter(function(item) {
-				return item;
-			});
-
-		},
-		unionCourses: function() {
-			var i, j, m, n,
-				token1, token2,
-				courseList = [].slice.call(arguments),
-				newList = [];
-
-			newList = newList.concat.apply(newList, courseList);
-
-			for (i = 0, n = newList.length; i < n; ++i) {
-				for (j = i + 1, m = newList.length; j < m; ++j) {
-					if (newList[i] && newList[j]) {
-						token1 = CourseCodeTokenizer.parse(newList[i].get('courseCode'));
-						token2 = CourseCodeTokenizer.parse(newList[j].get('courseCode'));
-						if (_.isEqual(token1, token2)) {
-							newList[i] = false;
-						}
-					}
-				}
-			}
-			
-			return newList.filter(function(item) {
-				return item;
-			});
-		},
+	{
 		//used to generate client-side id's for Requirement objects
 		//nested inside the Goal Backbone object so that requirements can be
 		//identified.  parentID is string or null.  This method is called by the
@@ -535,16 +367,16 @@ var Requirement = Backbone.Model.extend({
 			},
 			//lazy compilation of courses
 			//returns array of all courses within the goal
-			getCourseQueries: function() {
-				var courses;
-				if (!this.get('courseQueries')) {
-					courses = [];
+			getQueries: function() {
+				var queryCollection; ;
+				if (!this.get('queries')) {
+					queryCollection = new QueryCollection([]);
 					this.getReqs().forEach(function(req) {
-						courses = _.union(courses, req.getCourseQueries());
+						queryCollection.union(req.getQueries());
 					});
-					this.set('courseQueries', courses, {silent: true});
+					this.set('queries', courses, {silent: true});
 				}
-				return this.get('courseQueries');
+				return this.get('queries');
 			},
 			
 			//returns the number of levels to the deepest leaf of

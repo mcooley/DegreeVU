@@ -13,6 +13,7 @@ var Course = Backbone.UniqueModel(Backbone.Model.extend({
 	getHours:function() {
 		return (this.get('numOfCredits'))[0];
 	}
+	
 }));
 
 var CourseCollection = Backbone.Collection.extend({
@@ -31,7 +32,6 @@ var CourseCollection = Backbone.Collection.extend({
 			model.set('colorId', this.getColorId());
 		}).bind(this));
 	},
-	
 	filterByCourses: function() {
 		return this.filter(function(course) {
 			var courseCode = course.get('courseCode');
@@ -45,7 +45,7 @@ var CourseCollection = Backbone.Collection.extend({
 	//remove extra references
 	union: function(courseCollection) {
 		if (this !== courseCollection) {
-			courseCollection.models.each(function(course) {
+			courseCollection.each(function(course) {
 				if (!this.contains(course)) {
 					this.models.push(course);
 				}
@@ -53,4 +53,10 @@ var CourseCollection = Backbone.Collection.extend({
 		}
 	}
 	
+},
+{
+	union: function(collection1, collection2) {
+
+	}
 });
+
