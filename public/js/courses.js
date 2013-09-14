@@ -56,7 +56,10 @@ var CourseCollection = Backbone.Collection.extend({
 },
 {
 	union: function(collection1, collection2) {
-
+		var collection = new CourseCollection([], {});
+		collection.union(collection1);
+		collection.union(collection2);
+		return collection;
 	}
 });
 
