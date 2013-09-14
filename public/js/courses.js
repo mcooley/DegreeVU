@@ -41,6 +41,11 @@ var CourseCollection = Backbone.Collection.extend({
 			return courseMatches;
 		});
 	},
+	getCourseCodes: function() {
+		return this.models.map(function(model) {
+			return model.get('courseCode');
+		});
+	},
 	//unioning backbone courses
 	//remove extra references
 	union: function(courseCollection) {

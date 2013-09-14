@@ -78,11 +78,16 @@ var Requirement = Backbone.Model.extend({
 		//sets an array of backbone course objects at 
 		//the leaves of the requirements
 		setCourses: function(courseCollection) {
-			var courses;
+			var courses,
+				courseArray;
 			if (this.isLeaf()) {
-				
+				console.log(courseCollection.getCourseCodes());
+				courses = new CourseCollection(this.getItems().filter(courseCollection.getCourseCodes()), {});
+				this.set('courses', courses, {silent: true});
 			} else {
-
+				this.getItems().forEach(function(req) {
+					req.setCourses(courseCollection);
+				});
 			}
 		},
 		//returns true if the Requirement already has 

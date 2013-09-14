@@ -178,8 +178,6 @@ Query.prototype.isNegated = function() {
 }
 
 Query.prototype.toString = function() {
-	console.log(this.array);
-	console.log(this.array.length);
 	var queries = this.array.map(function(query) {
 		return Query.formatObject(query);
 	});
