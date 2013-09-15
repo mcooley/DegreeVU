@@ -384,7 +384,7 @@ function getCoursesFromTokens(tokens, callback) {
 	//separate tokens into negative and positive queries
 	
 	var processedTokens = generateDBQuery(parseQueries(tokens));
-	
+	console.log(processedTokens);
 	
 
 	queryCourses(processedTokens.query, function(error, positiveCourses) {
