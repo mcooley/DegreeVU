@@ -261,28 +261,51 @@ Query.formatObject = function(obj) {
 //returns true if the query can be refactored and 
 //returns false if the elements in the query contradict and
 //the query is useless
-Query.refactor = function() {
+Query.prototype.refactor = function() {
 	var i,n,j, 
 		foundSingleCourse = false, 
 		foundSingleCourseNegation = false;
 
 	if (this.array.length > 1) {
 		for (i =0, n = this.array.length; i < n; ++i) {
-			if (this.array[i].isSingleCourse()) {
+			//check to see if the element is nulled out
+			if (this.array[i]) {
+				if (!this.array[i].query) {
+					//single course
 
-			} //else if ()
-			for (j = i + 1; j < n; ++j) {
-				try {
-					if (!this.array[i].matches(this.array[j])) {
-						//then there is a contradiction
-						return false;
+					if (this.array[i].not) {
+						foundSingleCourseNegation = true;
+					} else {
+						foundSingleCourse = true;
+						for (j = 0; j < n; ++j) {
+							if (this.array[j].query || this.array[j].not) {
+								//element is something other than a plain course code
+								if (!CourseCodeTokenizer.matchObject(this.array[i], this.array[j])) {
+									//then there is a contradiction
+									return false;
+								} else {
+									//don't need the element
+									this.array[j] = null;
+
+								}
+							}
+						}
 					}
-				} catch(e) {
-					//nothing to do here
+
+				} else if (this.array[i].query === '+') {
+
+				} else if (this.array[i].query === '*') {
+					
 				}
-			}
-		}
+			} 
+ 		}
+
+ 		this.array = this.array.filter(function(query) {
+ 			return query;
+ 		});
 	}
+	//successful refactoring
+	return true;
 };
 //collection of queries that are related in some way,
 //such as queries that satisfy a single course
