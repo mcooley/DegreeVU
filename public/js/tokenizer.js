@@ -124,7 +124,7 @@ function Query(queryToken) {
 		token = token.trim();
 		return CourseCodeTokenizer.parse(token);
 	});
-}
+};
 
 Query.prototype.matches = function(courseCode) {
 	var i, n;
@@ -138,7 +138,7 @@ Query.prototype.matches = function(courseCode) {
 		}
 		return true;
 	}
-}
+};
 //takes an array of course codes and returns another array of
 //course codes with the codes that do not match 
 //the query filtered out
@@ -149,45 +149,45 @@ Query.prototype.filter = function(courseCodeArray) {
 	}).map(function(courseCode) {
 		return Query.formatQuery(courseCode);
 	});
-}
+};
 
 //adds an "and" query
 //can be a query object or a course code
 Query.prototype.and = function(query) {
 	this.array.push(CourseCodeTokenizer.parse(query));
-}
+};
 
 //returns true if the query is equal to the course code
 Query.prototype.isEqual = function(courseCode) {
 	var query = new Query(courseCode);
 	return _.isEqual(query.array, this.array);
-}
+};
 
 //true if the query is just a single course code
 Query.prototype.isSingleCourse = function() {
 	return this.isSingleQuery && !this.array[0].query;
-}
+};
 
 //true if the query is not an ampersand combo query
 Query.prototype.isSingleQuery = function() {
 	return this.array.length === 1
-}
+};
 
 Query.prototype.isNegated = function() {
 	return this.isSingleQuery() && this.array[0].not;
-}
+};
 
 Query.prototype.toString = function() {
 	var queries = this.array.map(function(query) {
 		return Query.formatObject(query);
 	});
 	return queries.join(" & ");
-}
+};
 
 //makes a deep copy and returns the copy
 Query.prototype.copy = function() {
 	return new Query(this.toString());
-}
+};
 
 //static methods
 
@@ -199,13 +199,13 @@ Query.formatQuery = function(queryString) {
 		return Query.formatObject(obj);
 	});
 	return queries.join(" & ");
-}
+};
 
 Query.isEqual = function(queryString1, queryString2) {
 	var query1 = new Query(queryString1),
 		query2 = new Query(queryString2);
 	return _.isEqual(query1.array, query2.array);
-}
+};
 
 //should not call these methods, they are "private"
 
@@ -240,7 +240,7 @@ Query.formatObject = function(obj) {
 		format = format + obj.courseSuffix.toUpperCase() + "$";
 	}
 	return format;
-}
+};
 
 //collection of queries that are related in some way,
 //such as queries that satisfy a single course
@@ -272,7 +272,7 @@ function QueryCollection(queries) {
 		this.collection = this.collapseQueries(queries);
 
 	}
-}
+};
 
 //returns true if the course code matches
 //the query collection
@@ -284,7 +284,7 @@ QueryCollection.prototype.matches = function(courseCode) {
 		}
 	}
 	return false;
-}
+};
 
 //accepts an array of course codes and returns another array
 //of course codes that satisfy the QueryCollection
@@ -295,18 +295,18 @@ QueryCollection.prototype.filter = function(courseCodes) {
 	}, this).map(function(courseCode) {
 		return Query.formatQuery(courseCode);
 	});
-}
+};
 
 QueryCollection.prototype.copy = function() {
 	return new QueryCollection(this.collection);
-}
+};
 
 
 QueryCollection.prototype.toArray = function() {
 	return this.collection.map(function(query) {
 		return query.toString();
 	});
-}
+};
 
 //pass in either a string, query object
 QueryCollection.prototype.append = function(query) {
@@ -322,7 +322,7 @@ QueryCollection.prototype.append = function(query) {
 			this.collection.push(query);
 		}
 	}
-}
+};
 
 //for any unknown functionality...
 QueryCollection.prototype.each = function(callback, context) {
@@ -332,7 +332,7 @@ QueryCollection.prototype.each = function(callback, context) {
 	for (i = 0, n = this.collection.length; i < n; ++i) {
 		callback.call(_context, this.collection[i], i);
 	}
-}
+};
 
 //query collection is unioned into the current query collection
 QueryCollection.prototype.union = function(_collection) {
@@ -368,7 +368,7 @@ QueryCollection.prototype.union = function(_collection) {
 	});
 
 		
-}
+};
 
 //static methods
 QueryCollection.union = function(collection1, collection2) {
@@ -386,7 +386,7 @@ QueryCollection.union = function(collection1, collection2) {
 	queries.union(collection2);
 	
 	return queries;
-}
+};
 
 //methods that should be "private"
 
@@ -409,6 +409,6 @@ QueryCollection.prototype.collapseQueries = function(queries) {
 	return _queries.filter(function(query) {
 		return !query.isNegated();
 	});
-}
+};
 
 
