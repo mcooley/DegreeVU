@@ -393,7 +393,6 @@ QueryCollection.union = function(collection1, collection2) {
 //takes an array of query objects
 QueryCollection.prototype.collapseQueries = function(queries) {
 	//make a copy of the queries so that they are not changed
-	console.log(queries);
 	var i, j,  _queries = queries.slice();
 
 	for (i = _queries.length - 1; i >= 0; --i) {
@@ -409,6 +408,10 @@ QueryCollection.prototype.collapseQueries = function(queries) {
 	return _queries.filter(function(query) {
 		return !query.isNegated();
 	});
+};
+
+QueryCollection.prototype.refactorQueries = function() {
+
 };
 
 
