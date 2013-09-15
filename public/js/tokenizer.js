@@ -83,11 +83,15 @@ var CourseCodeTokenizer = {
 	//is filled with a quey (something with a query character, like +)
 	matchQuery: function(courseCode, query) {
 		var queryObject = CourseCodeTokenizer.parse(query),
-			negateQuery,
 		    codeObject = CourseCodeTokenizer.parse(courseCode);
 
+		return CourseCodeTokenizer.matchObject(codeObject, queryObject);
+		
+	},
+	matchObject: function(codeObject, queryObject) {
+		var negateQuery;
 		if (!queryObject.query) {
-			negateQuery = CourseCodeTokenizer.parse(query);
+			negateQuery = CourseCodeTokenizer.copyQueryObject(queryObject);
 			negateQuery.not = false;
 			return (!queryObject.not && _.isEqual(codeObject, queryObject)) || (queryObject.not && !_.isEqual(codeObject, negateQuery));
 
@@ -111,9 +115,19 @@ var CourseCodeTokenizer = {
 		}
 
 		return false;
-		
-	}
-	
+	},
+	//makes a deep copy and returns it
+	copyQueryObject: function(obj) {
+		var copy = {}, i;
+		for (i in obj) {
+			if (obj.hasOwnProperty(i)) {
+				//nothing is nested in a query object,
+				// no recursion needed
+				copy[i] = obj[i];
+			}
+		}
+		return copy;
+	}	
 };
 
 
@@ -242,6 +256,34 @@ Query.formatObject = function(obj) {
 	return format;
 };
 
+//goes through the queries in the array and removes 
+//unneccessary elements in the query
+//returns true if the query can be refactored and 
+//returns false if the elements in the query contradict and
+//the query is useless
+Query.refactor = function() {
+	var i,n,j, 
+		foundSingleCourse = false, 
+		foundSingleCourseNegation = false;
+
+	if (this.array.length > 1) {
+		for (i =0, n = this.array.length; i < n; ++i) {
+			if (this.array[i].isSingleCourse()) {
+
+			} //else if ()
+			for (j = i + 1; j < n; ++j) {
+				try {
+					if (!this.array[i].matches(this.array[j])) {
+						//then there is a contradiction
+						return false;
+					}
+				} catch(e) {
+					//nothing to do here
+				}
+			}
+		}
+	}
+};
 //collection of queries that are related in some way,
 //such as queries that satisfy a single course
 //used to bundle queries and optimize processes
@@ -398,20 +440,23 @@ QueryCollection.prototype.collapseQueries = function(queries) {
 	for (i = _queries.length - 1; i >= 0; --i) {
 		if (_queries[i].isSingleCourse() && _queries[i].isNegated()) {
 			for (j = i - 1; j >= 0; --j) {
-				if (!_queries[j].isSingleCourse()) {
-					_queries[j].and(_queries[i].toString());
-				}
-				
+				_queries[j].and(_queries[i].toString());
 			}
 		}
 	}
 	return _queries.filter(function(query) {
 		return !query.isNegated();
 	});
+	//fixes the queries to minimize unneseccary "and" statemens
+	this.refactor();
 };
 
-QueryCollection.prototype.refactorQueries = function() {
+QueryCollection.prototype.refactor = function() {
 
 };
+
+
+
+
 
 
