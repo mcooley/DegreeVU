@@ -16,11 +16,15 @@ StatementHelper.copyQuery = function(mongoQuery) {
 };
 
 //takes a query for a single course code and converts it 
-//to regexp
+//to regexp, this method only converts single courses to regexp
 StatementHelper.queryToRegExp = function(query) {
+	var course;
 	if (query.isSingleCourse()) {
-		//do something, otherwise don't
+		course = "^\\s*" + query.array[0].coursePrefix + "\\s*" + query.array[0].courseNumber.toString();
+		course += (query.array[0].courseSuffix) ? query.array[0].courseSuffix  + "\\s*" : "\\s*$";
+		return new RegExp(course, "i");
 	} 
+	return null;
 };
 
 //diagnoses the query and determines the number of copies
