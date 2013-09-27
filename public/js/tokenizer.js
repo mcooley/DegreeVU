@@ -5,6 +5,11 @@
 	//PB: peabody
 	//BL: Blair
 
+//is this script being run on server or client side
+var serverSide = typeof require === 'function' && typeof exports === 'object' && typeof module === 'object';
+if (serverSide) {
+	var _ = require('underscore');
+}
 
 
 //DO NOT USE COURSE CODE TOKENIZER... USE THE QUERY OBJECT BELOW 
@@ -482,8 +487,8 @@ QueryCollection.prototype.refactor = function() {
 };
 
 
-//check if the script is being executed on server or client side
-if (typeof require === 'function' && typeof exports === 'object' && typeof module === 'object') {
+//set the exports for server side script
+if (serverSide) {
 	exports.CourseCodeTokenizer = CourseCodeTokenizer;
 	exports.Query = Query,
 	exports.QueryCollection = QueryCollection;
