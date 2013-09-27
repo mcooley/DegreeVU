@@ -4,6 +4,9 @@
 	//AS: arts and science
 	//PB: peabody
 	//BL: Blair
+
+
+
 //DO NOT USE COURSE CODE TOKENIZER... USE THE QUERY OBJECT BELOW 
 //AS THE ABSTRACTION OVER THE TOKENIZER
 var CourseCodeTokenizer = {
@@ -479,7 +482,12 @@ QueryCollection.prototype.refactor = function() {
 };
 
 
-
+//check if the script is being executed on server or client side
+if (typeof require === 'function' && typeof exports === 'object' && typeof module === 'object') {
+	exports.CourseCodeTokenizer = CourseCodeTokenizer;
+	exports.Query = Query,
+	exports.QueryCollection = QueryCollection;
+} 
 
 
 
