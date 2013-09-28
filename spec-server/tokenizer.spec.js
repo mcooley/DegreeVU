@@ -714,25 +714,32 @@ describe("Tokenizer Addon:", function() {
 			expect(cs101a.test('Cs 101b')).toBeFalsy();
 		});
 
-		it("should generate number strings used for plus queries", function() {
-			expect(StatementHelper.numberGenerator(1)).toBe('23456789');
-			expect(StatementHelper.numberGenerator(4)).toBe('56789');
-		});
-		it("should generate number strings when a string is passed in as a parameter", function() {
-			expect(StatementHelper.numberGenerator("1")).toBe('23456789');
-			expect(StatementHelper.numberGenerator("4")).toBe("56789");
-		});
+		describe("number generator method", function() {
+			it("should generate exclusive number searches", function() {
+				expect(StatementHelper.numberGenerator(1)).toBe('[2-9]');
+				expect(StatementHelper.numberGenerator(4)).toBe('[5-9]');
+			});
+			it("should generate number search when a string is passed in as a parameter", function() {
+				expect(StatementHelper.numberGenerator("1")).toBe('[2-9]');
+				expect(StatementHelper.numberGenerator("4")).toBe("[5-9]");
+			});
 
-		it("should generate number strings starting from the number itself", function() {
-			expect(StatementHelper.numberGenerator("1", true)).toBe("123456789");
-			expect(StatementHelper.numberGenerator("4", true)).toBe("456789");
-		});
+			it("should generate inclusive number searches", function() {
+				expect(StatementHelper.numberGenerator("1", true)).toBe("[1-9]");
+				expect(StatementHelper.numberGenerator("4", true)).toBe("[4-9]");
+			});
 
-		it("should return an empty string when passing in a number > 10 to the number generator", function() {
-			expect(StatementHelper.numberGenerator(10)).toBe("");
-			expect(StatementHelper.numberGenerator("10")).toBe("");
+			it("should generate a \\d search for an inclusive number search of 0", function() {
+				expect(StatementHelper.numberGenerator(0, true)).toBe("\\d");
+			});
+			it("should generate a 9 search for an inclusive 9", function() {
+				expect(StatementHelper.numberGenerator(9, true)).toBe("9");
+			});
+			it("should generate a 9 search for an exclusive 8", function() {
+				expect(StatementHelper.numberGenerator(8)).toBe("9");
+			});
 		});
-
+			
 		it("should create successful copies of primitives", function() {
 			expect(StatementHelper.copyMongoQuery("hello")).toEqual("hello");
 		});
@@ -744,6 +751,34 @@ describe("Tokenizer Addon:", function() {
 			copy.prop = "This is a new property";
 			expect(copy).not.toEqual(mongoQuery1);
 		});
+		describe("plus token regexp", function() {
+			var cs101p, cs99p, cs301p, cs1234p, cs0p, cs5p, cs251p;
+			beforeEach(function() {
+				cs0p = StatementHelper.plusTokenToRegExp({query: '+', coursePrefix: 'cs', courseNumber: 0});
+				cs5p = StatementHelper.plusTokenToRegExp({query: '+', coursePrefix: 'cs', courseNumber: 5});
+				cs99p = StatementHelper.plusTokenToRegExp({query: '+', coursePrefix: 'cs', courseNumber: 99});
+				cs101p = StatementHelper.plusTokenToRegExp({query: '+', coursePrefix: 'cs', courseNumber: 101});
+				cs251p = StatementHelper.plusTokenToRegExp({query: '+', coursePrefix: 'cs', courseNumber: 251});
+				cs301p = StatementHelper.plusTokenToRegExp({query: '+', coursePrefix: 'cs', courseNumber: 301});
+				cs1234p = StatementHelper.plusTokenToRegExp({query: '+', coursePrefix: 'cs', courseNumber: 1234});
+				
+			});
+			it("should correctly format plus tokens for 1 digit course numbers", function() {
+
+			});
+			it("should correctly format plus tokens for 2 digit course numbers", function() {
+
+			});
+			it("should correctly format plus tokens for 3 digit course numbers", function() {
+				
+			});
+			it("should correctly format plus tokens for 4 digit course numbers", function() {
+				
+			});
+			it("should correctly identify courses with suffixes", function() {});
+			it("should correctly identify courses with extra whitespace", function() {});
+		});
+
 
 	});
 		
