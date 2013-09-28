@@ -728,6 +728,11 @@ describe("Tokenizer Addon:", function() {
 			expect(StatementHelper.numberGenerator("4", true)).toBe("456789");
 		});
 
+		it("should return an empty string when passing in a number > 10 to the number generator", function() {
+			expect(StatementHelper.numberGenerator(10)).toBe("");
+			expect(StatementHelper.numberGenerator("10")).toBe("");
+		});
+
 		it("should create successful copies of primitives", function() {
 			expect(StatementHelper.copyMongoQuery("hello")).toEqual("hello");
 		});
