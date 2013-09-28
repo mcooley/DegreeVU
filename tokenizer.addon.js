@@ -57,7 +57,8 @@ StatementHelper.tokenToRegExp = function(token) {
 //it is much more complex
 StatementHelper.plusQueryToRegExp = function(token) {
 	var courseSearch,
-		numberSearch;
+		numberSearch,
+		digits;
 	if (token.query !== '+') {
 		throw new Error("Expecting a plus token to be passed in method plusQueryToRegExp");
 	}
@@ -68,9 +69,13 @@ StatementHelper.plusQueryToRegExp = function(token) {
 						"])|(\\d\\d["+StatementHelper.numberGenerator(token.courseNumber)+
 						"])|(\\d\\d\\d["+StatementHelper.numberGenerator(token.courseNumber)+"]))";
 	} else if (token.courseNumber < 100) {
-
+		//the number has 2 digits
+		digits = [token.courseNumber/10, token.courseNumber%10];
+		courseSearch = "( ( (["+""+"]) | () ) )|()|())";
 	} else if (token.courseNumber < 1000) {
 
+	} else {
+		//the number has 3 digits
 	}
 
 }
@@ -79,10 +84,14 @@ StatementHelper.plusQueryToRegExp = function(token) {
 //string digit number, with no breaks between the numbers
 //used to help generate plusQuery regexp's, should work if passing in
 //a number or a string
-StatementHelper.numberGenerator = function(num) {
+//include number is a boolean that determines if the number itself is included
+//in the string or if it is a string of numbers > than the number
+StatementHelper.numberGenerator = function(num, includeNumber) {
 	var numString = "",
 		number = (typeof num === 'number') ? num : +num;
-
+	if (!includeNumber) {
+		number++;
+	}
 	while (number < 10) {
 		numString = numString + number.toString();
 		number++;

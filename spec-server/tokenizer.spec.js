@@ -715,12 +715,17 @@ describe("Tokenizer Addon:", function() {
 		});
 
 		it("should generate number strings used for plus queries", function() {
-			expect(StatementHelper.numberGenerator(1)).toBe('123456789');
-			expect(StatementHelper.numberGenerator(4)).toBe('456789');
+			expect(StatementHelper.numberGenerator(1)).toBe('23456789');
+			expect(StatementHelper.numberGenerator(4)).toBe('56789');
 		});
-		it("should generate number strings when a strin is passed in as a parameter", function() {
-			expect(StatementHelper.numberGenerator("1")).toBe('123456789');
-			expect(StatementHelper.numberGenerator("4")).toBe("456789");
+		it("should generate number strings when a string is passed in as a parameter", function() {
+			expect(StatementHelper.numberGenerator("1")).toBe('23456789');
+			expect(StatementHelper.numberGenerator("4")).toBe("56789");
+		});
+
+		it("should generate number strings starting from the number itself", function() {
+			expect(StatementHelper.numberGenerator("1", true)).toBe("123456789");
+			expect(StatementHelper.numberGenerator("4", true)).toBe("456789");
 		});
 
 		it("should create successful copies of primitives", function() {
