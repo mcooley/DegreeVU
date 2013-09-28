@@ -62,14 +62,32 @@ StatementHelper.plusQueryToRegExp = function(token) {
 		throw new Error("Expecting a plus token to be passed in method plusQueryToRegExp");
 	}
 	courseSearch = "^" + token.coursePrefix + '(\\s?)+';
+	//all number regexes should work for numbers with 2, 3, or 4 digits
 	if (token.courseNumber < 10) {
-
+		courseSearch = 	"((\\d["+StatementHelper.numberGenerator(token.courseNumber)+
+						"])|(\\d\\d["+StatementHelper.numberGenerator(token.courseNumber)+
+						"])|(\\d\\d\\d["+StatementHelper.numberGenerator(token.courseNumber)+"]))";
 	} else if (token.courseNumber < 100) {
 
 	} else if (token.courseNumber < 1000) {
 
 	}
 
+}
+//pass in a single digit number and this will generate
+//a string of numbers that are greater than or equal to the
+//string digit number, with no breaks between the numbers
+//used to help generate plusQuery regexp's, should work if passing in
+//a number or a string
+StatementHelper.numberGenerator = function(num) {
+	var numString = "",
+		number = (typeof num === 'number') ? num : +num;
+
+	while (number < 10) {
+		numString = numString + number.toString();
+		number++;
+	}
+	return numString;
 }
 //generates a mongo query from this query
 

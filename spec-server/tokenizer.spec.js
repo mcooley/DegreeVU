@@ -714,6 +714,15 @@ describe("Tokenizer Addon:", function() {
 			expect(cs101a.test('Cs 101b')).toBeFalsy();
 		});
 
+		it("should generate number strings used for plus queries", function() {
+			expect(StatementHelper.numberGenerator(1)).toBe('123456789');
+			expect(StatementHelper.numberGenerator(4)).toBe('456789');
+		});
+		it("should generate number strings when a strin is passed in as a parameter", function() {
+			expect(StatementHelper.numberGenerator("1")).toBe('123456789');
+			expect(StatementHelper.numberGenerator("4")).toBe("456789");
+		});
+
 		it("should create successful copies of primitives", function() {
 			expect(StatementHelper.copyMongoQuery("hello")).toEqual("hello");
 		});
