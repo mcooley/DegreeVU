@@ -756,7 +756,7 @@ describe("Tokenizer Addon:", function() {
 			beforeEach(function() {
 				cs0p = StatementHelper.plusTokenToRegExp({query: '+', coursePrefix: 'cs', courseNumber: 0});
 				cs5p = StatementHelper.plusTokenToRegExp({query: '+', coursePrefix: 'cs', courseNumber: 5});
-				//cs99p = StatementHelper.plusTokenToRegExp({query: '+', coursePrefix: 'cs', courseNumber: 99});
+				cs99p = StatementHelper.plusTokenToRegExp({query: '+', coursePrefix: 'cs', courseNumber: 99});
 				cs101p = StatementHelper.plusTokenToRegExp({query: '+', coursePrefix: 'cs', courseNumber: 101});
 				cs251p = StatementHelper.plusTokenToRegExp({query: '+', coursePrefix: 'cs', courseNumber: 251});
 				cs301p = StatementHelper.plusTokenToRegExp({query: '+', coursePrefix: 'cs', courseNumber: 301});

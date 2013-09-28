@@ -98,7 +98,8 @@ StatementHelper.plusTokenToRegExp = function(token) {
 StatementHelper.numberSearchGenerator = function(num, numOfDigits) {
 	var number = num,
 		digits = [],
-		numberSearch, i, j, n, digitsCount;
+		numberSearch, i, j, n, digitsCount,
+		searchCombinations, next;
 	//store all the digits in an array
 	while (number != 0) {
 		digits.push(number % 10);
@@ -108,34 +109,37 @@ StatementHelper.numberSearchGenerator = function(num, numOfDigits) {
 	//can generate a number that is greater than or equal to 
 	//the number
 	if (digits.length <= numOfDigits) {
-		numberSearch = "(";
+		searchCombinations = [];
+		
 		for (i = 0, n = numOfDigits; i < n; ++i) {
-			if (i !== 0) {
-				numberSearch += "|";
-			}
-			numberSearch += "(";
+			
+			next = "(";
 			
 			for (j = numOfDigits - 1; j >= 0; --j) {
 				if (j >= digits.length) {
 					if (j > i) {
-						numberSearch += "0";
+						next += "0";
 					} else  {
-						numberSearch += "[^0]";
+						next += "[^0]";
 					} 
 				} else {
 					if (j > i) {
-						numberSearch += digits[j].toString();
+						next += digits[j].toString();
 					} else if (j === i) {
-						numberSearch += (j === 0) ? StatementHelper.numberGenerator(digits[j], true) : StatementHelper.numberGenerator(digits[j]);
+						next += (j === 0) ? StatementHelper.numberGenerator(digits[j], true) : StatementHelper.numberGenerator(digits[j]);
 					} else { //j is less than i
-						numberSearch += "\\d";
+						next += "\\d";
 					}
 				}
 			}
-			numberSearch += ")";
+			next += ")";
+			searchCombinations.push(next);
 		}
-		numberSearch += ")";
-		return numberSearch;
+		//remove any combinations where there is a 9 at the digit
+		searchCombinations = searchCombinations.filter(function(comb, index) {
+			return (index === 0 || index >= digits.length || digits[index] !== 9);
+		});
+		return "(" + searchCombinations.join("|") + ")";
 	}
 	return null;
 };
