@@ -104,10 +104,20 @@ StatementHelper.numberSearchGenerator = function(num, numOfDigits) {
 		digits.push(number % 10);
 		number = Math.floor(number / 10);
 	}
+	
+	//special case where the number 0 is passed in
+	if (digits.length === 0) {
+		numberSearch = "";
+		for (i = 0, n = numOfDigits; i < n; ++i) {
+			numberSearch += "\\d";
+		}
+
+		return numberSearch;
+	} 
 	//make sure that the number of digits being passed in,
 	//can generate a number that is greater than or equal to 
 	//the number
-	if (digits.length <= numOfDigits) {
+	else if (digits.length <= numOfDigits) {
 		searchCombinations = [];
 		
 		for (i = 0, n = numOfDigits; i < n; ++i) {
