@@ -491,16 +491,16 @@ describe("Tokenizer Testing Suite:", function() {
 		});
 
 		it("should use refactor method to remove unneeded queries from a query with at least 1 single course", function() {
-			notYetImplemented();
+			
 		});
 
 
 		it("should use refactor method to remove unneeded querying", function() {
-			notYetImplemented();
+			
 		});
 
 		it("should indicate if the query if conradictory", function() {
-			notYetImplemented();
+			
 		});
 
 		it("should create deep copies of itself using the copy method", function() {

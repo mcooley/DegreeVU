@@ -124,6 +124,10 @@ var CourseCodeTokenizer = {
 
 		return false;
 	},
+	//checks if query2 will always exist inside query1
+	complexQueryMatch: function(query1, query2) {
+		
+	},
 	//makes a deep copy and returns it
 	copyQueryObject: function(obj) {
 		var copy = {}, i;
@@ -270,47 +274,30 @@ Query.formatObject = function(obj) {
 //returns false if the elements in the query contradict and
 //the query is useless
 Query.prototype.refactor = function() {
-	var i,n,j, 
-		foundSingleCourse = false, 
-		foundSingleCourseNegation = false;
-
+	var i, n,
+		singleTokens;
 	if (this.array.length > 1) {
-		for (i =0, n = this.array.length; i < n; ++i) {
-			//check to see if the element is nulled out
-			if (this.array[i]) {
-				if (!this.array[i].query) {
-					//single course
+		singleTokens = this.array.filter(function(token) {
+			return !token.query;
+		});
 
-					if (this.array[i].not) {
-						foundSingleCourseNegation = true;
-					} else {
-						foundSingleCourse = true;
-						for (j = 0; j < n; ++j) {
-							if (this.array[j].query || this.array[j].not) {
-								//element is something other than a plain course code
-								if (!CourseCodeTokenizer.matchObject(this.array[i], this.array[j])) {
-									//then there is a contradiction
-									return false;
-								} else {
-									//don't need the element
-									this.array[j] = null;
-
-								}
-							}
-						}
-					}
-
-				} else if (this.array[i].query === '+') {
-
-				} else if (this.array[i].query === '*') {
-					
+		if (singleTokens.length > 1) {
+			for (i = 1, n = singleTokens.length; i < n; ++i) {
+				if (!CourseCodeTokenizer.matchQuery(singleTokens[0], singleTokens[i])) {
+					return false;
 				}
-			} 
- 		}
-
- 		this.array = this.array.filter(function(query) {
- 			return query;
- 		});
+			}
+			singleTokens = [singleTokens[0]];
+		}
+		//at this point, the single tokens array will have at most 1 element in it
+		if (singleToken.length === 1) {
+			for (i = 0, n = this.array.length; i < n; ++i) {
+				if (!CourseCodeTokenizer.matchQuery(singleTokens[0], this.array[i])) {
+					return false;
+				}
+			}
+		}
+		this.array = singleTokens[0];
 	}
 	//successful refactoring
 	return true;
@@ -478,12 +465,15 @@ QueryCollection.prototype.collapseQueries = function(queries) {
 	return _queries.filter(function(query) {
 		return !query.isNegated();
 	});
-	//fixes the queries to minimize unneseccary "and" statemens
+	//fixes the queries to minimize unneseccary "and" statements
 	this.refactor();
 };
 
+//attempts to refactor the query but if there is a conflict, this method
+//will simply return false, returns true if no conflict was found and
+//refactoring was successful
 QueryCollection.prototype.refactor = function() {
-
+	
 };
 
 
