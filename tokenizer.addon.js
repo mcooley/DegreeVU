@@ -87,7 +87,6 @@ StatementHelper.plusTokenToRegExp = function(token) {
 
 	//could have a course suffix at the end of the code
 	courseSearch += "[a-z]*";
-	console.log(courseSearch);
 	return new RegExp(courseSearch, 'i');
 
 };

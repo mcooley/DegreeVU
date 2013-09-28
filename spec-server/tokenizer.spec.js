@@ -764,21 +764,32 @@ describe("Tokenizer Addon:", function() {
 				
 			});
 			it("should correctly format plus tokens for 1 digit course numbers", function() {
-				expect(cs0p.test("cs    101")).toBeTruthy();
+				expect(cs0p.test("cs 101")).toBeTruthy();
 				expect(cs0p.test("CS 88a")).toBeTruthy();
 				expect(cs5p.test("cs 4")).toBeFalsy();
 			});
 			it("should correctly format plus tokens for 2 digit course numbers", function() {
-
+				expect(cs99p.test("Cs 101")).toBeTruthy();
+				expect(cs99p.test("cs 0101")).toBeTruthy();
+				expect(cs99p.test("cs 011")).toBeFalsy();
 			});
 			it("should correctly format plus tokens for 3 digit course numbers", function() {
-				
+				expect(cs101p.test("cs 101")).toBeTruthy();
+				expect(cs251p.test("Cs 0250")).toBeFalsy();
+				expect(cs301p.test("cs 0302")).toBeTruthy();
 			});
 			it("should correctly format plus tokens for 4 digit course numbers", function() {
-				
+				expect(cs1234p.test("cs 1001")).toBeFalsy();
+				expect(cs1234p.test("cs 999")).toBeFalsy();
+				expect(cs1234p.test("cs 1235")).toBeTruthy();
 			});
-			it("should correctly identify courses with suffixes", function() {});
-			it("should correctly identify courses with extra whitespace", function() {});
+			it("should correctly identify courses with suffixes", function() {
+				expect(cs99p.test("cs 101a")).toBeTruthy();
+				expect(cs1234p.test("cs 1245a")).toBeTruthy();
+				expect(cs251p.test("cs 200s")).toBeFalsy();
+
+			});
+			
 
 		});
 	
