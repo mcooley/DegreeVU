@@ -706,10 +706,6 @@ describe("Tokenizer Addon:", function() {
 			};
 		});
 
-		it("should determine the length of mongo queries, based on the number of nested or statements", function() {
-			expect(StatementHelper.mongoQueryLength(mongoQuery1)).toBe(1);
-			expect(StatementHelper.mongoQueryLength(mongoQuery2)).toBe(2);
-		});
 		it("should convert a course token to regexp", function() {
 			var cs101a = StatementHelper.tokenToRegExp({coursePrefix: 'cs', courseSuffix: 'a', courseNumber: 101});
 
@@ -717,6 +713,7 @@ describe("Tokenizer Addon:", function() {
 			expect(cs101a.test('cs   101A')).toBeTruthy();
 			expect(cs101a.test('Cs 101b')).toBeFalsy();
 		});
+
 		it("should create successful copies of primitives", function() {
 			expect(StatementHelper.copyMongoQuery("hello")).toEqual("hello");
 		});
