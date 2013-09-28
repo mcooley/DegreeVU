@@ -9,10 +9,21 @@ var Tokenizer = require('./public/js/tokenizer'),
 //returns the mongoQuery after the token has been added
 var StatementHelper = {};
 StatementHelper.addTokenToMongoQuery = function(token, mongoQuery) {
-	if (!token.query) {
-		mongoQuery.courseCode = tokenToRegExp(token);
-	} else if (token.query === '*') {
-	}
+	
+		if (!token.query) {
+			mongoQuery.courseCode = (token.not) ? {$nin: [tokenToRegExp(token)]} : tokenToRegExp(token);
+		} else if (token.query === '*') {
+			mongoQuery.coursePrefix = (token.not) ? {$nin: [new RegExp(token.coursePrefix, "i")]} : new RegExp(token.coursePrefix);
+		} else if (token.query === '+') {
+			mongoQuery.courseCode = (token.not) ? {$nin: [plusTokenToRegExp(token)]} : plusTokenToRegExp(token);
+		} else if (token.query === '$') {
+			mongoQuery.courseSuffix = new RegExp(token.courseSuffix, "i");
+		} else if (token.query === '^') {
+			//school name
+		} else if (token.query === '~') {
+			//attribute
+		}
+		
 };
 
 //makes a deep copy of the query
@@ -62,65 +73,72 @@ StatementHelper.plusTokenToRegExp = function(token) {
 	if (token.query !== '+') {
 		throw new Error("Expecting a plus token to be passed in method plusQueryToRegExp");
 	}
-	courseSearch = "^" + token.coursePrefix + '(\\s?)+';
+	courseSearch = "^" + token.coursePrefix + '\\s';
 	//all number regexes should work for numbers with 2, 3, or 4 digits
-	if (token.courseNumber < 10) {
-		courseSearch += 	"((\\d"+StatementHelper.numberGenerator(token.courseNumber, true)+
-						")|(\\d\\d"+StatementHelper.numberGenerator(token.courseNumber, true)+
-						")|(\\d\\d\\d"+StatementHelper.numberGenerator(token.courseNumber, true)+"))";
-	} else if (token.courseNumber < 100) {
-		//the number has 2 digits
-		digits = [token.courseNumber%10, Math.floor(token.courseNumber/10)];
-		courseSearch += "(";
-		//for 2 digit numbers
-		courseSearch += ("(("+digits[1].toString()+StatementHelper.numberGenerator(digits[0], true)+")|("
-						+StatementHelper.numberGenerator(digits[1])+"\\d))");
-		//for 3 digit numbers
-		courseSearch += ("|((\\d"+digits[1].toString()+StatementHelper.numberGenerator(digits[0], true)+")|(\\d"
-						+StatementHelper.numberGenerator(digits[1])+"\\d))");
-		//for 4 digit numbers
-		courseSearch += ("|((\\d\\d"+digits[1].toString()+StatementHelper.numberGenerator(digits[0], true)
-						+")|(\\d\\d"
-						+StatementHelper.numberGenerator(digits[1])+"\\d))");
-
-		courseSearch += ")";
-	} else if (token.courseNumber < 1000) {
-		//the number has 3 digits
-		digits = [token.courseNumber %10, Math.floor((token.courseNumber%100)/10), Math.floor(token.courseNumber /100)];
-		
-		courseSearch += "(";
-		//don't need to design it for 2 digits, because it should never match 
-		//2 digit number
-		//for 3 digits
-		courseSearch 	+= ("(("+digits[2].toString()+digits[1].toString()+StatementHelper.numberGenerator(digits[0], true)
-						+")|("+digits[2].toString()+StatementHelper.numberGenerator(digits[1])
-						+"\\d)|("+StatementHelper.numberGenerator(digits[0])+"\\d\\d))");
-						
-		//for 4 digits
-		courseSearch += ("|((\\d"+digits[2].toString()+digits[1].toString()+StatementHelper.numberGenerator(digits[0], true)
-						+")|(\\d"+digits[2].toString()+StatementHelper.numberGenerator(digits[1])
-						+"\\d)|(\\d"+StatementHelper.numberGenerator(digits[0])+"\\d\\d))")
-		courseSearch += ")";
-	} else {
-
-		//the number has 4 digits
-		digits = [token.courseNumber%10, Math.floor((token.courseNumber%100)/10), Math.floor((token.courseNumber%1000)/100), Math.floor(token.courseNumber/1000)];
-		//don't need to design it for 2 or 3 digits because it should never match 2
-		//or 3 digit number
-		console.log("Digits: ", JSON.stringify(digits));
-		courseSearch += "(";
-		courseSearch 	+= ("("+digits[3].toString()+digits[2].toString()+digits[1].toString()+StatementHelper.numberGenerator(digits[0], true)
-						+")|("+digits[3].toString()+digits[2].toString()+StatementHelper.numberGenerator(digits[1])
-						+"\\d)|("+digits[3].toString()+StatementHelper.numberGenerator(digits[2].toString())
-						+"\\d\\d)|("+StatementHelper.numberGenerator(digits[3])+"\\d\\d\\d)");
-		courseSearch +=")";
+	courseSearch += "(";
+	courseSearch += ("(" + StatementHelper.numberSearchGenerator(token.courseNumber, 4) + ")");
+	if (token.courseNumber < 1000) {
+		courseSearch += ("|(" + StatementHelper.numberSearchGenerator(token.courseNumber, 3) + ")");
 	}
+	if (token.courseNumber < 100) {
+		courseSearch += ("|(" + StatementHelper.numberSearchGenerator(token.courseNumber, 2) + ")");
+	}	
+	courseSearch += ")";
+
 	//could have a course suffix at the end of the code
 	courseSearch += "[a-z]*";
 	console.log(courseSearch);
 	return new RegExp(courseSearch, 'i');
 
-}
+};
+
+//generates a string that can be converted to regexp for searching
+//for a number greater than or equal to the parameter, with the number of digits used
+//to search
+StatementHelper.numberSearchGenerator = function(num, numOfDigits) {
+	var number = num,
+		digits = [],
+		numberSearch, i, j, n, digitsCount;
+	//store all the digits in an array
+	while (number != 0) {
+		digits.push(number % 10);
+		number = Math.floor(number / 10);
+	}
+	//make sure that the number of digits being passed in,
+	//can generate a number that is greater than or equal to 
+	//the number
+	if (digits.length <= numOfDigits) {
+		numberSearch = "(";
+		for (i = 0, n = numOfDigits; i < n; ++i) {
+			if (i !== 0) {
+				numberSearch += "|";
+			}
+			numberSearch += "(";
+			
+			for (j = numOfDigits - 1; j >= 0; --j) {
+				if (j >= digits.length) {
+					if (j > i) {
+						numberSearch += "0";
+					} else  {
+						numberSearch += "[^0]";
+					} 
+				} else {
+					if (j > i) {
+						numberSearch += digits[j].toString();
+					} else if (j === i) {
+						numberSearch += (j === 0) ? StatementHelper.numberGenerator(digits[j], true) : StatementHelper.numberGenerator(digits[j]);
+					} else { //j is less than i
+						numberSearch += "\\d";
+					}
+				}
+			}
+			numberSearch += ")";
+		}
+		numberSearch += ")";
+		return numberSearch;
+	}
+	return null;
+};
 //pass in a single digit number and this will generate
 //a string of numbers that are greater than or equal to the
 //string digit number, with no breaks between the numbers
@@ -129,8 +147,8 @@ StatementHelper.plusTokenToRegExp = function(token) {
 //include number is a boolean that determines if the number itself is included
 //in the string or if it is a string of numbers > than the number.  This will
 //not have the correct behavior if the num passed in is greater than 9
-StatementHelper.numberGenerator = function(num, includeNumber) {
-	var number = (typeof num === 'number') ? num : +num;
+StatementHelper.numberGenerator = function(digit, includeNumber) {
+	var number = (typeof num === 'number') ? digit : +digit;
 	if (!includeNumber) {
 		number++;
 	}

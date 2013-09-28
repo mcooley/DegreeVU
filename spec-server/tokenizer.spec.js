@@ -756,7 +756,7 @@ describe("Tokenizer Addon:", function() {
 			beforeEach(function() {
 				cs0p = StatementHelper.plusTokenToRegExp({query: '+', coursePrefix: 'cs', courseNumber: 0});
 				cs5p = StatementHelper.plusTokenToRegExp({query: '+', coursePrefix: 'cs', courseNumber: 5});
-				cs99p = StatementHelper.plusTokenToRegExp({query: '+', coursePrefix: 'cs', courseNumber: 99});
+				//cs99p = StatementHelper.plusTokenToRegExp({query: '+', coursePrefix: 'cs', courseNumber: 99});
 				cs101p = StatementHelper.plusTokenToRegExp({query: '+', coursePrefix: 'cs', courseNumber: 101});
 				cs251p = StatementHelper.plusTokenToRegExp({query: '+', coursePrefix: 'cs', courseNumber: 251});
 				cs301p = StatementHelper.plusTokenToRegExp({query: '+', coursePrefix: 'cs', courseNumber: 301});
@@ -764,7 +764,9 @@ describe("Tokenizer Addon:", function() {
 				
 			});
 			it("should correctly format plus tokens for 1 digit course numbers", function() {
-
+				expect(cs0p.test("cs    101")).toBeTruthy();
+				expect(cs0p.test("CS 88a")).toBeTruthy();
+				expect(cs5p.test("cs 4")).toBeFalsy();
 			});
 			it("should correctly format plus tokens for 2 digit course numbers", function() {
 
@@ -777,8 +779,12 @@ describe("Tokenizer Addon:", function() {
 			});
 			it("should correctly identify courses with suffixes", function() {});
 			it("should correctly identify courses with extra whitespace", function() {});
-		});
 
+		});
+	
+		describe("addTokenToMongoQuery method", function() {
+
+		});
 
 	});
 		
