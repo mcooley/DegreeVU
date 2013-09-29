@@ -316,6 +316,11 @@ Query.prototype.refactorCollection = [
 		}
 		return true;
 	},
+	//check for any queries that are exclusively made of
+	//anti queries
+	function() {
+		return this.array.length !== this.array.filter(function(token) {return token.not;}).length;
+	},
 	//above courses
 	function() {
 		return true;

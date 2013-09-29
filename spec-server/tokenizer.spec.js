@@ -592,8 +592,7 @@ describe("Tokenizer Testing Suite:", function() {
 		});
 
 		it("should match a set of course codes using a filter method and a complex multi query collection", function() {
-			var queries = new QueryCollection(s_collection2);
-			s_collection2 = ["MATH 155A", "MATH 155B", "MATH 200+", "!MATH 208", "!MATH 209"];
+			var queries = new QueryCollection(["MATH 155A", "MATH 155B", "MATH 200+", "!MATH 208", "!MATH 209"]);
 			
 			expect(queries.filter(["MATH 155A", "MATH 208", "MATH 300", "BSCI 110a"])).toEqual(["MATH 155A", "MATH 300"]);
 		});
