@@ -482,10 +482,10 @@ QueryCollection.union = function(collection1, collection2) {
 //takes an array of query objects
 QueryCollection.prototype.collapseQueries = function(queries) {
 	//make a copy of the queries so that they are not changed
-	var i, j,  _queries = queries.slice();
+	var i, j, n, _queries = queries.slice();
 
-	for (i = _queries.length - 1; i >= 0; --i) {
-		if (_queries[i].isSingleCourse() && _queries[i].isNegated()) {
+	for (i = 0, n = _queries.length; i < n; ++i) {
+		if (_queries[i].isNegated()) {
 			for (j = i - 1; j >= 0; --j) {
 				_queries[j].and(_queries[i].toString());
 			}
