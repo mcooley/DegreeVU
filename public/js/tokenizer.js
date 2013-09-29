@@ -343,8 +343,32 @@ Query.prototype.refactorCollection = [
 	function() {
 		return this.array.length !== this.array.filter(function(token) {return token.not;}).length;
 	},
-	//above courses
+	//compare a single course against all other queries
 	function() {
+		var i,n,
+			singleTokens = this.array.filter(function(token) {
+				return !token.not && !token.query;
+			}),
+		//there should only be 1 single token since the single courses 
+		//refactoring function was run before this
+			singleToken = (singleTokens.length) ? singleTokens[0] : null;
+
+
+		if (singleToken) {
+			//compare the sinlge token to all other tokens
+			for (i = 0, n = this.array.length; i < n; ++i) {
+				if (this.array[i] !== singleToken) {
+					try {
+						if (!CourseCodeTokenizer.matchObject(singleToken, this.array[i])) {
+							return false;
+						} else {
+							this.array[i] = null;
+						}
+					} catch (e) {}
+				}
+			}
+			this.array = this.array.filter(function(token) {return token;});
+		}
 		return true;
 	},
 	//start courses/ all courses in major

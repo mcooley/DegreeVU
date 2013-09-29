@@ -501,19 +501,24 @@ describe("Tokenizer Testing Suite:", function() {
 			expect(query4.filter(["cs 101", "cs 101a", "bsci110a", "cs 251"])).toEqual(["CS 101A", "BSCI 110A"]);
 
 		});
+		describe("refactoring", function() {
+			it("should remove unneeded queries from a query with at least 1 single course", function() {
+				var query = new Query("cs 201 & cs 200+");
 
-		it("should use refactor method to remove unneeded queries from a query with at least 1 single course", function() {
-			
+				query.refactor();
+				expect(query.toString()).toBe("CS 201");
+			});
+
+			it("should indicate if the query is conradictory for single course anti-queries", function() {
+				var query = new Query("cs 101 & !Cs 101");
+				expect(query.refactor()).toBeFalsy();
+			});
+			it("should indicate if the query is contradictory from having more than 1 single course", function() {
+				var query = new Query("cs 101 & cs 102");
+				expect(query.refactor()).toBeFalsy();
+			});
 		});
-
-
-		it("should use refactor method to remove unneeded querying", function() {
 			
-		});
-
-		it("should indicate if the query if conradictory", function() {
-			
-		});
 
 		it("should create deep copies of itself using the copy method", function() {
 			var query1 = new Query("cs 101a"),
