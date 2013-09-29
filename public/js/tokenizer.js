@@ -429,34 +429,33 @@ QueryCollection.prototype.union = function(_collection) {
 	var i, n, j,
 	collection;
 
-	
-	if (Array.isArray(_collection)) {
-		collection = new QueryCollection(_collection);
-	}
-	else if (_collection.constructor === QueryCollection) {
-		collection = _collection
-	}
+	if (this !== _collection) {
+		if (Array.isArray(_collection)) {
+			collection = new QueryCollection(_collection);
+		}
+		else if (_collection.constructor === QueryCollection) {
+			collection = _collection
+		}
 
-	collection.each(function(query) {
-		this.collection.push(query.copy());
-	}, this);
+		collection.each(function(query) {
+			this.collection.push(query.copy());
+		}, this);
 
-	for (i = 0, n = this.collection.length; i < n; ++i) {
-		if (this.collection[i]) {
-			for (j = i + 1; j < n; ++j) {
-				if (this.collection[j] && _.isEqual(this.collection[i], this.collection[j])) {
-					this.collection[j] = null;
+		for (i = 0, n = this.collection.length; i < n; ++i) {
+			if (this.collection[i]) {
+				for (j = i + 1; j < n; ++j) {
+					if (this.collection[j] && _.isEqual(this.collection[i], this.collection[j])) {
+						this.collection[j] = null;
+					}
 				}
 			}
+				
 		}
-			
-	}
-	//filter out the nulled elements
-	this.collection = this.collection.filter(function(query) {
-		return query;
-	});
-
-		
+		//filter out the nulled elements
+		this.collection = this.collection.filter(function(query) {
+			return query;
+		});
+	}		
 };
 
 //static methods
@@ -503,7 +502,7 @@ QueryCollection.prototype.collapseQueries = function(queries) {
 QueryCollection.prototype.refactor = function() {
 	this.collection = this.collection.filter(function(query) {
 		//each query performs its own refactoring and returns false
-		//if conflicts are found
+		//if conflicts are found, so query must be removed
 		return query.refactor();
 	});
 };

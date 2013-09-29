@@ -628,10 +628,6 @@ describe("Tokenizer Testing Suite:", function() {
 			expect(queries.matches("math 155a")).toBeTruthy();
 			expect(queries.matches("cs 103")).toBeFalsy();
 		});
-
-		it('should prevent self union', function() {
-			expect(false).toBeTruthy();
-		});
 		
 		it("should remove redundancies when unioning 2 query collections", function() {
 			var queries = new QueryCollection(s_collection1);
@@ -793,8 +789,6 @@ describe("Tokenizer Addon:", function() {
 				expect(cs251p.test("cs 200s")).toBeFalsy();
 
 			});
-			
-
 		});
 	
 		describe("addTokenToMongoQuery method", function() {
