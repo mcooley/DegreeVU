@@ -537,6 +537,11 @@ describe("Tokenizer Testing Suite:", function() {
 				var query = new Query("cs 101 & cs 102");
 				expect(query.refactor()).toBeFalsy();
 			});
+			it("should keep portions of multiqueries that cannot be resolved and not throw errors", function() {
+				var query = new Query("cs 101 & SE^");
+				expect(query.refactor()).toBeTruthy();
+				expect(query.toString()).toBe("CS 101 & SE^");
+			});
 		});
 	});
 
@@ -796,6 +801,7 @@ describe("Tokenizer Addon:", function() {
 				expect(cs251p.test("cs 200s")).toBeFalsy();
 
 			});
+
 		});
 	
 		describe("addTokenToMongoQuery method", function() {
