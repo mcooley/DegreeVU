@@ -6,6 +6,7 @@
 	//BL: Blair
 
 //is this script being run on server or client side
+
 var serverSide = typeof require === 'function' && typeof exports === 'object' && typeof module === 'object';
 if (serverSide) {
 	var _ = require('underscore');

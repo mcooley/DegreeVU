@@ -520,20 +520,10 @@ describe("Tokenizer Testing Suite:", function() {
 	});
 
 	describe("Query Collection", function() {
-
-		var s_collection1,
-			s_collection2,
-			s_collection3,
-			s_collection4,
-			q_collection1,
+		var q_collection1,
 			q_collection2;
 
 		beforeEach(function() {
-
-			s_collection1 = ["CS 101", "CS 102", "bsci 200+"],
-			s_collection2 = ["MATH 155A", "MATH 155B", "MATH 200+", "!MATH 208", "!MATH 209"];
-			s_collection3 = ["MATH100", "!MATH 200", "MATH*"];
-			s_collection4 = ["MATH 155", "Math 200+ & !MATH 209 & !MATH 210"];
 			q_collection1 = [new Query("CS 101"), new Query("CS 102"), new Query("CS251"), new Query("bsci 200+")];
 			q_collection2 = [new Query("a$"), new Query("!CS 200+")];
 		});
@@ -549,7 +539,7 @@ describe("Tokenizer Testing Suite:", function() {
 		it("should have a constructor that takes query strings", function() {
 			var testFunct = function() {
 				return function() {
-					var query = new QueryCollection(s_collection1);
+					var query = new QueryCollection(["CS 101", "CS 102", "bsci 200+"]);
 				}
 			}
 			expect(testFunct()).not.toThrowAnything();
@@ -569,7 +559,7 @@ describe("Tokenizer Testing Suite:", function() {
 
 		});
 		it('should match a course for a simple query', function() {
-			var queries = new QueryCollection(s_collection1);
+			var queries = new QueryCollection(["CS 101", "CS 102", "bsci 200+"]);
 
 			expect(queries.has("cs 101")).toBeTruthy();
 			expect(queries.has("bsci 201")).toBeTruthy();
@@ -578,7 +568,7 @@ describe("Tokenizer Testing Suite:", function() {
 		});
 
 		it('should match a course for a collection containing multiqueries', function() {
-			var queries = new QueryCollection(s_collection4);
+			var queries = new QueryCollection(["MATH 155", "Math 200+ & !MATH 209 & !MATH 210"]);
 
 			expect(queries.has("math 155")).toBeTruthy();
 			expect(queries.has("Math 209")).toBeFalsy();
@@ -586,7 +576,7 @@ describe("Tokenizer Testing Suite:", function() {
 		});
 
 		it("should match a set of course codes using the filter method", function() {
-			var queries = new QueryCollection(s_collection1);
+			var queries = new QueryCollection(["CS 101", "CS 102", "bsci 200+"]);
 
 			expect(queries.filter(["CS 101", "cs 103", "bsci 110a", "bsci 201"])).toEqual(["CS 101", "BSCI 201"]);
 		});
@@ -606,31 +596,31 @@ describe("Tokenizer Testing Suite:", function() {
 		});
 
 		it("should allow for appending more query strings", function() {
-			var queries = new QueryCollection(s_collection1);
+			var queries = new QueryCollection(["CS 101", "CS 102", "bsci 200+"]);
 			queries.append("cs 103");
 			expect(queries.has("cs 103")).toBeTruthy();
 		});
 
 
 		it("should allow for appending more query objects", function() {
-			var queries = new QueryCollection(s_collection2);
+			var queries = new QueryCollection(["MATH 155A", "MATH 155B", "MATH 200+", "!MATH 208", "!MATH 209"]);
 			queries.append(new Query("cs 103"));
 			expect(queries.has("cs 103")).toBeTruthy();
 			expect(queries.has("Math 209")).toBeFalsy();
 		});
 
 		it("should allow for unioning another query collection", function() {
-			var queries = new QueryCollection(s_collection1);
+			var queries = new QueryCollection(["CS 101", "CS 102", "bsci 200+"]);
 
-			queries.union(new QueryCollection(s_collection2));
+			queries.union(new QueryCollection(["MATH 155A", "MATH 155B", "MATH 200+", "!MATH 208", "!MATH 209"]));
 
-			//expect(queries.has("cs 101")).toBeTruthy();
-			//expect(queries.has("math 155a")).toBeTruthy();
-			//expect(queries.has("cs 103")).toBeFalsy();
+			expect(queries.has("cs 101")).toBeTruthy();
+			expect(queries.has("math 155a")).toBeTruthy();
+			expect(queries.has("cs 103")).toBeFalsy();
 		});
 		
 		it("should remove redundancies when unioning 2 query collections", function() {
-			var queries = new QueryCollection(s_collection1);
+			var queries = new QueryCollection(["CS 101", "CS 102", "bsci 200+"]);
 
 			queries.union(new QueryCollection(["CS 101", "!CS 103", "CS 200+"]));
 
@@ -639,7 +629,7 @@ describe("Tokenizer Testing Suite:", function() {
 
 
 		it("should create a deep copy of itself", function() {
-			var queries = new QueryCollection(s_collection2),
+			var queries = new QueryCollection(["MATH 155A", "MATH 155B", "MATH 200+", "!MATH 208", "!MATH 209"]),
 				queriesCopy = queries.copy();
 			expect(queries).toEqual(queriesCopy);
 			queriesCopy.append("CS 101");
@@ -648,13 +638,13 @@ describe("Tokenizer Testing Suite:", function() {
 		});
 		
 		it("should return an array of queries", function() {
-			var queries = new QueryCollection(s_collection1);
+			var queries = new QueryCollection(["CS 101", "CS 102", "bsci 200+"]);
 
 			expect(queries.toArray()).toEqual(["CS 101", "CS 102", "BSCI 200+"])
 		});
 
 		it("should return an array of queries for complex anti query collections", function() {
-			var queries = new QueryCollection(s_collection2);
+			var queries = new QueryCollection(["MATH 155A", "MATH 155B", "MATH 200+", "!MATH 208", "!MATH 209"]);
 
 			expect(queries.toArray()).toEqual(["MATH 155A", "MATH 155B", "MATH 200+ & !MATH 209 & !MATH 208"]);
 		});
