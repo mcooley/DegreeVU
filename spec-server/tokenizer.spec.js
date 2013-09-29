@@ -501,6 +501,16 @@ describe("Tokenizer Testing Suite:", function() {
 			expect(query4.filter(["cs 101", "cs 101a", "bsci110a", "cs 251"])).toEqual(["CS 101A", "BSCI 110A"]);
 
 		});
+
+		it("should create deep copies of itself using the copy method", function() {
+			var query1 = new Query("cs 101a"),
+				query2 = query1.copy();
+
+			expect(query2).toEqual(query1);
+			query2.array[0].not = !query2.array[0].not;
+			expect(query2).not.toEqual(query1);
+		});
+
 		describe("refactoring", function() {
 			it("should remove unneeded queries from a query with at least 1 single course", function() {
 				var query = new Query("cs 201 & cs 200+");
@@ -528,17 +538,6 @@ describe("Tokenizer Testing Suite:", function() {
 				expect(query.refactor()).toBeFalsy();
 			});
 		});
-			
-
-		it("should create deep copies of itself using the copy method", function() {
-			var query1 = new Query("cs 101a"),
-				query2 = query1.copy();
-
-			expect(query2).toEqual(query1);
-			query2.array[0].not = !query2.array[0].not;
-			expect(query2).not.toEqual(query1);
-		});
-
 	});
 
 	describe("Query Collection", function() {
