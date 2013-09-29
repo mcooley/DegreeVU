@@ -668,10 +668,6 @@ describe("Tokenizer Testing Suite:", function() {
 			expect(queries.toArray()).toEqual(["CS 101", "CS 103", "CS 200+"]);
 		});
 
-		it("should prevent self-union with the union static method", function() {
-			expect(false).toBeTruthy();
-		});
-
 		it("should union correctly with the static union method when given two Query collections", function() {
 			var queries = QueryCollection.union(new QueryCollection(["CS 101", "CS 103"]), new QueryCollection(["CS 101", "!CS 101", "CS 200+"]));
 
