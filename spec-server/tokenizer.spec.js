@@ -1,8 +1,13 @@
+
 var tokenizer = require('../tokenizer.addon'),
+	_ = require('underscore'),
+
+
 	CourseCodeTokenizer = tokenizer.CourseCodeTokenizer,
 	Query = tokenizer.Query,
 	QueryCollection = tokenizer.QueryCollection,
 	StatementHelper = tokenizer.StatementHelper;
+
 
 describe("Tokenizer Testing Suite:", function() {
 
@@ -507,9 +512,9 @@ describe("Tokenizer Testing Suite:", function() {
 			var query1 = new Query("cs 101a"),
 				query2 = query1.copy();
 
-			expect(_.isEqual(query1, query2)).toBeTruthy();
+			expect(query2).toEqual(query1);
 			query2.array[0].not = !query2.array[0].not;
-			expect(_.isEqual(query1, query2)).toBeFalsy();
+			expect(query2).not.toEqual(query1);
 		});
 
 	});

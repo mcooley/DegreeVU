@@ -141,8 +141,8 @@ var CourseCodeTokenizer = {
 
 
 //USE THIS CONSTRUCTOR HERE TO CONSTRUCT A QUERY
-function Query(queryToken) {
-	var array = queryToken.split("&");
+function Query(queryString) {
+	var array = queryString.split("&");
 	this.array = array.map(function(token) {
 		token = token.trim();
 		return CourseCodeTokenizer.parse(token);
@@ -306,6 +306,8 @@ Query.prototype.refactorCollection = [
 				return !token.not;
 			});
 			representative = (singleCourses.length) ? singleCourses[0] : null;
+			//check if there is an single course that is positive to represent
+			//courses
 			if (representative) {
 				this.array = this.array.filter(function(token) {
 					return token.query || token === representative;
