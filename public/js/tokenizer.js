@@ -143,8 +143,6 @@ var CourseCodeTokenizer = {
 
 //USE THIS CONSTRUCTOR HERE TO CONSTRUCT A QUERY
 function Query(queryString) {
-	
-	console.log(typeof queryString);
 	var array = queryString.split("&");
 	this.array = array.map(function(token) {
 		token = token.trim();
