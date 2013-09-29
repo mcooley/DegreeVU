@@ -653,7 +653,7 @@ describe("Tokenizer Testing Suite:", function() {
 		it("should return an array of queries for complex anti query collections", function() {
 			var queries = new QueryCollection(["MATH 155A", "MATH 155B", "MATH 200+", "!MATH 208", "!MATH 209"]);
 
-			expect(queries.toArray()).toEqual(["MATH 155A", "MATH 155B", "MATH 200+ & !MATH 209 & !MATH 208"]);
+			expect(queries.toArray()).toEqual(["MATH 155A", "MATH 155B", "MATH 200+ & !MATH 208 & !MATH 209"]);
 		});
 
 		it('should cancel out queries that are opposite to the negation', function() {
