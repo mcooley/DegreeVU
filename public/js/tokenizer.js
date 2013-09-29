@@ -143,6 +143,8 @@ var CourseCodeTokenizer = {
 
 //USE THIS CONSTRUCTOR HERE TO CONSTRUCT A QUERY
 function Query(queryString) {
+	
+	console.log(typeof queryString);
 	var array = queryString.split("&");
 	this.array = array.map(function(token) {
 		token = token.trim();
@@ -182,9 +184,13 @@ Query.prototype.and = function(query) {
 };
 
 //returns true if the query is equal to the course code
-Query.prototype.isEqual = function(courseCode) {
-	var query = new Query(courseCode);
-	return _.isEqual(query.array, this.array);
+Query.prototype.isEqual = function(query) {
+	if (typeof query === 'string') {
+		return _.isEqual(this.array, (new Query(query)).array);
+	} else if (typeof query === 'object' && query.prototype === Query) {
+		return _.isEqual(this.array, query.array);
+	}
+	return false;
 };
 
 //true if the query is just a single course code
@@ -353,9 +359,7 @@ function QueryCollection(queries) {
 	} 
 
 	else if (typeof queries[0] === 'string') {
-		return new QueryCollection(queries.map(function(queryString) {
-			return new Query(queryString);
-		}));
+		return new QueryCollection(queries.map(function(queryString) {return new Query(queryString);}));
 	}
 	else if (queries[0].constructor === Query) {
 
@@ -445,7 +449,8 @@ QueryCollection.prototype.union = function(_collection) {
 		for (i = 0, n = this.collection.length; i < n; ++i) {
 			if (this.collection[i]) {
 				for (j = i + 1; j < n; ++j) {
-					if (this.collection[j] && _.isEqual(this.collection[i], this.collection[j])) {
+					
+					if (this.collection[j] && this.collection[i].isEqual(this.collection[j])) {
 						this.collection[j] = null;
 					}
 				}
