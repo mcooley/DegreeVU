@@ -124,10 +124,7 @@ var CourseCodeTokenizer = {
 
 		return false;
 	},
-	//checks if query2 will always exist inside query1
-	complexQueryMatch: function(query1, query2) {
-		
-	},
+	
 	//makes a deep copy and returns it
 	copyQueryObject: function(obj) {
 		var copy = {}, i;
@@ -272,36 +269,61 @@ Query.formatObject = function(obj) {
 //unneccessary elements in the query
 //returns true if the query can be refactored and 
 //returns false if the elements in the query contradict and
-//the query is useless
+//the query is useless.  This is a facade method that calls 
+//multiple other methods for refactoring different types 
+//of queries
 Query.prototype.refactor = function() {
-	var i, n,
-		singleTokens;
-	if (this.array.length > 1) {
-		singleTokens = this.array.filter(function(token) {
-			return !token.query;
-		});
-
-		if (singleTokens.length > 1) {
-			for (i = 1, n = singleTokens.length; i < n; ++i) {
-				if (!CourseCodeTokenizer.matchQuery(singleTokens[0], singleTokens[i])) {
-					return false;
-				}
-			}
-			singleTokens = [singleTokens[0]];
-		}
-		//at this point, the single tokens array will have at most 1 element in it
-		if (singleToken.length === 1) {
-			for (i = 0, n = this.array.length; i < n; ++i) {
-				if (!CourseCodeTokenizer.matchQuery(singleTokens[0], this.array[i])) {
-					return false;
-				}
-			}
-		}
-		this.array = singleTokens[0];
-	}
-	//successful refactoring
-	return true;
+	var self = this;
+	return this.refactorCollection.reduce(function(memo, funct) {
+		//make sure to pass in the correct context to the function
+		return memo && funct.call(self);
+	}, true);
+	
 };
+
+//collection of functions that can be iterated and
+//executed.  This is a collection of refactoring tests
+//to run on the array object, that will automatically 
+//be executed.  Each function must return true if the
+//refactoring was successful, and false otherwise
+Query.prototype.refactorCollection = [
+	//single courses
+	function() {
+		var singleCourses = this.array.filter(function(token) {return !token.query;}),
+			i, n, j, representative;
+		if (singleCourses.length > 1) {
+			for (i = 0, n = singleCourses.length; i < n; ++i) {
+				for (j = i + 1; j < n; ++j) {
+					if (!CourseCodeTokenizer.matchObject(singleCourses[i], singleCourses[j])) {
+						return false;
+					}
+				}
+			}
+			//all courses are in agreement with one another at this point
+			//get a single course to use as the replacement to the list of 
+			//all single courses.  Remove any anti single courses
+			singleCourses = singleCourses.filter(function(token) {
+				return !token.not;
+			});
+			representative = (singleCourses.length) ? singleCourses[0] : null;
+			if (representative) {
+				this.array = this.array.filter(function(token) {
+					return token.query || token === representative;
+				});
+			}
+		}
+		return true;
+	},
+	//above courses
+	function() {
+		return true;
+	},
+	//start courses/ all courses in major
+	function() {
+		return true;
+	}
+
+]
 //collection of queries that are related in some way,
 //such as queries that satisfy a single course
 //used to bundle queries and optimize processes
@@ -330,7 +352,7 @@ function QueryCollection(queries) {
 	else if (queries[0].constructor === Query) {
 
 		this.collection = this.collapseQueries(queries);
-
+		this.refactor();
 	}
 };
 
@@ -465,15 +487,18 @@ QueryCollection.prototype.collapseQueries = function(queries) {
 	return _queries.filter(function(query) {
 		return !query.isNegated();
 	});
-	//fixes the queries to minimize unneseccary "and" statements
-	this.refactor();
+	
 };
 
 //attempts to refactor the query but if there is a conflict, this method
 //will simply return false, returns true if no conflict was found and
 //refactoring was successful
 QueryCollection.prototype.refactor = function() {
-	
+	this.collection = this.collection.filter(function(query) {
+		//each query performs its own refactoring and returns false
+		//if conflicts are found
+		return query.refactor();
+	});
 };
 
 
