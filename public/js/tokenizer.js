@@ -183,10 +183,27 @@ Query.prototype.and = function(query) {
 
 //returns true if the query is equal to the course code
 Query.prototype.isEqual = function(query) {
+	var queryCopy, i,j, n;
+	if (this === query) {return true;}
+
 	if (typeof query === 'string') {
-		return _.isEqual(this.array, (new Query(query)).array);
-	} else if (typeof query === 'object' && query.prototype === Query) {
-		return _.isEqual(this.array, query.array);
+		return this.isEqual(new Query(query));
+	} else if (typeof query === 'object' && query.constructor === Query) {
+		
+		if (this.array.length === query.array.length) {
+			
+			queryCopy = query.array.slice();
+			for (i = 0, n = this.array.length; i < n; ++i) {
+				
+				for (j = 0; j < n; ++j) {
+					//null out any tokens that match in both arrays
+					if (_.isEqual(this.array[i], queryCopy[j])) {
+						queryCopy[j] = null;
+					}
+				}
+			}
+			return !queryCopy.filter(function(token) {return token;}).length;
+		}
 	}
 	return false;
 };

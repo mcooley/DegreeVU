@@ -438,6 +438,13 @@ describe("Tokenizer Testing Suite:", function() {
 			expect(query6.isEqual("!p~")).toBeFalsy();
 		});
 
+		it("should identify equal queries despite different ordering of multi-queries", function() {
+			var query1 = new Query("cs 200+ & !cs 202 & !cs 201"),
+				query2 = new Query("!cs 201 & cs 200+ & !cs 202");
+
+			expect(query1.isEqual(query2)).toBeTruthy();
+		});
+
 		it("should reformat queries correctly using the toString method", function() {
 			var query1 = new Query("CS 101"),
 				query2 = new Query("cs101 "),
