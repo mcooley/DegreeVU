@@ -145,13 +145,13 @@ describe("Tokenizer Testing Suite:", function() {
 			expect(CourseCodeTokenizer.isEqual("bsci110a", "bsci110b")).toBeFalsy();
 		});
 
-		it("should recogize when a course code matches itself", function() {
+		it("should recogize when a course code has itself", function() {
 			expect(CourseCodeTokenizer.matchQuery("cs 101", "CS 101")).toBeTruthy();
 		});
 		it("should recognize when a course code does not match another course code", function() {
 			expect(CourseCodeTokenizer.matchQuery("cs 101", "CS 101a")).toBeFalsy();
 		});
-		it("should recognize when a course code code matches an anti course code", function() {
+		it("should recognize when a course code code has an anti course code", function() {
 			expect(CourseCodeTokenizer.matchQuery("cs 101", "!cs 101a")).toBeTruthy();
 			expect(CourseCodeTokenizer.matchQuery("cs 101", "!cs 101")).toBeFalsy();
 		});
@@ -260,10 +260,10 @@ describe("Tokenizer Testing Suite:", function() {
 			query.and("!cs 201");
 			query.and("!a$");
 
-			expect(query.matches('cs 200')).toBeTruthy();
-			expect(query.matches("cs 201")).toBeFalsy();
-			expect(query.matches("cs 101")).toBeFalsy();
-			expect(query.matches("cs 300a")).toBeFalsy();
+			expect(query.has('cs 200')).toBeTruthy();
+			expect(query.has("cs 201")).toBeFalsy();
+			expect(query.has("cs 101")).toBeFalsy();
+			expect(query.has("cs 300a")).toBeFalsy();
 		});
 
 
@@ -308,15 +308,15 @@ describe("Tokenizer Testing Suite:", function() {
 				query2 = new Query("Cs *");
 				query3 = new Query("a$")
 				query4 = new Query("PHYS 116a");
-			expect(query1.matches("cs 251")).toBeTruthy();
-			expect(query1.matches("cs 101")).toBeFalsy();
-			expect(query1.matches("nsc 201")).toBeFalsy();
-			expect(query2.matches("cs 300")).toBeTruthy();
-			expect(query2.matches("nsc 200")).toBeFalsy();
-			expect(query3.matches("NSC 220a")).toBeTruthy();
-			expect(query3.matches("PHIL 110")).toBeFalsy();
-			expect(query4.matches("phys116a")).toBeTruthy();
-			expect(query4.matches("phys116b")).toBeFalsy();
+			expect(query1.has("cs 251")).toBeTruthy();
+			expect(query1.has("cs 101")).toBeFalsy();
+			expect(query1.has("nsc 201")).toBeFalsy();
+			expect(query2.has("cs 300")).toBeTruthy();
+			expect(query2.has("nsc 200")).toBeFalsy();
+			expect(query3.has("NSC 220a")).toBeTruthy();
+			expect(query3.has("PHIL 110")).toBeFalsy();
+			expect(query4.has("phys116a")).toBeTruthy();
+			expect(query4.has("phys116b")).toBeFalsy();
 		});
 
 		it("should match a course code for a multi query", function() {
@@ -324,14 +324,14 @@ describe("Tokenizer Testing Suite:", function() {
 				query2 = new Query("cs* & !cs 103");
 
 			
-			expect(query1.matches("phys116a")).toBeFalsy();
-			expect(query1.matches("phys 100")).toBeTruthy();
-			expect(query1.matches("nsc 200")).toBeFalsy();
-			expect(query1.matches("Phys 116b")).toBeTruthy();
+			expect(query1.has("phys116a")).toBeFalsy();
+			expect(query1.has("phys 100")).toBeTruthy();
+			expect(query1.has("nsc 200")).toBeFalsy();
+			expect(query1.has("Phys 116b")).toBeTruthy();
 
-			expect(query2.matches("Phys 116")).toBeFalsy();
-			expect(query2.matches("cs 103")).toBeFalsy();
-			expect(query2.matches("cs 103a")).toBeTruthy();
+			expect(query2.has("Phys 116")).toBeFalsy();
+			expect(query2.has("cs 103")).toBeFalsy();
+			expect(query2.has("cs 103a")).toBeTruthy();
 		});
 
 		it("should allow adding queries to the current query", function() {
@@ -339,39 +339,39 @@ describe("Tokenizer Testing Suite:", function() {
 
 			query.and("cs*");
 
-			expect(query.matches("cs 101a")).toBeTruthy();
-			expect(query.matches("bsci 101a")).toBeFalsy();
-			expect(query.matches("cs 101")).toBeFalsy();
+			expect(query.has("cs 101a")).toBeTruthy();
+			expect(query.has("bsci 101a")).toBeFalsy();
+			expect(query.has("cs 101")).toBeFalsy();
 		});
 
 		it("should match a course code with an anti query as a course code", function() {
 			var query = new Query("!PHYS 116a");
 
-			expect(query.matches("phys116a")).toBeFalsy();
-			expect(query.matches("phys116b")).toBeTruthy();
+			expect(query.has("phys116a")).toBeFalsy();
+			expect(query.has("phys116b")).toBeTruthy();
 		});
 
 		it("should match a course code with an anti + (above) query", function() {
 			var query = new Query("!CS 200+");
 
-			expect(query.matches("cs 151")).toBeTruthy();
-			expect(query.matches("cs 251")).toBeFalsy();
-			expect(query.matches("nsc 201")).toBeTruthy();
+			expect(query.has("cs 151")).toBeTruthy();
+			expect(query.has("cs 251")).toBeFalsy();
+			expect(query.has("nsc 201")).toBeTruthy();
 		});
 
 		it("should match a course code with an anti * (all) query", function() {
 			var query = new Query("!Cs *");
 
-			expect(query.matches("cs 300")).toBeFalsy();
-			expect(query.matches("nsc 200")).toBeTruthy();
+			expect(query.has("cs 300")).toBeFalsy();
+			expect(query.has("nsc 200")).toBeTruthy();
 
 		});
 
 		it("should match a course code with an anti $ (suffix) query", function() {
 			var query = new Query("!a$");
 
-			expect(query.matches("NSC 220a")).toBeFalsy();
-			expect(query.matches("PHIL 110")).toBeTruthy();
+			expect(query.has("NSC 220a")).toBeFalsy();
+			expect(query.has("PHIL 110")).toBeTruthy();
 		});
 		
 		it("should identify queries that are equal", function() {
@@ -571,18 +571,18 @@ describe("Tokenizer Testing Suite:", function() {
 		it('should match a course for a simple query', function() {
 			var queries = new QueryCollection(s_collection1);
 
-			expect(queries.matches("cs 101")).toBeTruthy();
-			expect(queries.matches("bsci 201")).toBeTruthy();
-			expect(queries.matches("math 155")).toBeFalsy();
-			expect(queries.matches("cs 102")).toBeTruthy();
+			expect(queries.has("cs 101")).toBeTruthy();
+			expect(queries.has("bsci 201")).toBeTruthy();
+			expect(queries.has("math 155")).toBeFalsy();
+			expect(queries.has("cs 102")).toBeTruthy();
 		});
 
 		it('should match a course for a collection containing multiqueries', function() {
 			var queries = new QueryCollection(s_collection4);
 
-			expect(queries.matches("math 155")).toBeTruthy();
-			expect(queries.matches("Math 209")).toBeFalsy();
-			expect(queries.matches("math 210")).toBeFalsy();
+			expect(queries.has("math 155")).toBeTruthy();
+			expect(queries.has("Math 209")).toBeFalsy();
+			expect(queries.has("math 210")).toBeFalsy();
 		});
 
 		it("should match a set of course codes using the filter method", function() {
@@ -608,15 +608,15 @@ describe("Tokenizer Testing Suite:", function() {
 		it("should allow for appending more query strings", function() {
 			var queries = new QueryCollection(s_collection1);
 			queries.append("cs 103");
-			expect(queries.matches("cs 103")).toBeTruthy();
+			expect(queries.has("cs 103")).toBeTruthy();
 		});
 
 
 		it("should allow for appending more query objects", function() {
 			var queries = new QueryCollection(s_collection2);
 			queries.append(new Query("cs 103"));
-			expect(queries.matches("cs 103")).toBeTruthy();
-			expect(queries.matches("Math 209")).toBeFalsy();
+			expect(queries.has("cs 103")).toBeTruthy();
+			expect(queries.has("Math 209")).toBeFalsy();
 		});
 
 		it("should allow for unioning another query collection", function() {
@@ -624,9 +624,9 @@ describe("Tokenizer Testing Suite:", function() {
 
 			queries.union(new QueryCollection(s_collection2));
 
-			expect(queries.matches("cs 101")).toBeTruthy();
-			expect(queries.matches("math 155a")).toBeTruthy();
-			expect(queries.matches("cs 103")).toBeFalsy();
+			expect(queries.has("cs 101")).toBeTruthy();
+			expect(queries.has("math 155a")).toBeTruthy();
+			expect(queries.has("cs 103")).toBeFalsy();
 		});
 		
 		it("should remove redundancies when unioning 2 query collections", function() {

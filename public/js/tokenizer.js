@@ -149,7 +149,7 @@ function Query(queryString) {
 	});
 };
 
-Query.prototype.matches = function(courseCode) {
+Query.prototype.has = function(courseCode) {
 	var i, n;
 	if (this.isSingleQuery()) {
 		return CourseCodeTokenizer.matchQuery(courseCode, this.toString());
@@ -166,9 +166,9 @@ Query.prototype.matches = function(courseCode) {
 //course codes with the codes that do not match 
 //the query filtered out
 Query.prototype.filter = function(courseCodeArray) {
-	var matches = this.matches.bind(this);
+	var has = this.has.bind(this);
 	return courseCodeArray.filter(function(courseCode) {
-		return matches(courseCode);
+		return has(courseCode);
 	}).map(function(courseCode) {
 		return Query.formatQuery(courseCode);
 	});
@@ -363,12 +363,12 @@ function QueryCollection(queries) {
 	}
 };
 
-//returns true if the course code matches
+//returns true if the course code has
 //the query collection
-QueryCollection.prototype.matches = function(courseCode) {
+QueryCollection.prototype.has = function(courseCode) {
 	var i, n;
 	for (i = 0, n = this.collection.length; i < n; ++i) {
-		if (this.collection[i].matches(courseCode)) {
+		if (this.collection[i].has(courseCode)) {
 			return true;
 		}
 	}
@@ -380,7 +380,7 @@ QueryCollection.prototype.matches = function(courseCode) {
 QueryCollection.prototype.filter = function(courseCodes) {
 
 	return courseCodes.filter(function(courseCode) {
-		return this.matches(courseCode);
+		return this.has(courseCode);
 	}, this).map(function(courseCode) {
 		return Query.formatQuery(courseCode);
 	});
