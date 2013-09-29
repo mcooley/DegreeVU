@@ -505,8 +505,18 @@ describe("Tokenizer Testing Suite:", function() {
 			it("should remove unneeded queries from a query with at least 1 single course", function() {
 				var query = new Query("cs 201 & cs 200+");
 
-				query.refactor();
+				expect(query.refactor()).toBeTruthy();
 				expect(query.toString()).toBe("CS 201");
+			});
+			it("should remove unneeded queries from a single course query with extra anti queries present", function() {
+				var query = new Query("cs 101 & !cs 201 & !cs200+");
+				expect(query.refactor()).toBeTruthy();
+				expect(query.toString()).toBe("CS 101");
+			});
+
+			it("should indicate that a query is contradictory for single courses with more complex anti queries", function() {
+				var query = new Query("cs 201 & !cs 200+");
+				expect(query.refactor()).toBeFalsy();
 			});
 
 			it("should indicate if the query is conradictory for single course anti-queries", function() {
