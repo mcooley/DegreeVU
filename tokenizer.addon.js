@@ -42,6 +42,23 @@ StatementHelper.addTokenToMongoQuery = function(token, mongoQuery) {
 			//school name
 		} else if (token.query === '~') {
 			//attribute
+			if (mongoQuery.attribute) {
+				if (token.not && mongoQuery.attribute.$nin) {
+					mongoQuery.attribute.$nin.push(new RegExp(token.attribute, "i"));
+				} else if (token.not && !mongoQuery.attribute.$nin) {
+					mongoQuery.attribute.$nin = [new RegExp(token.attribute, "i")];
+				} 
+				//for !token.not
+				else if (mongoQuery.attribute.$in) {
+					mongoQuery.attribute.$in.push(new RegExp(token.attribute, "i"));
+				} 
+				// !mongoQuery.attribute.$in
+				else {
+					mongoQuery.attribute.$in = [new RegExp(token.attribute, "i")];
+				}
+			} else {
+				mongoQuery.attribute = (token.not) ? {$nin: [new RegExp(token.attribute, "i")]} : {$in: [new RegExp(token.attribute, "i")]};
+			}
 		}
 		
 };
