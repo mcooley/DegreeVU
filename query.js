@@ -38,13 +38,17 @@ function queryCourses(query, callback) {
 function getCoursesFromTokens(queries, callback) {
 	var qCollection = new StatementCollection(queries),
 		mongoQuery = qCollection.mongoQuery();
-
-	queryCourses(mongoQuery, function(err, courses) {
-		if (err) {
-			throw err;
-		}
-		callback(courses);
-	});
+	if (mongoQuery) {
+		queryCourses(mongoQuery, function(err, courses) {
+			if (err) {
+				throw err;
+			}
+			callback(courses);
+		});
+	} else {
+		callback([]);
+	}
+		
 }
 
 function getGoalsByName(callback) {

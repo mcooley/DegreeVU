@@ -41,23 +41,23 @@ StatementHelper.addTokenToMongoQuery = function(token, mongoQuery) {
 		} else if (token.query === '^') {
 			//school name
 		} else if (token.query === '~') {
-			//attribute
-			if (mongoQuery.attribute) {
-				if (token.not && mongoQuery.attribute.$nin) {
-					mongoQuery.attribute.$nin.push(new RegExp(token.attribute, "i"));
-				} else if (token.not && !mongoQuery.attribute.$nin) {
-					mongoQuery.attribute.$nin = [new RegExp(token.attribute, "i")];
+			//category
+			if (mongoQuery.category) {
+				if (token.not && mongoQuery.category.$nin) {
+					mongoQuery.category.$nin.push(new RegExp(token.category, "i"));
+				} else if (token.not && !mongoQuery.category.$nin) {
+					mongoQuery.category.$nin = [new RegExp(token.category, "i")];
 				} 
 				//for !token.not
-				else if (mongoQuery.attribute.$in) {
-					mongoQuery.attribute.$in.push(new RegExp(token.attribute, "i"));
+				else if (mongoQuery.category.$in) {
+					mongoQuery.category.$in.push(new RegExp(token.category, "i"));
 				} 
-				// !mongoQuery.attribute.$in
+				// !mongoQuery.category.$in
 				else {
-					mongoQuery.attribute.$in = [new RegExp(token.attribute, "i")];
+					mongoQuery.category.$in = [new RegExp(token.category, "i")];
 				}
 			} else {
-				mongoQuery.attribute = (token.not) ? {$nin: [new RegExp(token.attribute, "i")]} : {$in: [new RegExp(token.attribute, "i")]};
+				mongoQuery.category = (token.not) ? {$nin: [new RegExp(token.category, "i")]} : {$in: [new RegExp(token.category, "i")]};
 			}
 		}
 		
@@ -225,11 +225,15 @@ Statement.prototype.mongoQuery = function() {
 };
 
 StatementCollection.prototype.mongoQuery = function() {
-	var collectionQuery = {$or: []};
-	this.collection.forEach(function(statement) {
-		collectionQuery.$or.push(statement.mongoQuery());
-	});
-	return collectionQuery;
+	var collectionQuery;
+	if (this.collection.length) {
+		collectionQuery = {$or: []};
+		this.collection.forEach(function(statement) {
+			collectionQuery.$or.push(statement.mongoQuery());
+		});
+		return collectionQuery;
+	}
+	return null;	
 };
 
 
