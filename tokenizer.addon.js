@@ -11,11 +11,11 @@ var StatementHelper = {};
 StatementHelper.addTokenToMongoQuery = function(token, mongoQuery) {
 	
 		if (!token.query) {
-			mongoQuery.courseCode = (token.not) ? {$nin: [tokenToRegExp(token)]} : tokenToRegExp(token);
+			mongoQuery.courseCode = (token.not) ? {$nin: [tokenToRegExp(token)]} : StatementHelper.tokenToRegExp(token);
 		} else if (token.query === '*') {
 			mongoQuery.coursePrefix = (token.not) ? {$nin: [new RegExp(token.coursePrefix, "i")]} : new RegExp(token.coursePrefix);
 		} else if (token.query === '+') {
-			mongoQuery.courseCode = (token.not) ? {$nin: [plusTokenToRegExp(token)]} : plusTokenToRegExp(token);
+			mongoQuery.courseCode = (token.not) ? {$nin: [StatementHelper.plusTokenToRegExp(token)]} : StatementHelper.plusTokenToRegExp(token);
 		} else if (token.query === '$') {
 			mongoQuery.courseSuffix = new RegExp(token.courseSuffix, "i");
 		} else if (token.query === '^') {
@@ -52,7 +52,7 @@ StatementHelper.tokenToRegExp = function(token) {
 	var courseSearch;
 	if (!token.query) {
 		courseSearch = "^" + token.coursePrefix + '(\\s?)+' + token.courseNumber.toString();
-		courseSearch += (token.courseSuffix) ? token.courseSuffix  + '(\\s?)+' : '(\\s?)$';
+		courseSearch += (token.courseSuffix) ? token.courseSuffix  + '$' : '$';
 	} else if (token.query === '*') {
 		courseSearch = "^" + token.coursePrefix + "\\d+";
 	} else if (token.query === '+') {
@@ -180,11 +180,19 @@ StatementHelper.numberGenerator = function(digit, includeNumber) {
 
 
 Statement.prototype.mongoQuery = function() {
-	
+	var query = {};
+	this.tokens.forEach(function(token) {
+		StatementHelper.addTokenToMongoQuery(token, query);
+	});
+	return query;
 };
 
 StatementCollection.prototype.mongoQuery = function() {
-
+	var collectionQuery = {$or: []};
+	this.collection.forEach(function(statement) {
+		collectionQuery.$or.push(statement.mongoQuery());
+	});
+	return collectionQuery;
 };
 
 

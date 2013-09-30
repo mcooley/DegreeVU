@@ -809,7 +809,18 @@ describe("Tokenizer Addon:", function() {
 		});
 
 	});
-		
+	describe("Statement Addons", function() {
+		it("should generate mongodb query objects for single course queries", function() {
+			
+		});
+	});
+
+	describe("StatementCollection Addons", function() {
+		it("should generate mongodb query objects", function() {
+			var collection = new StatementCollection(["CS 101", "CS 201a"]);
+			expect(collection.mongoQuery()).toEqual({ $or : [ { courseCode : /^CS(\s?)+101$/i }, { courseCode : /^CS(\s?)+201A$/i } ] });
+		});
+	});
 });
 
 	
