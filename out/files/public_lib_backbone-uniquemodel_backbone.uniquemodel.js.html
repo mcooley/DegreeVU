@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>public/lib/backbone-uniquemodel/backbone.uniquemodel.js</title>
+    <link rel="stylesheet" href="http://yui.yahooapis.com/3.9.1/build/cssgrids/cssgrids-min.css">
+    <link rel="stylesheet" href="../assets/vendor/prettify/prettify-min.css">
+    <link rel="stylesheet" href="../assets/css/main.css" id="site_styles">
+    <link rel="shortcut icon" type="image/png" href="../assets/favicon.png">
+    <script src="http://yui.yahooapis.com/combo?3.9.1/build/yui/yui-min.js"></script>
+</head>
+<body class="yui3-skin-sam">
+
+<div id="doc">
+    <div id="hd" class="yui3-g header">
+        <div class="yui3-u-3-4">
+            
+                <h1><img src="../assets/css/logo.png" title=""></h1>
+            
+        </div>
+        <div class="yui3-u-1-4 version">
+            <em>API Docs for: </em>
+        </div>
+    </div>
+    <div id="bd" class="yui3-g">
+
+        <div class="yui3-u-1-4">
+            <div id="docs-sidebar" class="sidebar apidocs">
+                <div id="api-list">
+    <h2 class="off-left">APIs</h2>
+    <div id="api-tabview" class="tabview">
+        <ul class="tabs">
+            <li><a href="#api-classes">Classes</a></li>
+            <li><a href="#api-modules">Modules</a></li>
+        </ul>
+
+        <div id="api-tabview-filter">
+            <input type="search" id="api-filter" placeholder="Type to filter APIs">
+        </div>
+
+        <div id="api-tabview-panel">
+            <ul id="api-classes" class="apis classes">
+            
+                <li><a href="../classes/CourseCodeTokenizer.html">CourseCodeTokenizer</a></li>
+            
+            </ul>
+
+            <ul id="api-modules" class="apis modules">
+            
+            </ul>
+        </div>
+    </div>
+</div>
+
+            </div>
+        </div>
+        <div class="yui3-u-3-4">
+                <div id="api-options">
+        Show:
+        <label for="api-show-inherited">
+            <input type="checkbox" id="api-show-inherited" checked>
+            Inherited
+        </label>
+
+        <label for="api-show-protected">
+            <input type="checkbox" id="api-show-protected">
+            Protected
+        </label>
+
+        <label for="api-show-private">
+            <input type="checkbox" id="api-show-private">
+            Private
+        </label>
+        <label for="api-show-deprecated">
+            <input type="checkbox" id="api-show-deprecated">
+            Deprecated
+        </label>
+
+    </div>
+
+
+            <div class="apidocs">
+                <div id="docs-main">
+                    <div class="content">
+                        <h1 class="file-heading">File: public/lib/backbone-uniquemodel/backbone.uniquemodel.js</h1>
+
+<div class="file">
+    <pre class="code prettyprint linenums">
+/*jshint unused:true, undef:true, strict:true*/
+/*global global, _, Backbone*/
+(function (window) {
+  &quot;use strict&quot;;
+
+  var globalCache = {};
+
+  /**
+   * UniqueModel wrapper converts regular Backbone models into
+   * unique ones.
+   *
+   * Example:
+   *   var UniqueUser = UniqueModel(User);
+   *
+   * If this is model is synced between windows, you need to
+   * specify the model&#x27;s name (string) and a valid storage adapter
+   * (currently just &#x27;localStorage&#x27;).
+   *
+   * Example:
+   *   var SyncedUniqueUser = UniqueModel(User, &#x27;User&#x27;, &#x27;localStorage&#x27;);
+   */
+
+  function UniqueModel(Model, modelName, storageAdapter) {
+    modelName = modelName || _.uniqueId(&#x27;UniqueModel_&#x27;);
+    storageAdapter = storageAdapter || UniqueModel.STORAGE_DEFAULT_ADAPTER;
+
+    var cache = UniqueModel.addModel(Model, modelName, storageAdapter);
+
+    return cache.modelConstructor;
+  }
+
+  UniqueModel.STORAGE_DEFAULT_ADAPTER = &#x27;memory&#x27;;
+  UniqueModel.STORAGE_KEY_DELIMETER = &#x27;.&#x27;;
+  UniqueModel.STORAGE_NAMESPACE = &#x27;UniqueModel&#x27;;
+
+  // Returns the cache associated with the given Model.
+  UniqueModel.getModelCache = function (modelName) {
+    var cache = globalCache[modelName];
+    if (!cache)
+      throw &quot;Unrecognized model: &quot; + modelName;
+
+    return cache;
+  };
+
+  UniqueModel.addModel = function (Model, modelName, storageAdapter) {
+    // Throw error here? (added twice)
+    if (globalCache[modelName])
+      return globalCache[modelName];
+
+    var cache = new ModelCache(Model, modelName, storageAdapter);
+    globalCache[modelName] = cache;
+    return cache;
+  };
+
+  // Clears all in-memory instances
+  UniqueModel.clear = function () {
+    for (var modelName in globalCache) {
+      if (globalCache.hasOwnProperty(modelName))
+        delete globalCache[modelName];
+    }
+  };
+
+  /*
+   * Encapsulates a cache for a single model.
+   */
+
+  function ModelCache (Model, modelName, storageAdapter) {
+    var self = this;
+
+    this.instances = {};
+    this.Model = Model;
+    this.modelName = modelName;
+
+    this.storage = null;
+    if (storageAdapter === &#x27;localStorage&#x27;) {
+      this.storage = new LocalStorageAdapter(this.modelName);
+    }
+
+    if (this.storage) {
+      this.storage.on(&#x27;sync&#x27;, this.storageSync, this);
+      this.storage.on(&#x27;destroy&#x27;, this.storageDestroy, this);
+    }
+
+    var modelConstructor = function (attrs, options) {
+      return self.get(attrs, options);
+    };
+    _.extend(modelConstructor, Backbone.Events);
+
+    // Backbone collections need prototype of wrapped class
+    modelConstructor.prototype = this.Model.prototype;
+    this.modelConstructor = modelConstructor;
+  }
+
+  _.extend(ModelCache.prototype, {
+
+    newModel: function (attrs, options) {
+      var instance = new this.Model(attrs, options);
+
+      if (this.storage) {
+        if (instance.id)
+          this.storage.save(instance.id, instance.attributes);
+
+        instance.on(&#x27;sync&#x27;, this.instanceSync, this);
+        instance.on(&#x27;destroy&#x27;, this.instanceDestroy, this);
+      }
+
+      return instance;
+    },
+
+    // Event handler when &#x27;sync&#x27; is triggered on an instance
+    instanceSync: function (instance) {
+      if (this.storage)
+        this.storage.save(instance.id, instance.attributes);
+    },
+
+    // Event handler when &#x27;destroy&#x27; is triggered on an instance
+    instanceDestroy: function (instance) {
+      if (this.storage)
+        this.storage.remove(instance.id);
+    },
+
+    // Event handler when &#x27;sync&#x27; is triggered on the storage adapter
+    storageSync: function (id, attrs) {
+      this.get(attrs, { fromStorage: true });
+    },
+
+    // Event handler when &#x27;destroy&#x27; is triggered on the storage handler
+    storageDestroy: function (id) {
+      var instance = this.instances[id];
+      if (instance) {
+        instance.trigger(&#x27;destroy&#x27;, instance);
+        delete this.instances[id];
+      }
+    },
+
+    add: function (id, attrs, options) {
+      var instance = this.newModel(attrs, options);
+      this.instances[id] = instance;
+
+      return instance;
+    },
+
+    get: function (attrs, options) {
+      options = options || {};
+      var Model = this.Model;
+      var id = attrs &amp;&amp; attrs[Model.prototype.idAttribute];
+
+      // If there&#x27;s no ID, this model isn&#x27;t being tracked; return
+      // a new instance
+      if (!id)
+        return this.newModel(attrs, options);
+
+      // Attempt to restore a cached instance
+      var instance = this.instances[id];
+      if (!instance) {
+        // If we haven&#x27;t seen this instance before, start caching it
+        instance = this.add(id, attrs, options);
+        if (options.fromStorage)
+          this.modelConstructor.trigger(&#x27;uniquemodel.add&#x27;, instance);
+      } else {
+        // Otherwise update the attributes of the cached instance
+        instance.set(attrs);
+        if (!options.fromStorage)
+          this.instanceSync(instance);
+      }
+      return instance;
+    }
+  });
+
+  /**
+   * Wraps localStorage access and onstorage events. Designed
+   * so that this can be swapped out for another adapter (i.e.
+   * sessionStorage or a localStorage-backed library like lscache)
+   */
+  function LocalStorageAdapter (modelName) {
+    this.modelName = modelName;
+
+    LocalStorageAdapter.instances[modelName] = this;
+
+    // Global listener - only listen once
+    if (!LocalStorageAdapter.listener) {
+      LocalStorageAdapter.listener = window.addEventListener ?
+        window.addEventListener(&#x27;storage&#x27;, LocalStorageAdapter.onStorage, false) :
+        window.attachEvent(&#x27;onstorage&#x27;, LocalStorageAdapter.onStorage);
+    }
+  }
+
+  // Hash of LocalStorageAdapter instances
+  LocalStorageAdapter.instances = {};
+
+  // Reference to the global onstorage handler
+  LocalStorageAdapter.listener = null;
+
+  LocalStorageAdapter.onStorage = function (evt) {
+    // TODO: IE fires onstorage even in the window that fired the
+    //       change. Deal with that somehow.
+    var key = evt.key;
+
+    // This will process *all* storage events, so make sure not to choke
+    // on events we&#x27;re not interested in.
+
+    // Example regex output: /UniqueModel\.(\w+)\.(.+)/
+    var re = new RegExp([
+      UniqueModel.STORAGE_NAMESPACE, // namespace (default is UniqueModel)
+      &#x27;(\\w+)&#x27;,                      // class name
+      &#x27;(.+)&#x27;                         // key
+    ].join(&#x27;\\&#x27; + UniqueModel.STORAGE_KEY_DELIMETER));
+
+    var match = key.match(re);
+    if (!match)
+      return;
+
+    var modelName = match[1];
+    var id = match[2];
+
+    var adapter = LocalStorageAdapter.instances[modelName];
+    if (!adapter)
+      return;
+
+    adapter.handleStorageEvent(key, id);
+  };
+
+  _.extend(LocalStorageAdapter.prototype, {
+    handleStorageEvent: function (key, id) {
+      var json = localStorage.getItem(key);
+      if (!json)
+        this.trigger(&#x27;destroy&#x27;, id);
+      else
+        this.trigger(&#x27;sync&#x27;, id, JSON.parse(json));
+    },
+
+    getStorageKey: function (id) {
+      // e.g. UniqueModel.User.12345
+      var str = [
+        UniqueModel.STORAGE_NAMESPACE,
+        this.modelName,
+        id
+      ].join(UniqueModel.STORAGE_KEY_DELIMETER);
+
+      return str;
+    },
+
+    save: function (id, attrs) {
+      if (!id)
+        throw &#x27;Cannot save without id&#x27;;
+
+      var json = JSON.stringify(attrs);
+      localStorage.setItem(this.getStorageKey(id), json);
+    },
+
+    remove: function (id) {
+      if (!id)
+        throw &#x27;Cannot remove without id&#x27;;
+
+      localStorage.removeItem(this.getStorageKey(id));
+    }
+  }, Backbone.Events);
+
+  // Exports
+  _.extend(UniqueModel, {
+    ModelCache: ModelCache,
+    LocalStorageAdapter: LocalStorageAdapter
+  });
+
+  window.Backbone.UniqueModel = UniqueModel;
+
+})(typeof global === &quot;object&quot; ? global : this);
+
+    </pre>
+</div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="../assets/vendor/prettify/prettify-min.js"></script>
+<script>prettyPrint();</script>
+<script src="../assets/js/yui-prettify.js"></script>
+<script src="../assets/../api.js"></script>
+<script src="../assets/js/api-filter.js"></script>
+<script src="../assets/js/api-list.js"></script>
+<script src="../assets/js/api-search.js"></script>
+<script src="../assets/js/apidocs.js"></script>
+</body>
+</html>
