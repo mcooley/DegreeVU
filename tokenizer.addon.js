@@ -1,7 +1,7 @@
 var Tokenizer = require('./public/js/tokenizer'),
 	CourseCodeTokenizer = Tokenizer.CourseCodeTokenizer,
-	Query = Tokenizer.Query,
-	QueryCollection = Tokenizer.QueryCollection;
+	Statement = Tokenizer.Statement,
+	StatementCollection = Tokenizer.StatementCollection;
 
 //add ons to tokenizer for server-side querying
 //include require statement here
@@ -179,17 +179,17 @@ StatementHelper.numberGenerator = function(digit, includeNumber) {
 //generates a mongo query from this query
 
 
-Query.prototype.mongoQuery = function() {
+Statement.prototype.mongoQuery = function() {
 	
 };
 
-QueryCollection.prototype.mongoQuery = function() {
+StatementCollection.prototype.mongoQuery = function() {
 
 };
 
 
 //exports
-exports.Query = Query;
-exports.QueryCollection = QueryCollection;
+exports.Statement = Statement;
+exports.StatementCollection = StatementCollection;
 exports.CourseCodeTokenizer = CourseCodeTokenizer;
 exports.StatementHelper = StatementHelper;

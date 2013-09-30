@@ -13,7 +13,7 @@ if (serverSide) {
 }
 
 
-//DO NOT USE COURSE CODE TOKENIZER... USE THE QUERY OBJECT BELOW 
+//DO NOT USE COURSE CODE TOKENIZER... USE THE Statement OBJECT BELOW 
 //AS THE ABSTRACTION OVER THE TOKENIZER
 var CourseCodeTokenizer = {
 	
@@ -42,7 +42,7 @@ var CourseCodeTokenizer = {
 
 		if (!token.query) {
 			
-			//then the query is just a normal course code
+			//then the Statement is just a normal course code
 			token.coursePrefix = courseCode.match(/^[a-z]+/i)[0].toUpperCase();
 			token.courseNumber = +courseCode.match(/\d+/)[0];
 			if (courseCode.match(/[a-z]+$/i)) {
@@ -87,51 +87,51 @@ var CourseCodeTokenizer = {
 		return token;
 
 	},
-	//returns true if the courseCode is within the query
+	//returns true if the courseCode is within the Statement
 	//automatically returns false if the course code parameter
-	//is filled with a quey (something with a query character, like +)
+	//is filled with a quey (something with a Statement character, like +)
 	matchQuery: function(courseCode, query) {
-		var queryObject = CourseCodeTokenizer.parse(query),
+		var token = CourseCodeTokenizer.parse(query),
 		    codeObject = CourseCodeTokenizer.parse(courseCode);
 
-		return CourseCodeTokenizer.matchObject(codeObject, queryObject);
+		return CourseCodeTokenizer.matchObject(codeObject, token);
 		
 	},
-	matchObject: function(codeObject, queryObject) {
-		var negateQuery;
-		if (!queryObject.query) {
-			negateQuery = CourseCodeTokenizer.copyQueryObject(queryObject);
-			negateQuery.not = false;
-			return (!queryObject.not && _.isEqual(codeObject, queryObject)) || (queryObject.not && !_.isEqual(codeObject, negateQuery));
+	matchObject: function(codeObject, token) {
+		var negateStatement;
+		if (!token.query) {
+			negateStatement = CourseCodeTokenizer.copyToken(token);
+			negateStatement.not = false;
+			return (!token.not && _.isEqual(codeObject, token)) || (token.not && !_.isEqual(codeObject, negateStatement));
 
-		} else if (queryObject.query === '$') {
+		} else if (token.query === '$') {
 
-			return (!queryObject.not && queryObject.courseSuffix === codeObject.courseSuffix) || (queryObject.not && queryObject.courseSuffix !== codeObject.courseSuffix);
+			return (!token.not && token.courseSuffix === codeObject.courseSuffix) || (token.not && token.courseSuffix !== codeObject.courseSuffix);
 
-		} else if (queryObject.query === '*') {
+		} else if (token.query === '*') {
 
-			return (!queryObject.not && queryObject.coursePrefix === codeObject.coursePrefix) || (queryObject.not && queryObject.coursePrefix !== codeObject.coursePrefix);
+			return (!token.not && token.coursePrefix === codeObject.coursePrefix) || (token.not && token.coursePrefix !== codeObject.coursePrefix);
 
-		} else if (queryObject.query === '+') {
+		} else if (token.query === '+') {
 
-			return (!queryObject.not && (queryObject.coursePrefix === codeObject.coursePrefix && codeObject.courseNumber >= queryObject.courseNumber)) 
-					|| (queryObject.not && (queryObject.coursePrefix !== codeObject.coursePrefix || codeObject.courseNumber < queryObject.courseNumber));
+			return (!token.not && (token.coursePrefix === codeObject.coursePrefix && codeObject.courseNumber >= token.courseNumber)) 
+					|| (token.not && (token.coursePrefix !== codeObject.coursePrefix || codeObject.courseNumber < token.courseNumber));
 
-		} else if (queryObject.query === '^') {
-			throw new Error("cannot match a query to the school (^) token");
-		} else if (queryObject.query === "~") {
-			throw new Error("cannot match a query with the category (~) token");
+		} else if (token.query === '^') {
+			throw new Error("cannot match a statement to the school (^) token");
+		} else if (token.query === "~") {
+			throw new Error("cannot match a statement with the category (~) token");
 		}
 
 		return false;
 	},
 	
 	//makes a deep copy and returns it
-	copyQueryObject: function(obj) {
+	copyToken: function(obj) {
 		var copy = {}, i;
 		for (i in obj) {
 			if (obj.hasOwnProperty(i)) {
-				//nothing is nested in a query object,
+				//nothing is nested in a Statement object,
 				// no recursion needed
 				copy[i] = obj[i];
 			}
@@ -141,22 +141,22 @@ var CourseCodeTokenizer = {
 };
 
 
-//USE THIS CONSTRUCTOR HERE TO CONSTRUCT A QUERY
-function Query(queryString) {
-	var array = queryString.split("&");
+//USE THIS CONSTRUCTOR HERE TO CONSTRUCT A Statement
+function Statement(statementString) {
+	var array = statementString.split("&");
 	this.array = array.map(function(token) {
 		token = token.trim();
 		return CourseCodeTokenizer.parse(token);
 	});
 };
 
-Query.prototype.has = function(courseCode) {
+Statement.prototype.has = function(courseCode) {
 	var i, n;
-	if (this.isSingleQuery()) {
+	if (this.isSingleStatement()) {
 		return CourseCodeTokenizer.matchQuery(courseCode, this.toString());
 	} else {
 		for (i =0, n = this.array.length; i < n; ++i) {
-			if (!CourseCodeTokenizer.matchQuery(courseCode, Query.formatObject(this.array[i]))) {
+			if (!CourseCodeTokenizer.matchQuery(courseCode, Statement.formatObject(this.array[i]))) {
 				return false;
 			}
 		}
@@ -165,99 +165,98 @@ Query.prototype.has = function(courseCode) {
 };
 //takes an array of course codes and returns another array of
 //course codes with the codes that do not match 
-//the query filtered out
-Query.prototype.filter = function(courseCodeArray) {
+//the Statement filtered out
+Statement.prototype.filter = function(courseCodeArray) {
 	var has = this.has.bind(this);
 	return courseCodeArray.filter(function(courseCode) {
 		return has(courseCode);
 	}).map(function(courseCode) {
-		return Query.formatQuery(courseCode);
+		return Statement.formatStatement(courseCode);
 	});
 };
 
-//adds an "and" query
-//can be a query object or a course code
-Query.prototype.and = function(query) {
-	this.array.push(CourseCodeTokenizer.parse(query));
+//adds an "and" Statement
+//can be a Statement object or a course code
+Statement.prototype.and = function(statement) {
+	this.array.push(CourseCodeTokenizer.parse(statement));
 };
 
-//returns true if the query is equal to the course code
-Query.prototype.isEqual = function(query) {
-	var queryCopy, i,j, n;
-	if (this === query) {return true;}
+//returns true if the Statement is equal to the course code
+Statement.prototype.isEqual = function(statement) {
+	var statementCopy, i,j, n;
+	if (this === statement) {return true;}
 
-	if (typeof query === 'string') {
-		return this.isEqual(new Query(query));
-	} else if (typeof query === 'object' && query.constructor === Query) {
+	if (typeof statement === 'string') {
+		return this.isEqual(new Statement(statement));
+	} else if (typeof statement === 'object' && statement.constructor === Statement) {
 		
-		if (this.array.length === query.array.length) {
+		if (this.array.length === statement.array.length) {
 			
-			queryCopy = query.array.slice();
+			statementCopy = statement.array.slice();
 			for (i = 0, n = this.array.length; i < n; ++i) {
 				
 				for (j = 0; j < n; ++j) {
 					//null out any tokens that match in both arrays
-					if (_.isEqual(this.array[i], queryCopy[j])) {
-						queryCopy[j] = null;
+					if (_.isEqual(this.array[i], statementCopy[j])) {
+						statementCopy[j] = null;
 					}
 				}
 			}
-			return !queryCopy.filter(function(token) {return token;}).length;
+			return !statementCopy.filter(function(token) {return token;}).length;
 		}
 	}
 	return false;
 };
 
-//true if the query is just a single course code
-Query.prototype.isSingleCourse = function() {
-	return this.isSingleQuery && !this.array[0].query;
+//true if the Statement is just a single course code
+Statement.prototype.isSingleCourse = function() {
+	return this.isSingleStatement && !this.array[0].query;
 };
 
-//true if the query is not an ampersand combo query
-Query.prototype.isSingleQuery = function() {
+//true if the Statement is not an ampersand combo Statement
+Statement.prototype.isSingleStatement = function() {
 	return this.array.length === 1
 };
 
-Query.prototype.isNegated = function() {
-	return this.isSingleQuery() && this.array[0].not;
+Statement.prototype.isNegated = function() {
+	return this.isSingleStatement() && this.array[0].not;
 };
 
-Query.prototype.toString = function() {
-	var queries = this.array.map(function(query) {
-		return Query.formatObject(query);
+Statement.prototype.toString = function() {
+	var queries = this.array.map(function(statement) {
+		return Statement.formatObject(statement);
 	});
 	return queries.join(" & ");
 };
 
 //makes a deep copy and returns the copy
-Query.prototype.copy = function() {
-	return new Query(this.toString());
+Statement.prototype.copy = function() {
+	return new Statement(this.toString());
 };
 
 //static methods
 
-//reformats the query string and returns another
-//query string in the new format (capitalization, proper spacing, etc)
-Query.formatQuery = function(queryString) {
-	var queries = queryString.split("&").map(function(query) {
-		var obj = CourseCodeTokenizer.parse(query.trim());
-		return Query.formatObject(obj);
+//reformats the Statement string and returns another
+//Statement string in the new format (capitalization, proper spacing, etc)
+Statement.formatStatement = function(statementString) {
+	var statements = statementString.split("&").map(function(statement) {
+		var obj = CourseCodeTokenizer.parse(statement.trim());
+		return Statement.formatObject(obj);
 	});
-	return queries.join(" & ");
+	return statements.join(" & ");
 };
 
-Query.isEqual = function(queryString1, queryString2) {
-	var query1 = new Query(queryString1),
-		query2 = new Query(queryString2);
-	return _.isEqual(query1.array, query2.array);
+Statement.isEqual = function(statementString1, statementString2) {
+	var statement1 = new Statement(statementString1),
+		statement2 = new Statement(statementString2);
+	return statement1.isEqual(statement2);
 };
 
 //should not call these methods, they are "private"
 
-//converts a query object to a query string
-//this is for formatting a single query
-Query.formatObject = function(obj) {
-	
+//converts a Statement object to a Statement string
+//this is for formatting a single Statement
+Statement.formatObject = function(obj) {
 	var format;
 
 	if (obj.not) {
@@ -288,13 +287,13 @@ Query.formatObject = function(obj) {
 };
 
 //goes through the queries in the array and removes 
-//unneccessary elements in the query
-//returns true if the query can be refactored and 
-//returns false if the elements in the query contradict and
-//the query is useless.  This is a facade method that calls 
+//unneccessary elements in the Statement
+//returns true if the Statement can be refactored and 
+//returns false if the elements in the Statement contradict and
+//the Statement is useless.  This is a facade method that calls 
 //multiple other methods for refactoring different types 
 //of queries
-Query.prototype.refactor = function() {
+Statement.prototype.refactor = function() {
 	var self = this;
 	return this.refactorCollection.reduce(function(memo, funct) {
 		//make sure to pass in the correct context to the function
@@ -308,7 +307,7 @@ Query.prototype.refactor = function() {
 //to run on the array object, that will automatically 
 //be executed.  Each function must return true if the
 //refactoring was successful, and false otherwise
-Query.prototype.refactorCollection = [
+Statement.prototype.refactorCollection = [
 	//single courses
 	function() {
 		var singleCourses = this.array.filter(function(token) {return !token.query;}),
@@ -383,33 +382,31 @@ Query.prototype.refactorCollection = [
 //such as matching courses to a set of queries 
 //or unioning queries into 1
 //takes an array of queries as a parameter
-//parameter can either be an array of Query objects
+//parameter can either be an array of Statement objects
 //or array of course code strings, but not a mix 
 //of the two, throws an error if the parameter is not
 //an array
-function QueryCollection(queries) {
-	if (!Array.isArray(queries)) {
-		throw new Error("parameter for QueryCollection constructor should be an array");
+function StatementCollection(statements) {
+	if (!Array.isArray(statements)) {
+		throw new Error("parameter for StatementCollection constructor should be an array");
 	}
-
-	
-	if (queries.length === 0) {
+	if (statements.length === 0) {
 		this.collection = [];
 	} 
 
-	else if (typeof queries[0] === 'string') {
-		return new QueryCollection(queries.map(function(queryString) {return new Query(queryString);}));
+	else if (typeof statements[0] === 'string') {
+		return new StatementCollection(statements.map(function(statementString) {return new Statement(statementString);}));
 	}
-	else if (queries[0].constructor === Query) {
-
-		this.collection = this.collapseQueries(queries);
+	else if (statements[0].constructor === Statement) {
+		
+		this.collection = this.collapseStatements(statements);
 		this.refactor();
 	}
 };
 
 //returns true if the course code has
-//the query collection
-QueryCollection.prototype.has = function(courseCode) {
+//the Statement collection
+StatementCollection.prototype.has = function(courseCode) {
 	var i, n;
 	for (i = 0, n = this.collection.length; i < n; ++i) {
 		if (this.collection[i].has(courseCode)) {
@@ -420,45 +417,45 @@ QueryCollection.prototype.has = function(courseCode) {
 };
 
 //accepts an array of course codes and returns another array
-//of course codes that satisfy the QueryCollection
-QueryCollection.prototype.filter = function(courseCodes) {
+//of course codes that satisfy the StatementCollection
+StatementCollection.prototype.filter = function(courseCodes) {
 
 	return courseCodes.filter(function(courseCode) {
 		return this.has(courseCode);
 	}, this).map(function(courseCode) {
-		return Query.formatQuery(courseCode);
+		return Statement.formatStatement(courseCode);
 	});
 };
 
-QueryCollection.prototype.copy = function() {
-	return new QueryCollection(this.collection);
+StatementCollection.prototype.copy = function() {
+	return new StatementCollection(this.collection);
 };
 
 
-QueryCollection.prototype.toArray = function() {
-	return this.collection.map(function(query) {
-		return query.toString();
+StatementCollection.prototype.toArray = function() {
+	return this.collection.map(function(statement) {
+		return statement.toString();
 	});
 };
 
-//pass in either a string, query object
-QueryCollection.prototype.append = function(query) {
+//pass in either a string, Statement object
+StatementCollection.prototype.append = function(statement) {
 	var i, n;
-	if (typeof query === 'string') {
-		this.append(new Query(query));
-	} else if (query.constructor === Query) {
-		if (query.isNegated()) {
+	if (typeof statement === 'string') {
+		this.append(new Statement(statement));
+	} else if (statement.constructor === Statement) {
+		if (statement.isNegated()) {
 			for (i = 0, n = this.collection.length; i < n; ++i) {
-				this.collection[i].and(query);
+				this.collection[i].and(statement);
 			}
 		} else {
-			this.collection.push(query);
+			this.collection.push(statement);
 		}
 	}
 };
 
 //for any unknown functionality...
-QueryCollection.prototype.each = function(callback, context) {
+StatementCollection.prototype.each = function(callback, context) {
 	var _context = (context) ? context : this,
 	i, n;
 
@@ -467,22 +464,20 @@ QueryCollection.prototype.each = function(callback, context) {
 	}
 };
 
-//query collection is unioned into the current query collection
-QueryCollection.prototype.union = function(_collection) {
-
+//Statement collection is unioned into the current Statement collection
+StatementCollection.prototype.union = function(_collection) {
 	var i, n, j,
 	collection;
-
 	if (this !== _collection) {
 		if (Array.isArray(_collection)) {
-			collection = new QueryCollection(_collection);
+			collection = new StatementCollection(_collection);
 		}
-		else if (_collection.constructor === QueryCollection) {
+		else if (_collection.constructor === StatementCollection) {
 			collection = _collection
 		}
 
-		collection.each(function(query) {
-			this.collection.push(query.copy());
+		collection.each(function(statement) {
+			this.collection.push(statement.copy());
 		}, this);
 
 		for (i = 0, n = this.collection.length; i < n; ++i) {
@@ -497,22 +492,22 @@ QueryCollection.prototype.union = function(_collection) {
 				
 		}
 		//filter out the nulled elements
-		this.collection = this.collection.filter(function(query) {
-			return query;
+		this.collection = this.collection.filter(function(statement) {
+			return statement;
 		});
 	}		
 };
 
 //static methods
-QueryCollection.union = function(collection1, collection2) {
+StatementCollection.union = function(collection1, collection2) {
 	var queries = null;
 
 	
 	//collection 1 and 2 both have values in it
 	if (Array.isArray(collection1) && typeof collection1[0] === 'string') {
-		queries = new QueryCollection(collection1);
+		queries = new StatementCollection(collection1);
 			
-	} else if (collection1.constructor === QueryCollection) {
+	} else if (collection1.constructor === StatementCollection) {
 		queries = collection1;
 	}
 
@@ -523,32 +518,32 @@ QueryCollection.union = function(collection1, collection2) {
 
 //methods that should be "private"
 
-//takes an array of query objects
-QueryCollection.prototype.collapseQueries = function(queries) {
+//takes an array of Statement objects
+StatementCollection.prototype.collapseStatements = function(statements) {
 	//make a copy of the queries so that they are not changed
-	var i, j, n, _queries = queries.slice();
+	var i, j, n, _statements = statements.slice();
 
-	for (i = 0, n = _queries.length; i < n; ++i) {
-		if (_queries[i].isNegated()) {
+	for (i = 0, n = _statements.length; i < n; ++i) {
+		if (_statements[i].isNegated()) {
 			for (j = i - 1; j >= 0; --j) {
-				_queries[j].and(_queries[i].toString());
+				_statements[j].and(_statements[i].toString());
 			}
 		}
 	}
-	return _queries.filter(function(query) {
-		return !query.isNegated();
+	return _statements.filter(function(statement) {
+		return !statement.isNegated();
 	});
 	
 };
 
-//attempts to refactor the query but if there is a conflict, this method
+//attempts to refactor the Statement but if there is a conflict, this method
 //will simply return false, returns true if no conflict was found and
 //refactoring was successful
-QueryCollection.prototype.refactor = function() {
-	this.collection = this.collection.filter(function(query) {
-		//each query performs its own refactoring and returns false
-		//if conflicts are found, so query must be removed
-		return query.refactor();
+StatementCollection.prototype.refactor = function() {
+	this.collection = this.collection.filter(function(statement) {
+		//each Statement performs its own refactoring and returns false
+		//if conflicts are found, so Statement must be removed
+		return statement.refactor();
 	});
 };
 
@@ -556,8 +551,8 @@ QueryCollection.prototype.refactor = function() {
 //set the exports for server side script
 if (serverSide) {
 	exports.CourseCodeTokenizer = CourseCodeTokenizer;
-	exports.Query = Query,
-	exports.QueryCollection = QueryCollection;
+	exports.Statement = Statement,
+	exports.StatementCollection = StatementCollection;
 } 
 
 

@@ -4,8 +4,8 @@ var tokenizer = require('../tokenizer.addon'),
 
 
 	CourseCodeTokenizer = tokenizer.CourseCodeTokenizer,
-	Query = tokenizer.Query,
-	QueryCollection = tokenizer.QueryCollection,
+	Statement = tokenizer.Statement,
+	StatementCollection = tokenizer.StatementCollection,
 	StatementHelper = tokenizer.StatementHelper;
 
 
@@ -198,8 +198,8 @@ describe("Tokenizer Testing Suite:", function() {
 				}
 			}
 
-			expect(testFunct("cs 101", "SE^")).toThrow(new Error("cannot match a query to the school (^) token"));
-			expect(testFunct("cs 101", "!SE^")).toThrow(new Error("cannot match a query to the school (^) token"));
+			expect(testFunct("cs 101", "SE^")).toThrow(new Error("cannot match a statement to the school (^) token"));
+			expect(testFunct("cs 101", "!SE^")).toThrow(new Error("cannot match a statement to the school (^) token"));
 		
 		});
 
@@ -209,363 +209,363 @@ describe("Tokenizer Testing Suite:", function() {
 					CourseCodeTokenizer.matchQuery(course, query);
 				}
 			}
-			expect(testFunct("cs 101", "mns~")).toThrow("cannot match a query with the category (~) token");
-			expect(testFunct("cs 101", "!p~")).toThrow("cannot match a query with the category (~) token");
+			expect(testFunct("cs 101", "mns~")).toThrow("cannot match a statement with the category (~) token");
+			expect(testFunct("cs 101", "!p~")).toThrow("cannot match a statement with the category (~) token");
 		});
 
 		it("should create correct copies of query objects", function() {
-			var query = CourseCodeTokenizer.parse('CS 101'),
-				copy = CourseCodeTokenizer.copyQueryObject(query);
-			expect(query).toEqual(copy);
+			var token = CourseCodeTokenizer.parse('CS 101'),
+				copy = CourseCodeTokenizer.copyToken(token);
+			expect(token).toEqual(copy);
 			
 		});
 
 		it("should create deep copies of query objects", function() {
-			var query = CourseCodeTokenizer.parse("CS 101"),
-				copy = CourseCodeTokenizer.copyQueryObject(query);
+			var token = CourseCodeTokenizer.parse("CS 101"),
+				copy = CourseCodeTokenizer.copyToken(token);
 				copy.not = true;
-			expect(query).not.toEqual(copy);
+			expect(token).not.toEqual(copy);
 		});
 
 	});
 
-	describe("Query Object", function() {
+	describe("Statement Object", function() {
 
-		it("should construct a query object for a single query string", function() {
-			var query1 = new Query("cs 201"),
-				query2 = new Query("cs*");
-			expect(query1.array[0]).toEqual(CourseCodeTokenizer.parse("Cs 201"));
-			expect(query1.array.length).toBe(1);
-			expect(query2.array[0]).toEqual(CourseCodeTokenizer.parse("CS *"));
-			expect(query2.array.length).toBe(1);
+		it("should construct a Statement object for a single Statement string", function() {
+			var statement1 = new Statement("cs 201"),
+				statement2 = new Statement("cs*");
+			expect(statement1.array[0]).toEqual(CourseCodeTokenizer.parse("Cs 201"));
+			expect(statement1.array.length).toBe(1);
+			expect(statement2.array[0]).toEqual(CourseCodeTokenizer.parse("CS *"));
+			expect(statement2.array.length).toBe(1);
 		});
 
-		it("should construct multiple query objects for a multi query string", function() {
-			var query1 = new Query("cs 200+ & !cs 201"),
-				query2 = new Query("Cs 250+ & !cs 200 & !bsci110a");
+		it("should construct multiple Statement objects for a multi Statement string", function() {
+			var statement1 = new Statement("cs 200+ & !cs 201"),
+				statement2 = new Statement("Cs 250+ & !cs 200 & !bsci110a");
 
-			expect(query1.array.length).toBe(2);
-			expect(query1.array[0]).toEqual({coursePrefix: 'CS', courseNumber: 200, query: '+', not: false});
-			expect(query1.array[1]).toEqual({coursePrefix: 'CS', courseNumber: 201, not: true});
+			expect(statement1.array.length).toBe(2);
+			expect(statement1.array[0]).toEqual({coursePrefix: 'CS', courseNumber: 200, query: '+', not: false});
+			expect(statement1.array[1]).toEqual({coursePrefix: 'CS', courseNumber: 201, not: true});
 
-			expect(query2.array.length).toBe(3);
-			expect(query2.array[0]).toEqual({coursePrefix: "CS", not: false, courseNumber: 250, query: '+'})
-			expect(query2.array[1]).toEqual({coursePrefix: "CS", not: true, courseNumber: 200});
-			expect(query2.array[2]).toEqual({coursePrefix: "BSCI", not: true, courseNumber: 110, courseSuffix: 'A'});
+			expect(statement2.array.length).toBe(3);
+			expect(statement2.array[0]).toEqual({coursePrefix: "CS", not: false, courseNumber: 250, query: '+'})
+			expect(statement2.array[1]).toEqual({coursePrefix: "CS", not: true, courseNumber: 200});
+			expect(statement2.array[2]).toEqual({coursePrefix: "BSCI", not: true, courseNumber: 110, courseSuffix: 'A'});
 		});
 
-		it('should be able to add queries after initial construction to create a multi query', function() {
-			var query = new Query("cs 200+");
+		it('should be able to add queries after initial construction to create a multi statement', function() {
+			var statement = new Statement("cs 200+");
 
-			query.and("!cs 201");
-			query.and("!a$");
+			statement.and("!cs 201");
+			statement.and("!a$");
 
-			expect(query.has('cs 200')).toBeTruthy();
-			expect(query.has("cs 201")).toBeFalsy();
-			expect(query.has("cs 101")).toBeFalsy();
-			expect(query.has("cs 300a")).toBeFalsy();
+			expect(statement.has('cs 200')).toBeTruthy();
+			expect(statement.has("cs 201")).toBeFalsy();
+			expect(statement.has("cs 101")).toBeFalsy();
+			expect(statement.has("cs 300a")).toBeFalsy();
 		});
 
 
-		it("should identify when a query is an anti query", function() {
-			var query1 = new Query('cs 200'),
-				query2 = new Query('!bsci*');
+		it("should identify when a Statement is an anti token", function() {
+			var statement1 = new Statement('cs 200'),
+				statement2 = new Statement('!bsci*');
 
-			expect(query1.isNegated()).toBeFalsy();
-			expect(query2.isNegated()).toBeTruthy();
+			expect(statement1.isNegated()).toBeFalsy();
+			expect(statement2.isNegated()).toBeTruthy();
 		});
 
 		it("should always consider multi queries as never negative queries", function() {
-			var query1 = new Query("cs 101 & !cs 200"),
-				query2 = new Query("cs 300+ & cs 200+");
+			var statement1 = new Statement("cs 101 & !cs 200"),
+				statement2 = new Statement("cs 300+ & cs 200+");
 
-			expect(query1.isNegated()).toBeFalsy();
-			expect(query2.isNegated()).toBeFalsy();
+			expect(statement1.isNegated()).toBeFalsy();
+			expect(statement2.isNegated()).toBeFalsy();
 		});
 
-		it("should identify when a query is for a single course code", function() {
-			var query1 = new Query("cs 200+"),
-				query2 = new Query("cs 101"),
-				query3 = new Query("!cs 101"),
-				query4 = new Query("mns~");
+		it("should identify when a Statement is for a single course code", function() {
+			var statement1 = new Statement("cs 200+"),
+				statement2 = new Statement("cs 101"),
+				statement3 = new Statement("!cs 101"),
+				statement4 = new Statement("mns~");
 
-			expect(query1.isSingleCourse()).toBeFalsy();
-			expect(query2.isSingleCourse()).toBeTruthy();
-			expect(query3.isSingleCourse()).toBeTruthy();
-			expect(query4.isSingleCourse()).toBeFalsy();
+			expect(statement1.isSingleCourse()).toBeFalsy();
+			expect(statement2.isSingleCourse()).toBeTruthy();
+			expect(statement3.isSingleCourse()).toBeTruthy();
+			expect(statement4.isSingleCourse()).toBeFalsy();
 		});
 
-		it("should identify when a query object contains either a single or multi query", function() {
-			var query1 = new Query("CS 101"),
-				query2 = new Query("cs 200+ & cs 101");
+		it("should identify when a statement object contains either a single or multi statement", function() {
+			var statement1 = new Statement("CS 101"),
+				statement2 = new Statement("cs 200+ & cs 101");
 
-			expect(query1.isSingleQuery()).toBeTruthy();
-			expect(query2.isSingleQuery()).toBeFalsy();
+			expect(statement1.isSingleStatement()).toBeTruthy();
+			expect(statement2.isSingleStatement()).toBeFalsy();
 		});
 
-		it("should match a course code for a single query", function() {
-			var query1 = new Query("CS 200+"),
-				query2 = new Query("Cs *");
-				query3 = new Query("a$")
-				query4 = new Query("PHYS 116a");
-			expect(query1.has("cs 251")).toBeTruthy();
-			expect(query1.has("cs 101")).toBeFalsy();
-			expect(query1.has("nsc 201")).toBeFalsy();
-			expect(query2.has("cs 300")).toBeTruthy();
-			expect(query2.has("nsc 200")).toBeFalsy();
-			expect(query3.has("NSC 220a")).toBeTruthy();
-			expect(query3.has("PHIL 110")).toBeFalsy();
-			expect(query4.has("phys116a")).toBeTruthy();
-			expect(query4.has("phys116b")).toBeFalsy();
+		it("should match a course code for a single Statement", function() {
+			var statement1 = new Statement("CS 200+"),
+				statement2 = new Statement("Cs *");
+				statement3 = new Statement("a$")
+				statement4 = new Statement("PHYS 116a");
+			expect(statement1.has("cs 251")).toBeTruthy();
+			expect(statement1.has("cs 101")).toBeFalsy();
+			expect(statement1.has("nsc 201")).toBeFalsy();
+			expect(statement2.has("cs 300")).toBeTruthy();
+			expect(statement2.has("nsc 200")).toBeFalsy();
+			expect(statement3.has("NSC 220a")).toBeTruthy();
+			expect(statement3.has("PHIL 110")).toBeFalsy();
+			expect(statement4.has("phys116a")).toBeTruthy();
+			expect(statement4.has("phys116b")).toBeFalsy();
 		});
 
-		it("should match a course code for a multi query", function() {
-			var query1 = new Query("phys 100+ & !phys116a"),
-				query2 = new Query("cs* & !cs 103");
+		it("should match a course code for a multi Statement", function() {
+			var statement1 = new Statement("phys 100+ & !phys116a"),
+				statement2 = new Statement("cs* & !cs 103");
 
 			
-			expect(query1.has("phys116a")).toBeFalsy();
-			expect(query1.has("phys 100")).toBeTruthy();
-			expect(query1.has("nsc 200")).toBeFalsy();
-			expect(query1.has("Phys 116b")).toBeTruthy();
+			expect(statement1.has("phys116a")).toBeFalsy();
+			expect(statement1.has("phys 100")).toBeTruthy();
+			expect(statement1.has("nsc 200")).toBeFalsy();
+			expect(statement1.has("Phys 116b")).toBeTruthy();
 
-			expect(query2.has("Phys 116")).toBeFalsy();
-			expect(query2.has("cs 103")).toBeFalsy();
-			expect(query2.has("cs 103a")).toBeTruthy();
+			expect(statement2.has("Phys 116")).toBeFalsy();
+			expect(statement2.has("cs 103")).toBeFalsy();
+			expect(statement2.has("cs 103a")).toBeTruthy();
 		});
 
-		it("should allow adding queries to the current query", function() {
-			var query = new Query("a$");
+		it("should allow adding queries to the current statement", function() {
+			var statement = new Statement("a$");
 
-			query.and("cs*");
+			statement.and("cs*");
 
-			expect(query.has("cs 101a")).toBeTruthy();
-			expect(query.has("bsci 101a")).toBeFalsy();
-			expect(query.has("cs 101")).toBeFalsy();
+			expect(statement.has("cs 101a")).toBeTruthy();
+			expect(statement.has("bsci 101a")).toBeFalsy();
+			expect(statement.has("cs 101")).toBeFalsy();
 		});
 
-		it("should match a course code with an anti query as a course code", function() {
-			var query = new Query("!PHYS 116a");
+		it("should match a course code with an anti statement as a course code", function() {
+			var statement = new Statement("!PHYS 116a");
 
-			expect(query.has("phys116a")).toBeFalsy();
-			expect(query.has("phys116b")).toBeTruthy();
+			expect(statement.has("phys116a")).toBeFalsy();
+			expect(statement.has("phys116b")).toBeTruthy();
 		});
 
 		it("should match a course code with an anti + (above) query", function() {
-			var query = new Query("!CS 200+");
+			var statement = new Statement("!CS 200+");
 
-			expect(query.has("cs 151")).toBeTruthy();
-			expect(query.has("cs 251")).toBeFalsy();
-			expect(query.has("nsc 201")).toBeTruthy();
+			expect(statement.has("cs 151")).toBeTruthy();
+			expect(statement.has("cs 251")).toBeFalsy();
+			expect(statement.has("nsc 201")).toBeTruthy();
 		});
 
 		it("should match a course code with an anti * (all) query", function() {
-			var query = new Query("!Cs *");
+			var statement = new Statement("!Cs *");
 
-			expect(query.has("cs 300")).toBeFalsy();
-			expect(query.has("nsc 200")).toBeTruthy();
+			expect(statement.has("cs 300")).toBeFalsy();
+			expect(statement.has("nsc 200")).toBeTruthy();
 
 		});
 
 		it("should match a course code with an anti $ (suffix) query", function() {
-			var query = new Query("!a$");
+			var statement = new Statement("!a$");
 
-			expect(query.has("NSC 220a")).toBeFalsy();
-			expect(query.has("PHIL 110")).toBeTruthy();
+			expect(statement.has("NSC 220a")).toBeFalsy();
+			expect(statement.has("PHIL 110")).toBeTruthy();
 		});
 		
 		it("should identify queries that are equal", function() {
-			var query1 = new Query("cs 251"),
-				query2 = new Query("bsci*"),
-				query3 = new Query("nsc 150+"),
-				query4 = new Query("se^"),
-				query5 = new Query("a$"),
-				query6 = new Query("mns~");
+			var statement1 = new Statement("cs 251"),
+				statement2 = new Statement("bsci*"),
+				statement3 = new Statement("nsc 150+"),
+				statement4 = new Statement("se^"),
+				statement5 = new Statement("a$"),
+				statement6 = new Statement("mns~");
 
-			expect(query1.isEqual('cs 251')).toBeTruthy();
-			expect(query2.isEqual("bsci *")).toBeTruthy();
-			expect(query3.isEqual("NSC 150+")).toBeTruthy();
-			expect(query4.isEqual("SE^")).toBeTruthy();
-			expect(query5.isEqual("a$")).toBeTruthy();
-			expect(query6.isEqual("MNS~")).toBeTruthy();
+			expect(statement1.isEqual('cs 251')).toBeTruthy();
+			expect(statement2.isEqual("bsci *")).toBeTruthy();
+			expect(statement3.isEqual("NSC 150+")).toBeTruthy();
+			expect(statement4.isEqual("SE^")).toBeTruthy();
+			expect(statement5.isEqual("a$")).toBeTruthy();
+			expect(statement6.isEqual("MNS~")).toBeTruthy();
 		});
 
 		it("should identify queries that are not equal", function() {
-			var query1 = new Query("cs 251"),
-				query2 = new Query("bsci*"),
-				query3 = new Query("nsc 150+"),
-				query4 = new Query("se^"),
-				query5 = new Query("a$"),
-				query6 = new Query("mns~");
+			var statement1 = new Statement("cs 251"),
+				statement2 = new Statement("bsci*"),
+				statement3 = new Statement("nsc 150+"),
+				statement4 = new Statement("se^"),
+				statement5 = new Statement("a$"),
+				statement6 = new Statement("mns~");
 
-			expect(query1.isEqual('cs 151')).toBeFalsy();
-			expect(query2.isEqual("bsci 110a")).toBeFalsy();
-			expect(query3.isEqual("NSC 151+")).toBeFalsy();
-			expect(query4.isEqual("as^")).toBeFalsy();
-			expect(query5.isEqual("b$")).toBeFalsy();
-			expect(query6.isEqual("p~")).toBeFalsy();
+			expect(statement1.isEqual('cs 151')).toBeFalsy();
+			expect(statement2.isEqual("bsci 110a")).toBeFalsy();
+			expect(statement3.isEqual("NSC 151+")).toBeFalsy();
+			expect(statement4.isEqual("as^")).toBeFalsy();
+			expect(statement5.isEqual("b$")).toBeFalsy();
+			expect(statement6.isEqual("p~")).toBeFalsy();
 		});
 
 		it("should identify anti queries that are equal", function() {
-			var query1 = new Query("!cs 251"),
-				query2 = new Query("!bsci*"),
-				query3 = new Query("!nsc 150+"),
-				query4 = new Query("!se^"),
-				query5 = new Query("!a$"),
-				query6 = new Query("!mns~");
+			var statement1 = new Statement("!cs 251"),
+				statement2 = new Statement("!bsci*"),
+				statement3 = new Statement("!nsc 150+"),
+				statement4 = new Statement("!se^"),
+				statement5 = new Statement("!a$"),
+				statement6 = new Statement("!mns~");
 
-			expect(query1.isEqual('!cs 251')).toBeTruthy();
-			expect(query2.isEqual("!bsci *")).toBeTruthy();
-			expect(query3.isEqual("!NSC 150+")).toBeTruthy();
-			expect(query4.isEqual("!SE^")).toBeTruthy();
-			expect(query5.isEqual("!a$")).toBeTruthy();
-			expect(query6.isEqual("!MNS~")).toBeTruthy();
+			expect(statement1.isEqual('!cs 251')).toBeTruthy();
+			expect(statement2.isEqual("!bsci *")).toBeTruthy();
+			expect(statement3.isEqual("!NSC 150+")).toBeTruthy();
+			expect(statement4.isEqual("!SE^")).toBeTruthy();
+			expect(statement5.isEqual("!a$")).toBeTruthy();
+			expect(statement6.isEqual("!MNS~")).toBeTruthy();
 		});
 
 		it("should identify anti queries that are not equal", function() {
-			var query1 = new Query("!cs 251"),
-				query2 = new Query("!bsci*"),
-				query3 = new Query("!nsc 150+"),
-				query4 = new Query("!se^"),
-				query5 = new Query("!a$"),
-				query6 = new Query("!mns~");
+			var statement1 = new Statement("!cs 251"),
+				statement2 = new Statement("!bsci*"),
+				statement3 = new Statement("!nsc 150+"),
+				statement4 = new Statement("!se^"),
+				statement5 = new Statement("!a$"),
+				statement6 = new Statement("!mns~");
 
-			expect(query1.isEqual('!cs 151')).toBeFalsy();
-			expect(query2.isEqual("!bsci 110A")).toBeFalsy();
-			expect(query3.isEqual("!NSC 151+")).toBeFalsy();
-			expect(query4.isEqual("!as^")).toBeFalsy();
-			expect(query5.isEqual("!b$")).toBeFalsy();
-			expect(query6.isEqual("!p~")).toBeFalsy();
+			expect(statement1.isEqual('!cs 151')).toBeFalsy();
+			expect(statement2.isEqual("!bsci 110A")).toBeFalsy();
+			expect(statement3.isEqual("!NSC 151+")).toBeFalsy();
+			expect(statement4.isEqual("!as^")).toBeFalsy();
+			expect(statement5.isEqual("!b$")).toBeFalsy();
+			expect(statement6.isEqual("!p~")).toBeFalsy();
 		});
 
 		it("should identify equal queries despite different ordering of multi-queries", function() {
-			var query1 = new Query("cs 200+ & !cs 202 & !cs 201"),
-				query2 = new Query("!cs 201 & cs 200+ & !cs 202");
+			var statement1 = new Statement("cs 200+ & !cs 202 & !cs 201"),
+				statement2 = new Statement("!cs 201 & cs 200+ & !cs 202");
 
-			expect(query1.isEqual(query2)).toBeTruthy();
+			expect(statement1.isEqual(statement2)).toBeTruthy();
 		});
 
 		it("should reformat queries correctly using the toString method", function() {
-			var query1 = new Query("CS 101"),
-				query2 = new Query("cs101 "),
-				query3 = new Query("a$"),
-				query4 = new Query("mns~"),
-				query5 = new Query("bsci 110a");
+			var statement1 = new Statement("CS 101"),
+				statement2 = new Statement("cs101 "),
+				statement3 = new Statement("a$"),
+				statement4 = new Statement("mns~"),
+				statement5 = new Statement("bsci 110a");
 
-				expect(query1.toString()).toBe("CS 101");
-				expect(query2.toString()).toBe("CS 101");
-				expect(query3.toString()).toBe("A$");
-				expect(query4.toString()).toBe("MNS~");
-				expect(query5.toString()).toBe("BSCI 110A");
+				expect(statement1.toString()).toBe("CS 101");
+				expect(statement2.toString()).toBe("CS 101");
+				expect(statement3.toString()).toBe("A$");
+				expect(statement4.toString()).toBe("MNS~");
+				expect(statement5.toString()).toBe("BSCI 110A");
 		});
 
 		it("should reformat anti queries correctly using the toString method", function() {
-			var query1 = new Query("!CS 101"),
-				query2 = new Query("!cs101 "),
-				query3 = new Query("!a$"),
-				query4 = new Query("!mns~"),
-				query5 = new Query("!bsci 110a");
+			var statement1 = new Statement("!CS 101"),
+				statement2 = new Statement("!cs101 "),
+				statement3 = new Statement("!a$"),
+				statement4 = new Statement("!mns~"),
+				statement5 = new Statement("!bsci 110a");
 
-				expect(query1.toString()).toBe("!CS 101");
-				expect(query2.toString()).toBe("!CS 101");
-				expect(query3.toString()).toBe("!A$");
-				expect(query4.toString()).toBe("!MNS~");
-				expect(query5.toString()).toBe("!BSCI 110A");
+				expect(statement1.toString()).toBe("!CS 101");
+				expect(statement2.toString()).toBe("!CS 101");
+				expect(statement3.toString()).toBe("!A$");
+				expect(statement4.toString()).toBe("!MNS~");
+				expect(statement5.toString()).toBe("!BSCI 110A");
 		});
 
-		it("should reformat queries correctly using the formatQuery static method", function() {
-			expect(Query.formatQuery("CS 101")).toBe("CS 101");
-			expect(Query.formatQuery("cs101")).toBe("CS 101");
-			expect(Query.formatQuery("a$")).toBe("A$");
-			expect(Query.formatQuery("mns~")).toBe("MNS~");
-			expect(Query.formatQuery("bsci110a")).toBe("BSCI 110A");
+		it("should reformat queries correctly using the formatstatement static method", function() {
+			expect(Statement.formatStatement("CS 101")).toBe("CS 101");
+			expect(Statement.formatStatement("cs101")).toBe("CS 101");
+			expect(Statement.formatStatement("a$")).toBe("A$");
+			expect(Statement.formatStatement("mns~")).toBe("MNS~");
+			expect(Statement.formatStatement("bsci110a")).toBe("BSCI 110A");
 		});
 
-		it("should reformat queries correctly using the formatQuery static method", function() {
-			expect(Query.formatQuery("!CS 101")).toBe("!CS 101");
-			expect(Query.formatQuery("!cs101")).toBe("!CS 101");
-			expect(Query.formatQuery("!a$")).toBe("!A$");
-			expect(Query.formatQuery("!mns~")).toBe("!MNS~");
-			expect(Query.formatQuery("!bsci110a")).toBe("!BSCI 110A");
+		it("should reformat queries correctly using the formatStatement static method", function() {
+			expect(Statement.formatStatement("!CS 101")).toBe("!CS 101");
+			expect(Statement.formatStatement("!cs101")).toBe("!CS 101");
+			expect(Statement.formatStatement("!a$")).toBe("!A$");
+			expect(Statement.formatStatement("!mns~")).toBe("!MNS~");
+			expect(Statement.formatStatement("!bsci110a")).toBe("!BSCI 110A");
 		});
 
-		it("should filter and re-format course codes that match the query", function() {
-			var query1 = new Query("cs 101"),
-				query2 = new Query("cs 200+"),
-				query3 = new Query("!cs 200+"),
-				query4 = new Query("a$");
+		it("should filter and re-format course codes that match the Statement", function() {
+			var statement1 = new Statement("cs 101"),
+				statement2 = new Statement("cs 200+"),
+				statement3 = new Statement("!cs 200+"),
+				statement4 = new Statement("a$");
 
-			expect(query1.filter(["cs 101", "cs 103", "cs 201"])).toEqual(["CS 101"]);
-			expect(query2.filter(["cs 101", "cs 201", "cs251", "cs231"])).toEqual(["CS 201", "CS 251", "CS 231"]);
-			expect(query3.filter(["cs 101", "cs 201", "cs 251", "cs 231"])).toEqual(["CS 101"]);
-			expect(query4.filter(["cs 101", "cs 101a", "bsci110a", "cs 251"])).toEqual(["CS 101A", "BSCI 110A"]);
+			expect(statement1.filter(["cs 101", "cs 103", "cs 201"])).toEqual(["CS 101"]);
+			expect(statement2.filter(["cs 101", "cs 201", "cs251", "cs231"])).toEqual(["CS 201", "CS 251", "CS 231"]);
+			expect(statement3.filter(["cs 101", "cs 201", "cs 251", "cs 231"])).toEqual(["CS 101"]);
+			expect(statement4.filter(["cs 101", "cs 101a", "bsci110a", "cs 251"])).toEqual(["CS 101A", "BSCI 110A"]);
 
 		});
 
 		it("should create deep copies of itself using the copy method", function() {
-			var query1 = new Query("cs 101a"),
-				query2 = query1.copy();
+			var statement1 = new Statement("cs 101a"),
+				statement2 = statement1.copy();
 
-			expect(query2).toEqual(query1);
-			query2.array[0].not = !query2.array[0].not;
-			expect(query2).not.toEqual(query1);
+			expect(statement2).toEqual(statement1);
+			statement2.array[0].not = !statement2.array[0].not;
+			expect(statement2).not.toEqual(statement1);
 		});
 
 		describe("refactoring", function() {
-			it("should remove unneeded queries from a query with at least 1 single course", function() {
-				var query = new Query("cs 201 & cs 200+");
+			it("should remove unneeded queries from a statement with at least 1 single course", function() {
+				var statement = new Statement("cs 201 & cs 200+");
 
-				expect(query.refactor()).toBeTruthy();
-				expect(query.toString()).toBe("CS 201");
+				expect(statement.refactor()).toBeTruthy();
+				expect(statement.toString()).toBe("CS 201");
 			});
-			it("should remove unneeded queries from a single course query with extra anti queries present", function() {
-				var query = new Query("cs 101 & !cs 201 & !cs200+");
-				expect(query.refactor()).toBeTruthy();
-				expect(query.toString()).toBe("CS 101");
-			});
-
-			it("should indicate that a query is contradictory for single courses with more complex anti queries", function() {
-				var query = new Query("cs 201 & !cs 200+");
-				expect(query.refactor()).toBeFalsy();
+			it("should remove unneeded queries from a single course statement with extra anti queries present", function() {
+				var statement = new Statement("cs 101 & !cs 201 & !cs200+");
+				expect(statement.refactor()).toBeTruthy();
+				expect(statement.toString()).toBe("CS 101");
 			});
 
-			it("should indicate if the query is conradictory for single course anti-queries", function() {
-				var query = new Query("cs 101 & !Cs 101");
-				expect(query.refactor()).toBeFalsy();
+			it("should indicate that a statement is contradictory for single courses with more complex anti queries", function() {
+				var statement = new Statement("cs 201 & !cs 200+");
+				expect(statement.refactor()).toBeFalsy();
 			});
-			it("should indicate if the query is contradictory from having more than 1 single course", function() {
-				var query = new Query("cs 101 & cs 102");
-				expect(query.refactor()).toBeFalsy();
+
+			it("should indicate if the statement is conradictory for single course anti-queries", function() {
+				var statement = new Statement("cs 101 & !Cs 101");
+				expect(statement.refactor()).toBeFalsy();
+			});
+			it("should indicate if the statement is contradictory from having more than 1 single course", function() {
+				var statement = new Statement("cs 101 & cs 102");
+				expect(statement.refactor()).toBeFalsy();
 			});
 			it("should keep portions of multiqueries that cannot be resolved and not throw errors", function() {
-				var query = new Query("cs 101 & SE^");
-				expect(query.refactor()).toBeTruthy();
-				expect(query.toString()).toBe("CS 101 & SE^");
+				var statement = new Statement("cs 101 & SE^");
+				expect(statement.refactor()).toBeTruthy();
+				expect(statement.toString()).toBe("CS 101 & SE^");
 			});
 		});
 	});
 
-	describe("Query Collection", function() {
+	describe("Statement Collection", function() {
 		var q_collection1,
 			q_collection2;
 
 		beforeEach(function() {
-			q_collection1 = [new Query("CS 101"), new Query("CS 102"), new Query("CS251"), new Query("bsci 200+")];
-			q_collection2 = [new Query("a$"), new Query("!CS 200+")];
+			q_collection1 = [new Statement("CS 101"), new Statement("CS 102"), new Statement("CS251"), new Statement("bsci 200+")];
+			q_collection2 = [new Statement("a$"), new Statement("!CS 200+")];
 		});
 
-		it("should have a constructor that takes query objects", function() {
+		it("should have a constructor that takes Statement objects", function() {
 			var testFunct = function() {
 				return function() {
-					var query = new QueryCollection(q_collection1);
+					var statement = new StatementCollection(q_collection1);
 				}
 			}
 			expect(testFunct()).not.toThrowAnything();
 		});
-		it("should have a constructor that takes query strings", function() {
+		it("should have a constructor that takes Statement strings", function() {
 			var testFunct = function() {
 				return function() {
-					var query = new QueryCollection(["CS 101", "CS 102", "bsci 200+"]);
+					var statement = new StatementCollection(["CS 101", "CS 102", "bsci 200+"]);
 				}
 			}
 			expect(testFunct()).not.toThrowAnything();
@@ -574,18 +574,18 @@ describe("Tokenizer Testing Suite:", function() {
 		it('should throw an error when the constructor parameter is not an array', function() {
 			var testFunct = function(param) {
 				return function() {
-					var query = new QueryCollection(param);
+					var statement = new StatementCollection(param);
 				}
 			}
 
-			expect(testFunct(1)).toThrow(new Error("parameter for QueryCollection constructor should be an array"));
-			expect(testFunct()).toThrow(new Error("parameter for QueryCollection constructor should be an array"));
-			expect(testFunct("Bad param")).toThrow(new Error("parameter for QueryCollection constructor should be an array"));
-			expect(testFunct([])).not.toThrow(new Error("parameter for QueryCollection constructor should be an array"));
+			expect(testFunct(1)).toThrow(new Error("parameter for StatementCollection constructor should be an array"));
+			expect(testFunct()).toThrow(new Error("parameter for StatementCollection constructor should be an array"));
+			expect(testFunct("Bad param")).toThrow(new Error("parameter for StatementCollection constructor should be an array"));
+			expect(testFunct([])).not.toThrow(new Error("parameter for StatementCollection constructor should be an array"));
 
 		});
-		it('should match a course for a simple query', function() {
-			var queries = new QueryCollection(["CS 101", "CS 102", "bsci 200+"]);
+		it('should match a course for a simple Statement', function() {
+			var queries = new StatementCollection(["CS 101", "CS 102", "bsci 200+"]);
 
 			expect(queries.has("cs 101")).toBeTruthy();
 			expect(queries.has("bsci 201")).toBeTruthy();
@@ -594,7 +594,7 @@ describe("Tokenizer Testing Suite:", function() {
 		});
 
 		it('should match a course for a collection containing multiqueries', function() {
-			var queries = new QueryCollection(["MATH 155", "Math 200+ & !MATH 209 & !MATH 210"]);
+			var queries = new StatementCollection(["MATH 155", "Math 200+ & !MATH 209 & !MATH 210"]);
 
 			expect(queries.has("math 155")).toBeTruthy();
 			expect(queries.has("Math 209")).toBeFalsy();
@@ -602,60 +602,60 @@ describe("Tokenizer Testing Suite:", function() {
 		});
 
 		it("should match a set of course codes using the filter method", function() {
-			var queries = new QueryCollection(["CS 101", "CS 102", "bsci 200+"]);
+			var queries = new StatementCollection(["CS 101", "CS 102", "bsci 200+"]);
 
 			expect(queries.filter(["CS 101", "cs 103", "bsci 110a", "bsci 201"])).toEqual(["CS 101", "BSCI 201"]);
 		});
 
-		it("should match a set of course codes using a filter method and a complex multi query collection", function() {
-			var queries = new QueryCollection(["MATH 155A", "MATH 155B", "MATH 200+", "!MATH 208", "!MATH 209"]);
+		it("should match a set of course codes using a filter method and a complex multi Statement collection", function() {
+			var queries = new StatementCollection(["MATH 155A", "MATH 155B", "MATH 200+", "!MATH 208", "!MATH 209"]);
 			
 			expect(queries.filter(["MATH 155A", "MATH 208", "MATH 300", "BSCI 110a"])).toEqual(["MATH 155A", "MATH 300"]);
 		});
 
 		it("should be able to iterate through queries using the each method", function() {
-			var queries = new QueryCollection(q_collection1);
+			var queries = new StatementCollection(q_collection1);
 
-			queries.each(function(query, index) {
-				expect(query).toEqual(q_collection1[index]);
+			queries.each(function(statement, index) {
+				expect(statement).toEqual(q_collection1[index]);
 			});
 		});
 
-		it("should allow for appending more query strings", function() {
-			var queries = new QueryCollection(["CS 101", "CS 102", "bsci 200+"]);
+		it("should allow for appending more statement strings", function() {
+			var queries = new StatementCollection(["CS 101", "CS 102", "bsci 200+"]);
 			queries.append("cs 103");
 			expect(queries.has("cs 103")).toBeTruthy();
 		});
 
 
-		it("should allow for appending more query objects", function() {
-			var queries = new QueryCollection(["MATH 155A", "MATH 155B", "MATH 200+", "!MATH 208", "!MATH 209"]);
-			queries.append(new Query("cs 103"));
+		it("should allow for appending more Statement objects", function() {
+			var queries = new StatementCollection(["MATH 155A", "MATH 155B", "MATH 200+", "!MATH 208", "!MATH 209"]);
+			queries.append(new Statement("cs 103"));
 			expect(queries.has("cs 103")).toBeTruthy();
 			expect(queries.has("Math 209")).toBeFalsy();
 		});
 
-		it("should allow for unioning another query collection", function() {
-			var queries = new QueryCollection(["CS 101", "CS 102", "bsci 200+"]);
+		it("should allow for unioning another Statement collection", function() {
+			var queries = new StatementCollection(["CS 101", "CS 102", "bsci 200+"]);
 
-			queries.union(new QueryCollection(["MATH 155A", "MATH 155B", "MATH 200+", "!MATH 208", "!MATH 209"]));
+			queries.union(new StatementCollection(["MATH 155A", "MATH 155B", "MATH 200+", "!MATH 208", "!MATH 209"]));
 
 			expect(queries.has("cs 101")).toBeTruthy();
 			expect(queries.has("math 155a")).toBeTruthy();
 			expect(queries.has("cs 103")).toBeFalsy();
 		});
 		
-		it("should remove redundancies when unioning 2 query collections", function() {
-			var queries = new QueryCollection(["CS 101", "CS 102", "bsci 200+"]);
+		it("should remove redundancies when unioning 2 Statement collections", function() {
+			var queries = new StatementCollection(["CS 101", "CS 102", "bsci 200+"]);
 
-			queries.union(new QueryCollection(["CS 101", "!CS 103", "CS 200+"]));
+			queries.union(new StatementCollection(["CS 101", "!CS 103", "CS 200+"]));
 
 			expect(queries.toArray()).toEqual(["CS 101", "CS 102", "BSCI 200+", "CS 200+"]);
 		});
 
 
 		it("should create a deep copy of itself", function() {
-			var queries = new QueryCollection(["MATH 155A", "MATH 155B", "MATH 200+", "!MATH 208", "!MATH 209"]),
+			var queries = new StatementCollection(["MATH 155A", "MATH 155B", "MATH 200+", "!MATH 208", "!MATH 209"]),
 				queriesCopy = queries.copy();
 			expect(queries).toEqual(queriesCopy);
 			queriesCopy.append("CS 101");
@@ -664,31 +664,31 @@ describe("Tokenizer Testing Suite:", function() {
 		});
 		
 		it("should return an array of queries", function() {
-			var queries = new QueryCollection(["CS 101", "CS 102", "bsci 200+"]);
+			var queries = new StatementCollection(["CS 101", "CS 102", "bsci 200+"]);
 
 			expect(queries.toArray()).toEqual(["CS 101", "CS 102", "BSCI 200+"])
 		});
 
-		it("should return an array of queries for complex anti query collections", function() {
-			var queries = new QueryCollection(["MATH 155A", "MATH 155B", "MATH 200+", "!MATH 208", "!MATH 209"]);
+		it("should return an array of queries for complex anti Statement collections", function() {
+			var collection= new StatementCollection(["MATH 155A", "MATH 155B", "MATH 200+", "!MATH 208", "!MATH 209"]);
 
-			expect(queries.toArray()).toEqual(["MATH 155A", "MATH 155B", "MATH 200+ & !MATH 208 & !MATH 209"]);
+			expect(collection.toArray()).toEqual(["MATH 155A", "MATH 155B", "MATH 200+ & !MATH 208 & !MATH 209"]);
 		});
 
 		it('should cancel out queries that are opposite to the negation', function() {
-			var queries = new QueryCollection(["CS 101", "CS 201", "!CS 101"]);
+			var queries = new StatementCollection(["CS 101", "CS 201", "!CS 101"]);
 
 			expect(queries.toArray()).toEqual(["CS 201"]);
 		});
 
 		it("should union correctly with the static union method when given two arrays of strings", function() {
-			var queries = QueryCollection.union(["CS 101", "CS 103"], ["CS 101", "!CS 101", "CS 200+"]);
+			var queries = StatementCollection.union(["CS 101", "CS 103"], ["CS 101", "!CS 101", "CS 200+"]);
 
 			expect(queries.toArray()).toEqual(["CS 101", "CS 103", "CS 200+"]);
 		});
 
-		it("should union correctly with the static union method when given two Query collections", function() {
-			var queries = QueryCollection.union(new QueryCollection(["CS 101", "CS 103"]), new QueryCollection(["CS 101", "!CS 101", "CS 200+"]));
+		it("should union correctly with the static union method when given two Statement collections", function() {
+			var queries = StatementCollection.union(new StatementCollection(["CS 101", "CS 103"]), new StatementCollection(["CS 101", "!CS 101", "CS 200+"]));
 
 			expect(queries.toArray()).toEqual(["CS 101", "CS 103", "CS 200+"]);
 		});
