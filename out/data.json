@@ -57,13 +57,105 @@
             "params": [
                 {
                     "name": "courseCode1",
-                    "description": "Course code as a string"
+                    "description": "Course code as a string",
+                    "type": "String"
                 },
                 {
                     "name": "courseCode2",
-                    "description": "Course code as a string"
+                    "description": "Course code as a string",
+                    "type": "String"
                 }
             ],
+            "return": {
+                "description": "true if the course codes are logically equal, false otherwise",
+                "type": "Boolean"
+            },
+            "class": "CourseCodeTokenizer"
+        },
+        {
+            "file": "public/js/tokenizer.js",
+            "line": 41,
+            "description": "parses a courseCode into a token, separating the different\nportions of the course code string into an object that can be\nquickly interpretted",
+            "itemtype": "method",
+            "name": "parse",
+            "params": [
+                {
+                    "name": "courseCode",
+                    "description": "The course code string being parsed",
+                    "type": "String"
+                }
+            ],
+            "return": {
+                "description": "A token object with the course code parsed into properties",
+                "type": "Object"
+            },
+            "class": "CourseCodeTokenizer"
+        },
+        {
+            "file": "public/js/tokenizer.js",
+            "line": 113,
+            "description": "checks if a course code matches a query multiple course codes.  This method\ncalls parse and matchObject methods of CourseCodeTokenizer to perform comparison",
+            "itemtype": "method",
+            "name": "matchQuery",
+            "params": [
+                {
+                    "name": "courseCode",
+                    "description": "A string that represents the course code being queried against",
+                    "type": "String"
+                },
+                {
+                    "name": "query",
+                    "description": "A string that queries the course code",
+                    "type": "String"
+                }
+            ],
+            "return": {
+                "description": "true if the courseCode is a member of the query, false otherwise",
+                "type": "Boolean"
+            },
+            "class": "CourseCodeTokenizer"
+        },
+        {
+            "file": "public/js/tokenizer.js",
+            "line": 128,
+            "description": "similar to matchQuery, except it matches object against object\ninstead of string against string.",
+            "itemtype": "method",
+            "name": "matchObject",
+            "params": [
+                {
+                    "name": "codeObject",
+                    "description": "The token object that is checked for belonging within the query",
+                    "type": "Object"
+                },
+                {
+                    "name": "token",
+                    "description": "The query object that is being used compare against the token",
+                    "type": "Object"
+                }
+            ],
+            "return": {
+                "description": "true if the codeObject is a member of the token's query, false otherwise",
+                "type": "Boolean"
+            },
+            "class": "CourseCodeTokenizer"
+        },
+        {
+            "file": "public/js/tokenizer.js",
+            "line": 165,
+            "description": "Performs a deep, logical copy of a course token",
+            "itemtype": "method",
+            "name": "copyToken",
+            "params": [
+                {
+                    "name": "obj",
+                    "description": "The token that is being copied",
+                    "type": "Object"
+                }
+            ],
+            "return": {
+                "description": "a deep copy of the param",
+                "type": "Boolean"
+            },
             "class": "CourseCodeTokenizer"
         },
         {

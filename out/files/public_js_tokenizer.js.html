@@ -116,8 +116,9 @@ var CourseCodeTokenizer = {
 	 * referring to the same type of course, whether it is a single
 	 * course or multiple courses
 	 * @method isEqual
-	 * @param courseCode1 Course code as a string
-	 * @param courseCode2 Course code as a string
+	 * @param {String} courseCode1 Course code as a string
+	 * @param {String} courseCode2 Course code as a string
+	 * @return {Boolean} true if the course codes are logically equal, false otherwise
 	 */
 	isEqual: function(courseCode1, courseCode2) {
 		var token1 = CourseCodeTokenizer.parse(courseCode1),
@@ -125,6 +126,14 @@ var CourseCodeTokenizer = {
 
 		return _.isEqual(token1, token2);
 	},
+	/**
+	 * parses a courseCode into a token, separating the different
+	 * portions of the course code string into an object that can be
+	 * quickly interpretted
+	 * @method parse
+	 * @param {String} courseCode The course code string being parsed
+	 * @return {Object} A token object with the course code parsed into properties
+	 */
 	parse: function(courseCode) {
 
 		var validSchoolTokens,
@@ -189,9 +198,14 @@ var CourseCodeTokenizer = {
 		return token;
 
 	},
-	//returns true if the courseCode is within the Statement
-	//automatically returns false if the course code parameter
-	//is filled with a quey (something with a Statement character, like +)
+	/**
+	 * checks if a course code matches a query multiple course codes.  This method
+	 * calls parse and matchObject methods of CourseCodeTokenizer to perform comparison
+	 * @method matchQuery
+	 * @param {String} courseCode A string that represents the course code being queried against
+	 * @param {String} query A string that queries the course code
+	 * @return {Boolean} true if the courseCode is a member of the query, false otherwise
+	 */
 	matchQuery: function(courseCode, query) {
 		var token = CourseCodeTokenizer.parse(query),
 		    codeObject = CourseCodeTokenizer.parse(courseCode);
@@ -199,6 +213,14 @@ var CourseCodeTokenizer = {
 		return CourseCodeTokenizer.matchObject(codeObject, token);
 		
 	},
+	/**
+	 * similar to matchQuery, except it matches object against object
+	 * instead of string against string.
+	 * @method matchObject
+	 * @param {Object} codeObject The token object that is checked for belonging within the query
+	 * @param {Object} token The query object that is being used compare against the token
+	 * @return {Boolean} true if the codeObject is a member of the token&#x27;s query, false otherwise
+	 */
 	matchObject: function(codeObject, token) {
 		var negateStatement;
 		if (!token.query) {
@@ -228,7 +250,12 @@ var CourseCodeTokenizer = {
 		return false;
 	},
 	
-	//makes a deep copy and returns it
+	/**
+	 * Performs a deep, logical copy of a course token
+	 * @method copyToken
+	 * @param {Object} obj The token that is being copied
+	 * @return {Boolean} a deep copy of the param
+	 */
 	copyToken: function(obj) {
 		var copy = {}, i;
 		for (i in obj) {
