@@ -1,13 +1,23 @@
-//This file uses CourseCodeTokenizer, so that object should
-//This file uses courseCodes to represent courses in order to 
-//prevent the need for the course backbone object
 
 
-//should not call the requirement constructor,
-//the requirements are automatically constructed
-//within the Goal object constructor
+
+/**
+ * An object that resides within a goal, that relates
+ * a set of courses and keeps track of whether courses have been 
+ * taken or not to validate if they have satisfied 
+ * a portion of the overall goal.  Requirements are a recursive
+ * object that can have other Requirements nested within them for
+ * increased complexity
+ * @class Requirement
+ */
 var Requirement = Backbone.Model.extend({
 
+		/**
+		 * Constructor that is called when a Requirement
+		 * is initialized.
+		 * @constructor
+		 * @param {obj} obj A raw JSON object that is the requirement in declarive form
+		 */
 		initialize: function(obj) {
 			
 			var items, i, n;
@@ -35,41 +45,47 @@ var Requirement = Backbone.Model.extend({
 			}
 			
 		},
-		addCourse: function(courseCode) {
-			
-		},
-		removeCourse: function(courseCode) {
-			
-		},
 		//getter methods
-
+		/**
+		 * Getter for the title of the requirement
+		 * @method getTitle
+		 * @return {String} title of the requirement
+		*/
 		getTitle: function() {
 			return this.get('title');
 		},
 		
+		/**
+		 * Getter for the requirements items.  These items can either be
+		 * strings or nested requirements
+		 * @method getItems
+		 * @return {Array} an array of the items, either an array of strings
+		 * or an array of Requirement Objects
+		 */
 		getItems: function() {
 			return this.get('items');
 		},
-		getStatements: function() {
-
-			
-		},
-		//sets an array of backbone course objects at 
-		//the leaves of the requirements
-		setCourses: function(courseCollection) {
-			
-		},
-		//returns true if the Requirement already has 
-		//this course added
-		containsCourse: function(courseCode) {
-
-		},
-		//returns true if the Requirement accepts this
-		//course, ignoring if the course if already added or not
-		acceptsCourse: function(courseCode) {
+		
+		/**
+		 * Indicates if the Requirements, or any nested Requirements,
+		 * contains the indicated course.  A Requirement Contains a course
+		 * despite whether the course has been added to the schedule or not, so 
+		 * if a course is added to the schedule, the Requirement will still contain
+		 * that course
+		 * @method contains
+		 * @param {Course} course A Course Object
+		 * @return {Boolean} true if the Requirement contains this course
+		 */
+		contains: function(course) {
 
 		},
-		//what type of requirement?
+		/**
+		 * returns the completion type of the requirement, whether
+		 * it is 'takeHours', 'takeItems', or 'takeAll'
+		 * @method completionType
+		 * @return {String} the completion type, indicating how the Requirement
+		 * needs to be validated ('takeHours', 'takeItems', 'takeAll')
+		 */
 		completionType: function() {
 			if (this.get('takeHours')) {
 				return 'takeHours';
@@ -81,9 +97,15 @@ var Requirement = Backbone.Model.extend({
 				return 'takeItems';
 			}
 		},
-		//get the hours needed for the 
-		//requirement, if the completion type
-		//is not takeHours, then this returns 0
+		/**
+		 * The number of hours needed to complete the requirement.
+		 * If the Requirement has a completion type other than 'takeHours'.
+		 * This number is the total number of hours needed for completion, despite
+		 * any courses that have been added previously
+		 * then this returns 0
+		 * @method hoursNeeded
+		 * @return {Number} The number of hours needed to complete this requirement
+		 */
 		hoursNeeded: function() {
 			if (this.completionType() === 'takeHours') {
 				return this.get('takeHours');
@@ -91,67 +113,66 @@ var Requirement = Backbone.Model.extend({
 			return 0;
 		},
 
-		//get the number of courses needed to complete
-		//this requirement, if the completion type
-		//is takeHours, this returns 0
+		/**
+		 * The number of items needed to satisfy the requirement.  If 
+		 * the completion type is takeHours, this method returns 0; if the
+		 * completion type is takeAll, this returns the total number of items,
+		 * and if the completion type is takeItems, this returns the number of 
+		 * items indicated.  The number of items returned this method is the same, 
+		 * despite the number of courses that are added within the schedule
+		 * @method itemsNeeded
+		 * @return {Number} the number of items needed to take.
+		 */
 		itemsNeeded: function() {
 			if (this.completionType() === 'takeHours') {
 				return 0;
 			}
-
-			if (this.completionType() === 'takeAll') {
-				//cache the courses needed so that you do not 
-				//have to traverse the tree for the courses count
-				//everytime this method is called
-				if (!this.itemsNeeded.memo) {
-					this.itemsNeeded.memo = this.getCourseQueries().length;
-				}
-				return this.itemsNeeded.memo;
-			}
-
-			if (this.completionType() === 'takeItems') {
+			else if (this.completionType() === 'takeAll') {
+				return this.getItems().length;
+			} else {
+				//takeCourses
 				return this.get('take');
 			}
 		},
 
-		//validation-progress related methods
-		//these methods cache values so that the tree
-		//is not traversed everytime the methods are
-		//called.  When 'update' is called, these methods
-		//are flagged so that the next call will reset the cache
-		//value since the taken courses have changed
-
-
-		update: function() {
-			this.clearValidationCache();
-		},
-
-		//this method is called by update
-		//NEVER CALL THIS
-		//this is where all the cached values are removed
-		//so that subsequent calls will to validation methods 
-		//will refresh data
-		clearValidationCache: function() {
-			this.progress.memo = null;
-			this.isComplete.memo = null;
-		},
-
+		/**
+		 * Indicates if the requirement has been satisfied
+		 * @method isComplete
+		 * @return {Boolean} true if the Requirement has been completed
+		 */
 		isComplete: function() {
 			
 		},
-		//the progress of the requirement to becoming
-		//complete, returns a decimal number indicating 
-		//the progress, progress is between 0 and 1, 1 being
-		//that the requirement is complete
+		/**
+		 * Returns a decimal number to indicate how close someone is to
+		 * completing this requirement. A value of 1 means that the requirement
+		 * is complete, and a value of 0 means that the requirement has no validated
+		 * courses
+		 * @method progress
+		 * @return {Number} A decimal number between 0 and 1 (inclusive) to indicate
+		 * the progress towards completion of the Requirement 
+		 */
 		progress: function() {
 			
 		},
 
-		//tree-related methods
-
+		/**
+		 * STRUCTURAL METHOD.  Indicates the depth this current Requirement is 
+		 * from the root goal within the tree structure of the goal
+		 * @method getDepthFromRoot
+		 * @return {Number} the number of nodes (Requirements) this Requirement is
+		 * from the root 
+		 */
 		getDepthFromRoot: function() {
 			return this.get('reqID').length / 2;
 		},
+		/**
+		 * STRUCTURAL METHOD.  Indicates the depth of the deepest child of this requirement
+		 * from the root of the tree structure of the goal
+		 * @method getDepthOfChild
+		 * @return {Number} the number of nodes (Requirements) the deepest child requirement is
+		 * from the root
+		 */
 		getMaxDepthOfChild: function() {
 			var maxDepth = 0;
 			if (this.isLeaf()) {
@@ -167,22 +188,42 @@ var Requirement = Backbone.Model.extend({
 			return maxDepth;
 			
 		},
+		/**
+		 * STRUCTURAL METHOD.  Gets the index of this Requirement within
+		 * its parent Object.
+		 * @method getIndex
+		 * @return {Number} the index of this elements
+		 */
 		getIndex: function() {
 			var reqID = this.get('reqID');
 			return parseInt(reqID.substr(reqID.length - 2, 2), 16);
 		},
 
-
+		/**
+		 * STRUCTURAL METHOD.  Indicates if this Requirement is 
+		 * a leaf requirement, meaning that it has not nested Requirements
+		 * @method isLeaf
+		 * @return {Boolean} true if this Requirement has no nested Requirements
+		 */
 		isLeaf: function() {
 			return this.get('isLeaf');
 		},
-		//the requirement is a root if it is not
-		//nested within any requirement object
+		/**
+		 * STURCTURAL METHOD. Indicates if this Requirement is a root requirement,
+		 * meaning that it has not parents
+		 * @method isRoot
+		 * @return {Boolean} true if this Requirement has no parent Requirements
+		 */
 		isRoot: function() {
 			return this.get('isRoot');
 		},
 
-		//recursively converts this object to JSON
+		/**
+		 * converts this Requirement Object to a JSON object, including all
+		 * the nested Requirements
+		 * @method toJSON
+		 * @return {Object} JSON object representing this requirement 
+		 */
 		toJSON: function() {
 
 		}
@@ -248,11 +289,7 @@ var Requirement = Backbone.Model.extend({
 			getReqs: function() {
 				return this.get('requirements');
 			},
-			//lazy compilation of courses
-			//returns array of all courses within the goal
-			getStatements: function() {
-				
-			},
+			
 			
 			//returns the number of levels to the deepest leaf of
 			//the requirement structure
