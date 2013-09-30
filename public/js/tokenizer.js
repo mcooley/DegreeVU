@@ -117,6 +117,8 @@ var CourseCodeTokenizer = {
 	 * @param {String} courseCode A string that represents the course code being queried against
 	 * @param {String} query A string that queries the course code
 	 * @return {Boolean} true if the courseCode is a member of the query, false otherwise
+	 * @throws Error if trying to match a codeObject with a token with query ^ (school) or (~) category,
+	 * neither of which can be determined from a course code
 	 */
 	matchQuery: function(courseCode, query) {
 		var token = CourseCodeTokenizer.parse(query),
@@ -132,6 +134,8 @@ var CourseCodeTokenizer = {
 	 * @param {Object} codeObject The token object that is checked for belonging within the query
 	 * @param {Object} token The query object that is being used compare against the token
 	 * @return {Boolean} true if the codeObject is a member of the token's query, false otherwise
+	 * @throws Error if trying to match a codeObject with a token with query ^ (school) or (~) category,
+	 * neither of which can be determined from a course code
 	 */
 	matchObject: function(codeObject, token) {
 		var negateStatement;
@@ -182,7 +186,16 @@ var CourseCodeTokenizer = {
 };
 
 
-//USE THIS CONSTRUCTOR HERE TO CONSTRUCT A Statement
+/**
+ * Used to change course codes into objects that can be interpretted by 
+ * both client and server side code, and for matching course codes with 
+ * queries and other course codes.  This object adds a more powerful abstraction
+ * over CourseCodeTokenizer.  The Statement Object can be a combination of multiple
+ * tokens, all of which must be satisfied for a course code to match a Statement
+ * @class Statement
+ * @constructor
+ * @param {String} statementString a course code-like string
+ */
 function Statement(statementString) {
 	var tokens = statementString.split("&");
 	this.tokens = tokens.map(function(token) {
@@ -191,6 +204,12 @@ function Statement(statementString) {
 	});
 };
 
+/**
+ * Checks if a course code matches a Statement
+ * @method has
+ * @param {String} courseCode A course code string
+ * @return {Boolean} true if the course code matches the statement, false otherwise
+ */
 Statement.prototype.has = function(courseCode) {
 	var i, n;
 	if (this.isSingleStatement()) {
@@ -204,9 +223,15 @@ Statement.prototype.has = function(courseCode) {
 		return true;
 	}
 };
-//takes an array of course codes and returns another array of
-//course codes with the codes that do not match 
-//the Statement filtered out
+
+/**
+ * Checks if an array of course codes match the statement
+ * @method filter
+ * @param {Array} courseCodeArray an array of course code strings
+ * @return {Array} a new array with the course codes passed in the array that actually 
+ * match the filter.  These course codes are formatted, capitalized, and spaced properly,
+ * and may not look identical to the ones passed in with the array
+ */
 Statement.prototype.filter = function(courseCodeArray) {
 	var has = this.has.bind(this);
 	return courseCodeArray.filter(function(courseCode) {
@@ -216,13 +241,24 @@ Statement.prototype.filter = function(courseCodeArray) {
 	});
 };
 
-//adds an "and" Statement
-//can be a Statement object or a course code
-Statement.prototype.and = function(statement) {
-	this.tokens.push(CourseCodeTokenizer.parse(statement));
+/**
+ * Takes a course code and appends it to the Statement object.
+ * The statement can be composed of multiple course code tokens,
+ * all of which have to be satisfied by a course
+ * @method and
+ * @param {String} courseCode the course code that is being appended to the token
+ */
+Statement.prototype.and = function(courseCode) {
+	this.tokens.push(CourseCodeTokenizer.parse(courseCode));
 };
 
-//returns true if the Statement is equal to the course code
+/**
+ * compares the statement object with the parameter.
+ * @method isEqual
+ * @param {String, Statement} statement Either a string that can be parsed into 
+ * a statement or an actual statement object
+ * @return true if the Statement is logically equivalent to the parameter, false otherwise
+ */
 Statement.prototype.isEqual = function(statement) {
 	var statementCopy, i,j, n;
 	if (this === statement) {return true;}
@@ -249,20 +285,39 @@ Statement.prototype.isEqual = function(statement) {
 	return false;
 };
 
-//true if the Statement is just a single course code
+/**
+ * Checks if the Statement is for a single course
+ * @method isSingleCourse
+ * @return {Boolean} true if the Statement is for a single course
+ */
 Statement.prototype.isSingleCourse = function() {
 	return this.isSingleStatement && !this.tokens[0].query;
 };
 
-//true if the Statement is not an ampersand combo Statement
+/**
+ * Checks if the Statement has only a single token within it
+ * @method isSingleStatement
+ * @return {Boolean} true if the Statement has only 1 token within it
+ */
 Statement.prototype.isSingleStatement = function() {
 	return this.tokens.length === 1
 };
 
+/**
+ * Checks if the token within the statement is a negative token
+ * @method isNegated
+ * @return {Boolean} true if the Statement is a negative token
+ */
 Statement.prototype.isNegated = function() {
 	return this.isSingleStatement() && this.tokens[0].not;
 };
 
+/**
+ * Returns a String representation of the Statement, similar to a course code
+ * @method toString
+ * @return {String} string representation of the Statement, formatted properly with
+ * spacing and capitalization
+ */
 Statement.prototype.toString = function() {
 	var queries = this.tokens.map(function(statement) {
 		return Statement.formatObject(statement);
@@ -270,15 +325,23 @@ Statement.prototype.toString = function() {
 	return queries.join(" & ");
 };
 
-//makes a deep copy and returns the copy
+/**
+ * Makes a logical copy of the statement
+ * @method copy
+ * @return {Statement} logical copy of the statement
+ */
 Statement.prototype.copy = function() {
 	return new Statement(this.toString());
 };
 
-//static methods
-
-//reformats the Statement string and returns another
-//Statement string in the new format (capitalization, proper spacing, etc)
+/**
+ * Formats a statement string into a statement string with proper
+ * capitalization and spacing
+ * @method formatStatement
+ * @static
+ * @param {String} statementString The Statement string to format
+ * @return {String} the reformatted statement string
+ */
 Statement.formatStatement = function(statementString) {
 	var statements = statementString.split("&").map(function(statement) {
 		var obj = CourseCodeTokenizer.parse(statement.trim());
@@ -287,16 +350,27 @@ Statement.formatStatement = function(statementString) {
 	return statements.join(" & ");
 };
 
+/**
+ * Compares two statement Strings and returns true if they 
+ * are logically equal
+ * @method isEqual
+ * @static
+ * @param {String} statementString1 A statement as string representation
+ * @param {String} statementString2 A statement as string representation
+ */
 Statement.isEqual = function(statementString1, statementString2) {
 	var statement1 = new Statement(statementString1),
 		statement2 = new Statement(statementString2);
 	return statement1.isEqual(statement2);
 };
 
-//should not call these methods, they are "private"
-
-//converts a Statement object to a Statement string
-//this is for formatting a single Statement
+/**
+ * Formats a token object into a string representation.
+ * @method formatObject
+ * @static
+ * @param {Object} obj The token to be formatted
+ * @return {String} the formatted token into a Statement String
+ */
 Statement.formatObject = function(obj) {
 	var format;
 
@@ -327,28 +401,35 @@ Statement.formatObject = function(obj) {
 	return format;
 };
 
-//goes through the queries in the array and removes 
-//unneccessary elements in the Statement
-//returns true if the Statement can be refactored and 
-//returns false if the elements in the Statement contradict and
-//the Statement is useless.  This is a facade method that calls 
-//multiple other methods for refactoring different types 
-//of queries
+/**
+ * Iterates through the tokens in the internal representation
+ * of the statement and removes unneeded or redundant 
+ * tokens that are present within the Statement.
+ * @method refactor
+ * @return {Boolean} true if the refactoring was successful, false
+ * if the Statement has contradictory tokens and should be removed
+ * entirely
+ */
 Statement.prototype.refactor = function() {
 	var self = this;
-	return this.refactorCollection.reduce(function(memo, funct) {
+	return Statement.refactorCollection.reduce(function(memo, funct) {
 		//make sure to pass in the correct context to the function
 		return memo && funct.call(self);
 	}, true);
 	
 };
 
-//collection of functions that can be iterated and
-//executed.  This is a collection of refactoring tests
-//to run on the array object, that will automatically 
-//be executed.  Each function must return true if the
-//refactoring was successful, and false otherwise
-Statement.prototype.refactorCollection = [
+/**
+ * An array of functions that are iterated and called by the refactor
+ * method for various refactoring tests.  Each function within the array
+ * performs refacotring within the context of the statement, then 
+ * returns true if the refactoring was successful, and false if a
+ * contradiction was found
+ * @property refactorCollection
+ * @static
+ * @type Array 
+ */
+Statement.refactorCollection = [
 	//single courses
 	function() {
 		var singleCourses = this.tokens.filter(function(token) {return !token.query;}),
@@ -416,7 +497,7 @@ Statement.prototype.refactorCollection = [
 		return true;
 	}
 
-]
+];
 //collection of queries that are related in some way,
 //such as queries that satisfy a single course
 //used to bundle queries and optimize processes
