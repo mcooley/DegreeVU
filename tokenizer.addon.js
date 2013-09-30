@@ -15,7 +15,27 @@ StatementHelper.addTokenToMongoQuery = function(token, mongoQuery) {
 		} else if (token.query === '*') {
 			mongoQuery.coursePrefix = (token.not) ? {$nin: [new RegExp(token.coursePrefix, "i")]} : new RegExp(token.coursePrefix);
 		} else if (token.query === '+') {
-			mongoQuery.courseCode = (token.not) ? {$nin: [StatementHelper.plusTokenToRegExp(token)]} : StatementHelper.plusTokenToRegExp(token);
+			if (mongoQuery.courseCode) {
+				if (token.not && mongoQuery.courseCode.$nin) {
+					mongoQuery.courseCode.$nin.push(StatementHelper.plusTokenToRegExp(token));
+				} else if (token.not && !mongoQuery.courseCode.$nin) {
+					mongoQuery.courseCode.$nin = [StatementHelper.plusTokenToRegExp(token)];
+
+				} 
+				//for !token.not
+				else if (mongoQuery.courseCode.$in) {
+					mongoQuery.courseCode.$in.push(StatementHelper.plusTokenToRegExp(token));
+				} 
+				//!mongoQuery.courseCode.$in
+				else {
+					mongoQuery.courseCode.$in = [StatementHelper.plusTokenToRegExp(token)];
+				}
+			} 
+			//there is no mongo query courseCode Property
+			else {
+				
+				mongoQuery.courseCode = (token.not) ? {$nin: [StatementHelper.plusTokenToRegExp(token)]} : {$in: [StatementHelper.plusTokenToRegExp(token)]};
+			}
 		} else if (token.query === '$') {
 			mongoQuery.courseSuffix = new RegExp(token.courseSuffix, "i");
 		} else if (token.query === '^') {

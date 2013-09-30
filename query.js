@@ -5,18 +5,7 @@ var mongo = require("mongodb"),
     Statement = Tokenizer.Statement,
     StatementCollection = Tokenizer.StatementCollection,
 
-    //dbName = config.name,
-    //dbHost = config.host,
-    //dbPort = mongo.Connection.DEFAULT_PORT,
-    //db = new mongo.Db(dbName, new mongo.Server(dbHost, dbPort), {}),
     MONGODB_URL;
-
-    schoolMap = {
-	ENGINEERING: "School of Engineering",
-	AS: "College of Arts and Science",
-	BLAIR: "Blair School of Music",
-	PEABODY: "Peabody College"
-};
 
 
 

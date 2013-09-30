@@ -810,9 +810,22 @@ describe("Tokenizer Addon:", function() {
 
 	});
 	describe("Statement Addons", function() {
-		it("should generate mongodb query objects for single course queries", function() {
+		it("should generate mongodb query objects for single course statements", function() {
 			
 		});
+
+		it("should generate mongodb query objects for complex anti-statements", function() {
+			var statement = new Statement("cs 100+ & !cs 200+");
+
+			expect(statement.mongoQuery())
+					.toEqual(
+						{ courseCode : 
+							{ 	$in : [ /^CS\s((((010\d)|(01[1-9]\d)|(0[2-9]\d\d)|([^0]\d\d\d)))|(((10\d)|(1[1-9]\d)|([2-9]\d\d))))[a-z]*/i ], 
+								$nin : [ /^CS\s((((020\d)|(02[1-9]\d)|(0[3-9]\d\d)|([^0]\d\d\d)))|(((20\d)|(2[1-9]\d)|([3-9]\d\d))))[a-z]*/i ] 
+							} 
+						});
+		});
+
 	});
 
 	describe("StatementCollection Addons", function() {
@@ -823,7 +836,7 @@ describe("Tokenizer Addon:", function() {
 
 		it("should generate mongodb query objects for plus courses", function() {
 			var collection = new StatementCollection(["CS 200+"]);
-			expect(collection.mongoQuery()).toEqual({ $or : [ { courseCode : /^CS\s?((((020\d)|(02[1-9]\d)|(0[3-9]\d\d)|([^0]\d\d\d)))|(((20\d)|(2[1-9]\d)|([3-9]\d\d))))[a-z]*/i } ] });
+			expect(collection.mongoQuery()).toEqual({ $or : [ { courseCode : { $in : [ /^CS\s((((020\d)|(02[1-9]\d)|(0[3-9]\d\d)|([^0]\d\d\d)))|(((20\d)|(2[1-9]\d)|([3-9]\d\d))))[a-z]*/i ] } } ] });
 		});
 	});
 });
