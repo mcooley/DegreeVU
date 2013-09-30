@@ -36,21 +36,10 @@ var Requirement = Backbone.Model.extend({
 			
 		},
 		addCourse: function(courseCode) {
-			var i, n, index, done, takenCourses;
-			if (this.isLeaf()) {
-				
-			} else {
-
-			}
+			
 		},
 		removeCourse: function(courseCode) {
-			var i, n, takenCourses, index, done;
-			if (this.isLeaf()) {
-				
-
-			} else {
-				
-			}
+			
 		},
 		//getter methods
 
@@ -61,34 +50,14 @@ var Requirement = Backbone.Model.extend({
 		getItems: function() {
 			return this.get('items');
 		},
-		getQueries: function() {
+		getStatements: function() {
 
-			var queryCollection;
-			if (this.isLeaf()) {
-				return this.getItems();
-			} else {
-				queryCollection = new QueryCollection();
-				this.getItems().forEach(function(req) {
-					queryCollection.union(req.getQueries());
-				}); 
-				
-			}
-			return queryCollection;
+			
 		},
 		//sets an array of backbone course objects at 
 		//the leaves of the requirements
 		setCourses: function(courseCollection) {
-			var courses,
-				courseArray;
-			if (this.isLeaf()) {
-				console.log(courseCollection.getCourseCodes());
-				courses = new CourseCollection(this.getItems().filter(courseCollection.getCourseCodes()), {});
-				this.set('courses', courses, {silent: true});
-			} else {
-				this.getItems().forEach(function(req) {
-					req.setCourses(courseCollection);
-				});
-			}
+			
 		},
 		//returns true if the Requirement already has 
 		//this course added
@@ -168,78 +137,13 @@ var Requirement = Backbone.Model.extend({
 		},
 
 		isComplete: function() {
-			var type = this.completionType(),
-				done, i, n;
-			if (type === 'takeAll') {
-				if (this.isLeaf()) {
-					if (this.get('courses') && this.get('takenCourses')) {
-						return this.get('courses').length === this.get('takenCourses').length;
-					} else {
-						return false;
-					}
-				} else {
-					for (i = 0, n = this.getItems().length; i < n; ++i) {
-						if (!this.getItems()[i].isComplete()) {
-							return false;
-						}
-					}
-					return true;
-				}
-
-			} else if (type === 'takeItems') {
-				var count;
-				if (this.itemsNeeded() === 0) {
-					return true;
-				}
-
-				if (this.isLeaf()) {
-
-					//don't forget the 0 case
-					console.log("Checking for take some");
-					console.log(this.itemsNeeded() + " items needed");
-					if (this.get('takenCourses')) {
-						if (this.get('takenCourses').length >= this.itemsNeeded()) {
-							return true;
-						}
-					}
-					return false;
-				} else {
-					count = 0;
-					this.getItems().forEach(function(req) {
-						if (req.isComplete()) {
-							count++;
-						}
-					});
-					return count >= this.itemsNeeded();
-				}
-
-			} else { //type is take hours
-				if (this.isLeaf()) {
-					console.log("Not checking for hours yet");
-					return false;
-				} else {
-					throw new Error("Cannot check the hours for a requirement without courses: in requirement titled " + this.getTitle());
-				}
-
-			}
+			
 		},
 		//the progress of the requirement to becoming
 		//complete, returns a decimal number indicating 
 		//the progress, progress is between 0 and 1, 1 being
 		//that the requirement is complete
 		progress: function() {
-			//progress is stored in the the root requirements only
-			//calculated at the leaves
-			if (this.isLeaf()) {
-
-			} else if (this.isRoot()) {
-				if (!this.progress.memo) {
-
-				}
-				return this.progress.memo;
-			} else {
-
-			}
 			
 		},
 
@@ -330,38 +234,12 @@ var Requirement = Backbone.Model.extend({
 			},
 			//fetch courses for a Goal from the server
 			//this is temporary
-			fetch: function() {
-				var courseQueries = this.getCourseQueries();
-				var collection = new CourseCollection([],
-				{
-					url: '/courses/lookup?q=' + courseQueries.toString()
-				});
-				collection.fetch();
-				collection.once('sync', function() {
-					//set the courses in the requirements
-					//the courses will trickle down to the leaves so that
-					//they have a reference to all relevant courses
-					console.log(collection.models);
-					this.getReqs().forEach(function(req) {
-						req.setCourses(collection.models);
-					});
-					this.trigger('sync');
-				}.bind(this));
-				this.set('courseCollection', collection);
+			fetch: function(callback) {
+				
 			},
 			//must first fetch them
 			getCourses: function(options) {
-				if (!this.get('courseCollection')) {
-					throw new Error('Must fetch courses for goal \"' + this.getTitle() + "\" before attempting to get courses");
-				}
-				//option 'showCourseCodes' allows for returning the courses
-				//by the course codes instead of the course objects themselves
-				if (options && options.showCodes) {
-					return ([].slice.call(this.get('courseCollection').models)).map(function(course) {
-						return course.get('courseCode');
-					});
-				}
-				return [].slice.call(this.get('courseCollection').models);
+				
 			},
 			getTitle: function() {
 				return this.get('title');
@@ -372,16 +250,8 @@ var Requirement = Backbone.Model.extend({
 			},
 			//lazy compilation of courses
 			//returns array of all courses within the goal
-			getQueries: function() {
-				var queryCollection; ;
-				if (!this.get('queries')) {
-					queryCollection = new QueryCollection([]);
-					this.getReqs().forEach(function(req) {
-						queryCollection.union(req.getQueries());
-					});
-					this.set('queries', courses, {silent: true});
-				}
-				return this.get('queries');
+			getStatements: function() {
+				
 			},
 			
 			//returns the number of levels to the deepest leaf of
@@ -417,41 +287,16 @@ var Requirement = Backbone.Model.extend({
 				//1) the course is not already added
 				//2) the course is within the list of courses for this goal
 			//emits 'courseAdded' event if a course is successfully added
-			addCourse: function(courseCode) {
-				var isAdded = false;
-				this.getReqs().forEach(function(req) {
-					isAdded = isAdded || req.addCourse(courseCode);
-				});
-				return isAdded;
+			addCourse: function(course) {
+				
 			},
 
 			//removes course from the list of courses taken only if:
 				//1) the course is in the list of taken courses
 				//2) the course is is within the list of courses for the goal
 			//emits 'courseRemoved' event if a course is successfully removed
-			removeCourse: function(courseCode) {
-				var isRemoved = false;
-				this.getReqs().forEach(function(req) {
-					isRemoved = isRemoved || req.removeCourse(courseCode);
-				});
-				return isRemoved;
-			},
-
-			//iterates through the goal object's requirements
-			//at all levels, in a DFS-like manner. The callback parameter:
-				//requirement object
-				//index within the parent
-				//depth (number of levels, 1-based)
-				//parent object (null if no parent)
-				//parent index (-1 if no parent)
-			iterate: function(callback, context) {
-				if (!context) {
-					context = this;
-				}
-				this.get('requirements').forEach(function(requirement, index) {
-					callback.call(context, requirement, index, 1, null -1);
-					requirement.iterate(callback, context);
-				});
+			removeCourse: function(course) {
+				
 			},
 
 			update: function() {},
@@ -474,10 +319,10 @@ var Requirement = Backbone.Model.extend({
 				//return (this.getTakenCourses().length) / (this.getCourseQueries().length);
 			},
 
-			//generates an object that can be passed to the server
-			//in order to search for suggested courses based on the
-			// current goal the person is looking at...
-			courseDiagnostic: function() {
+			//generates a StatementCollection that can be passed to 
+			//the server in order to search for suggested courses 
+			//based on the current goal the person is looking at...
+			relevantSearch: function() {
 				//this object can include:
 					//courses that this person has already taken
 						//in this major
