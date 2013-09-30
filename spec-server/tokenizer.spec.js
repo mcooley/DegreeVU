@@ -234,24 +234,24 @@ describe("Tokenizer Testing Suite:", function() {
 		it("should construct a Statement object for a single Statement string", function() {
 			var statement1 = new Statement("cs 201"),
 				statement2 = new Statement("cs*");
-			expect(statement1.array[0]).toEqual(CourseCodeTokenizer.parse("Cs 201"));
-			expect(statement1.array.length).toBe(1);
-			expect(statement2.array[0]).toEqual(CourseCodeTokenizer.parse("CS *"));
-			expect(statement2.array.length).toBe(1);
+			expect(statement1.tokens[0]).toEqual(CourseCodeTokenizer.parse("Cs 201"));
+			expect(statement1.tokens.length).toBe(1);
+			expect(statement2.tokens[0]).toEqual(CourseCodeTokenizer.parse("CS *"));
+			expect(statement2.tokens.length).toBe(1);
 		});
 
 		it("should construct multiple Statement objects for a multi Statement string", function() {
 			var statement1 = new Statement("cs 200+ & !cs 201"),
 				statement2 = new Statement("Cs 250+ & !cs 200 & !bsci110a");
 
-			expect(statement1.array.length).toBe(2);
-			expect(statement1.array[0]).toEqual({coursePrefix: 'CS', courseNumber: 200, query: '+', not: false});
-			expect(statement1.array[1]).toEqual({coursePrefix: 'CS', courseNumber: 201, not: true});
+			expect(statement1.tokens.length).toBe(2);
+			expect(statement1.tokens[0]).toEqual({coursePrefix: 'CS', courseNumber: 200, query: '+', not: false});
+			expect(statement1.tokens[1]).toEqual({coursePrefix: 'CS', courseNumber: 201, not: true});
 
-			expect(statement2.array.length).toBe(3);
-			expect(statement2.array[0]).toEqual({coursePrefix: "CS", not: false, courseNumber: 250, query: '+'})
-			expect(statement2.array[1]).toEqual({coursePrefix: "CS", not: true, courseNumber: 200});
-			expect(statement2.array[2]).toEqual({coursePrefix: "BSCI", not: true, courseNumber: 110, courseSuffix: 'A'});
+			expect(statement2.tokens.length).toBe(3);
+			expect(statement2.tokens[0]).toEqual({coursePrefix: "CS", not: false, courseNumber: 250, query: '+'})
+			expect(statement2.tokens[1]).toEqual({coursePrefix: "CS", not: true, courseNumber: 200});
+			expect(statement2.tokens[2]).toEqual({coursePrefix: "BSCI", not: true, courseNumber: 110, courseSuffix: 'A'});
 		});
 
 		it('should be able to add queries after initial construction to create a multi statement', function() {
@@ -507,7 +507,7 @@ describe("Tokenizer Testing Suite:", function() {
 				statement2 = statement1.copy();
 
 			expect(statement2).toEqual(statement1);
-			statement2.array[0].not = !statement2.array[0].not;
+			statement2.tokens[0].not = !statement2.tokens[0].not;
 			expect(statement2).not.toEqual(statement1);
 		});
 

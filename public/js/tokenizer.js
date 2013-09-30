@@ -143,8 +143,8 @@ var CourseCodeTokenizer = {
 
 //USE THIS CONSTRUCTOR HERE TO CONSTRUCT A Statement
 function Statement(statementString) {
-	var array = statementString.split("&");
-	this.array = array.map(function(token) {
+	var tokens = statementString.split("&");
+	this.tokens = tokens.map(function(token) {
 		token = token.trim();
 		return CourseCodeTokenizer.parse(token);
 	});
@@ -155,8 +155,8 @@ Statement.prototype.has = function(courseCode) {
 	if (this.isSingleStatement()) {
 		return CourseCodeTokenizer.matchQuery(courseCode, this.toString());
 	} else {
-		for (i =0, n = this.array.length; i < n; ++i) {
-			if (!CourseCodeTokenizer.matchQuery(courseCode, Statement.formatObject(this.array[i]))) {
+		for (i =0, n = this.tokens.length; i < n; ++i) {
+			if (!CourseCodeTokenizer.matchQuery(courseCode, Statement.formatObject(this.tokens[i]))) {
 				return false;
 			}
 		}
@@ -178,7 +178,7 @@ Statement.prototype.filter = function(courseCodeArray) {
 //adds an "and" Statement
 //can be a Statement object or a course code
 Statement.prototype.and = function(statement) {
-	this.array.push(CourseCodeTokenizer.parse(statement));
+	this.tokens.push(CourseCodeTokenizer.parse(statement));
 };
 
 //returns true if the Statement is equal to the course code
@@ -190,14 +190,14 @@ Statement.prototype.isEqual = function(statement) {
 		return this.isEqual(new Statement(statement));
 	} else if (typeof statement === 'object' && statement.constructor === Statement) {
 		
-		if (this.array.length === statement.array.length) {
+		if (this.tokens.length === statement.tokens.length) {
 			
-			statementCopy = statement.array.slice();
-			for (i = 0, n = this.array.length; i < n; ++i) {
+			statementCopy = statement.tokens.slice();
+			for (i = 0, n = this.tokens.length; i < n; ++i) {
 				
 				for (j = 0; j < n; ++j) {
 					//null out any tokens that match in both arrays
-					if (_.isEqual(this.array[i], statementCopy[j])) {
+					if (_.isEqual(this.tokens[i], statementCopy[j])) {
 						statementCopy[j] = null;
 					}
 				}
@@ -210,20 +210,20 @@ Statement.prototype.isEqual = function(statement) {
 
 //true if the Statement is just a single course code
 Statement.prototype.isSingleCourse = function() {
-	return this.isSingleStatement && !this.array[0].query;
+	return this.isSingleStatement && !this.tokens[0].query;
 };
 
 //true if the Statement is not an ampersand combo Statement
 Statement.prototype.isSingleStatement = function() {
-	return this.array.length === 1
+	return this.tokens.length === 1
 };
 
 Statement.prototype.isNegated = function() {
-	return this.isSingleStatement() && this.array[0].not;
+	return this.isSingleStatement() && this.tokens[0].not;
 };
 
 Statement.prototype.toString = function() {
-	var queries = this.array.map(function(statement) {
+	var queries = this.tokens.map(function(statement) {
 		return Statement.formatObject(statement);
 	});
 	return queries.join(" & ");
@@ -310,7 +310,7 @@ Statement.prototype.refactor = function() {
 Statement.prototype.refactorCollection = [
 	//single courses
 	function() {
-		var singleCourses = this.array.filter(function(token) {return !token.query;}),
+		var singleCourses = this.tokens.filter(function(token) {return !token.query;}),
 			i, n, j, representative;
 		if (singleCourses.length > 1) {
 			for (i = 0, n = singleCourses.length; i < n; ++i) {
@@ -330,7 +330,7 @@ Statement.prototype.refactorCollection = [
 			//check if there is an single course that is positive to represent
 			//courses
 			if (representative) {
-				this.array = this.array.filter(function(token) {
+				this.tokens = this.tokens.filter(function(token) {
 					return token.query || token === representative;
 				});
 			}
@@ -340,12 +340,12 @@ Statement.prototype.refactorCollection = [
 	//check for any queries that are exclusively made of
 	//anti queries
 	function() {
-		return this.array.length !== this.array.filter(function(token) {return token.not;}).length;
+		return this.tokens.length !== this.tokens.filter(function(token) {return token.not;}).length;
 	},
 	//compare a single course against all other queries
 	function() {
 		var i,n,
-			singleTokens = this.array.filter(function(token) {
+			singleTokens = this.tokens.filter(function(token) {
 				return !token.not && !token.query;
 			}),
 		//there should only be 1 single token since the single courses 
@@ -355,18 +355,18 @@ Statement.prototype.refactorCollection = [
 
 		if (singleToken) {
 			//compare the sinlge token to all other tokens
-			for (i = 0, n = this.array.length; i < n; ++i) {
-				if (this.array[i] !== singleToken) {
+			for (i = 0, n = this.tokens.length; i < n; ++i) {
+				if (this.tokens[i] !== singleToken) {
 					try {
-						if (!CourseCodeTokenizer.matchObject(singleToken, this.array[i])) {
+						if (!CourseCodeTokenizer.matchObject(singleToken, this.tokens[i])) {
 							return false;
 						} else {
-							this.array[i] = null;
+							this.tokens[i] = null;
 						}
 					} catch (e) {}
 				}
 			}
-			this.array = this.array.filter(function(token) {return token;});
+			this.tokens = this.tokens.filter(function(token) {return token;});
 		}
 		return true;
 	},
