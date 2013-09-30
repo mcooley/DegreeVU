@@ -8,7 +8,7 @@ var Tokenizer = require('./public/js/tokenizer'),
 
 //returns the mongoQuery after the token has been added
 var StatementHelper = {
-	addTokenToMongoQuery = function(token, mongoQuery) {
+	addTokenToMongoQuery: function(token, mongoQuery) {
 	
 		if (!token.query) {
 			mongoQuery.courseCode = (token.not) ? {$nin: [tokenToRegExp(token)]} : StatementHelper.tokenToRegExp(token);
@@ -63,7 +63,7 @@ var StatementHelper = {
 		
 	},
 	//makes a deep copy of the query
-	copyMongoQuery = function(mongoQuery) {
+	copyMongoQuery: function(mongoQuery) {
 		var i, copy = {};
 		if (typeof mongoQuery === 'object') {
 			for (i in mongoQuery) {
@@ -83,7 +83,7 @@ var StatementHelper = {
 	//takes a query for a single course code and converts it 
 	//to regexp, this method only converts single courses to regexp
 	//ignores the not property on the token
-	tokenToRegExp = function(token) {
+	tokenToRegExp: function(token) {
 		var courseSearch;
 		if (!token.query) {
 			courseSearch = "^" + token.coursePrefix + '(\\s?)+' + token.courseNumber.toString();
@@ -97,7 +97,7 @@ var StatementHelper = {
 			
 		return new RegExp(courseSearch, "i");
 	},
-	plusTokenToRegExp = function(token) {
+	plusTokenToRegExp: function(token) {
 		var courseSearch,
 			numberSearch,
 			digits;
@@ -124,7 +124,7 @@ var StatementHelper = {
 	//generates a string that can be converted to regexp for searching
 	//for a number greater than or equal to the parameter, with the number of digits used
 	//to search
-	numberSearchGenerator = function(num, numOfDigits) {
+	numberSearchGenerator: function(num, numOfDigits) {
 		var number = num,
 			digits = [],
 			numberSearch, i, j, n, digitsCount,
@@ -190,7 +190,7 @@ var StatementHelper = {
 	//include number is a boolean that determines if the number itself is included
 	//in the string or if it is a string of numbers > than the number.  This will
 	//not have the correct behavior if the num passed in is greater than 9
-	numberGenerator = function(digit, includeNumber) {
+	numberGenerator: function(digit, includeNumber) {
 		var number = (typeof num === 'number') ? digit : +digit;
 		if (!includeNumber) {
 			number++;

@@ -209,6 +209,8 @@ function Statement(statementString) {
  * @method has
  * @param {String} courseCode A course code string
  * @return {Boolean} true if the course code matches the statement, false otherwise
+ * @throws Error if the Statement has a token with query ^ (school) or (~) category,
+ * neither of which can be resolved from a course code
  */
 Statement.prototype.has = function(courseCode) {
 	var i, n;
@@ -231,6 +233,8 @@ Statement.prototype.has = function(courseCode) {
  * @return {Array} a new array with the course codes passed in the array that actually 
  * match the filter.  These course codes are formatted, capitalized, and spaced properly,
  * and may not look identical to the ones passed in with the array
+ * @throws Error if the Statement has a token with query ^ (school) or (~) category,
+ * neither of which can be resolved from a course code
  */
 Statement.prototype.filter = function(courseCodeArray) {
 	var has = this.has.bind(this);
@@ -491,23 +495,17 @@ Statement.refactorCollection = [
 			this.tokens = this.tokens.filter(function(token) {return token;});
 		}
 		return true;
-	},
-	//start courses/ all courses in major
-	function() {
-		return true;
 	}
 
 ];
-//collection of queries that are related in some way,
-//such as queries that satisfy a single course
-//used to bundle queries and optimize processes
-//such as matching courses to a set of queries 
-//or unioning queries into 1
-//takes an array of queries as a parameter
-//parameter can either be an array of Statement objects
-//or array of course code strings, but not a mix 
-//of the two, throws an error if the parameter is not
-//an array
+ 
+/**
+ * A collection of statements that are used
+ * for more powerful matching and querying
+ * @class StatementCollection
+ * @constructor
+ * @param {Array} statements An array of statements or statement strings
+ */
 function StatementCollection(statements) {
 	if (!Array.isArray(statements)) {
 		throw new Error("parameter for StatementCollection constructor should be an array");
@@ -521,13 +519,21 @@ function StatementCollection(statements) {
 	}
 	else if (statements[0].constructor === Statement) {
 		
-		this.collection = this.collapseStatements(statements);
+		this.collection = StatementCollection.collapseStatements(statements);
 		this.refactor();
 	}
 };
 
-//returns true if the course code has
-//the Statement collection
+/**
+ * Checks if the course code is matched by ANY of the Statements in
+ * the collection
+ * @method has
+ * @param {String} courseCode string that is checked between the Statements
+ * @return {Boolean} true if the course code exists within any of the Statements
+ * of the collection
+ * @throws Error if the StatementCollection has a Statement containing token for ^ (school) or (~) 
+ * category query, neither of which can be resolved from a course code
+ */
 StatementCollection.prototype.has = function(courseCode) {
 	var i, n;
 	for (i = 0, n = this.collection.length; i < n; ++i) {
@@ -538,8 +544,14 @@ StatementCollection.prototype.has = function(courseCode) {
 	return false;
 };
 
-//accepts an array of course codes and returns another array
-//of course codes that satisfy the StatementCollection
+/**
+ * Takes an array of course codes and checks if these course codes 
+ * exist within any of the Statements of the collection
+ * @method filter
+ * @param {Array} courseCodes An array of course codes (in the form of strings)
+ * @throws Error if the StatementCollection has a Statement containing token for ^ (school) or (~) 
+ * category query, neither of which can be resolved from a course code
+ */
 StatementCollection.prototype.filter = function(courseCodes) {
 
 	return courseCodes.filter(function(courseCode) {
@@ -549,18 +561,34 @@ StatementCollection.prototype.filter = function(courseCodes) {
 	});
 };
 
+/**
+ * Creates a logical copy of the Statement collection
+ * @method copy
+ * @return {StatementCollection} A logical, deep copy 
+ * of the StatementCollection
+ */
 StatementCollection.prototype.copy = function() {
 	return new StatementCollection(this.collection);
 };
 
-
+/**
+ * Returns an array of Statement Strings, formatted for capitalization
+ * and spacing
+ * @method toArray
+ * @return {Array} An array of statement strings
+ */
 StatementCollection.prototype.toArray = function() {
 	return this.collection.map(function(statement) {
 		return statement.toString();
 	});
 };
 
-//pass in either a string, Statement object
+/**
+ * appends a Statement to the StatementCollection
+ * @method append
+ * @param {String, Statement} statement Either a Statement Object or a string 
+ * representation of a Statement Object
+ */
 StatementCollection.prototype.append = function(statement) {
 	var i, n;
 	if (typeof statement === 'string') {
@@ -576,7 +604,14 @@ StatementCollection.prototype.append = function(statement) {
 	}
 };
 
-//for any unknown functionality...
+/**
+ * Iterates through the statement in a collection and supplies statement
+ * and index to the callback
+ * @method each
+ * @param {Function} callback callback function that takes a Statement Object
+ * and the index of that Statement Object within the collection
+ * @param {Object} context=this The context to run the callback function in
+ */
 StatementCollection.prototype.each = function(callback, context) {
 	var _context = (context) ? context : this,
 	i, n;
@@ -586,7 +621,13 @@ StatementCollection.prototype.each = function(callback, context) {
 	}
 };
 
-//Statement collection is unioned into the current Statement collection
+/**
+ * Combines a statement collection with this Statement Collection, 
+ * removing any redundant Statements that are shared between the collections
+ * @method union
+ * @param {StatementCollection} collection The collection to union this
+ * StatementCollection with
+ */
 StatementCollection.prototype.union = function(_collection) {
 	var i, n, j,
 	collection;
@@ -620,7 +661,20 @@ StatementCollection.prototype.union = function(_collection) {
 	}		
 };
 
-//static methods
+
+/**
+ * Static union method for unioning two statement collections. Note: The parameters
+ * can either be an array of Statement Strings or a Statement Collection.  No matter which
+ * type is used as the parameter, both parameters have to be of that type, for consistency
+ * @method union
+ * @static
+ * @param {StatementCollection, Array} collection1 Either an array of
+ * statemnt strings or a StatementCollection object
+ * @param {StatementCollection, Array} collection2 Either an array of
+ * statemnt strings or a StatementCollection object
+ * @return {StatementCollection} A StatementCollection Object that results of the
+ * unioning of the two collections
+ */
 StatementCollection.union = function(collection1, collection2) {
 	var queries = null;
 
@@ -638,10 +692,18 @@ StatementCollection.union = function(collection1, collection2) {
 	return queries;
 };
 
-//methods that should be "private"
-
-//takes an array of Statement objects
-StatementCollection.prototype.collapseStatements = function(statements) {
+/**
+ * Takes statements and collapse them together, so that no anti-statements
+ * exist by themselves and all the statements are correctly represented in a
+ * boolean fashion.  This method is used by the StatementCollection constructor
+ * and should not be called directly
+ * @method collapseStatements
+ * @static
+ * @param {Array} statements An array of statement objects
+ * @return {Array} An array of Statement objects that have been collapsed
+ * into a condensed representation
+ */
+StatementCollection.collapseStatements = function(statements) {
 	//make a copy of the queries so that they are not changed
 	var i, j, n, _statements = statements.slice();
 
@@ -658,9 +720,11 @@ StatementCollection.prototype.collapseStatements = function(statements) {
 	
 };
 
-//attempts to refactor the Statement but if there is a conflict, this method
-//will simply return false, returns true if no conflict was found and
-//refactoring was successful
+/**
+ * Cleans up the Statements within the collection by removing 
+ * redundancies and removing any Statements that have contradictory tokens
+ * @method refactor
+ */
 StatementCollection.prototype.refactor = function() {
 	this.collection = this.collection.filter(function(statement) {
 		//each Statement performs its own refactoring and returns false
