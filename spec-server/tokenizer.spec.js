@@ -816,9 +816,14 @@ describe("Tokenizer Addon:", function() {
 	});
 
 	describe("StatementCollection Addons", function() {
-		it("should generate mongodb query objects", function() {
+		it("should generate mongodb query objects for single courses", function() {
 			var collection = new StatementCollection(["CS 101", "CS 201a"]);
 			expect(collection.mongoQuery()).toEqual({ $or : [ { courseCode : /^CS(\s?)+101$/i }, { courseCode : /^CS(\s?)+201A$/i } ] });
+		});
+
+		it("should generate mongodb query objects for plus courses", function() {
+			var collection = new StatementCollection(["CS 200+"]);
+			expect(collection.mongoQuery()).toEqual({ $or : [ { courseCode : /^CS\s?((((020\d)|(02[1-9]\d)|(0[3-9]\d\d)|([^0]\d\d\d)))|(((20\d)|(2[1-9]\d)|([3-9]\d\d))))[a-z]*/i } ] });
 		});
 	});
 });

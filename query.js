@@ -50,7 +50,6 @@ function getCoursesFromTokens(queries, callback) {
 	var qCollection = new StatementCollection(queries),
 		mongoQuery = qCollection.mongoQuery();
 
-	
 	queryCourses(mongoQuery, function(err, courses) {
 		if (err) {
 			throw err;
@@ -62,16 +61,7 @@ function getCoursesFromTokens(queries, callback) {
 function getGoalsByName(callback) {
 	callback(["Computer Science", "HOD"]);
 };
-// Open the connection
-/*
-db.open(function(error) {
-	if (!error) {
-		console.log("Connected to " + dbName + " at " + dbHost + ":" + dbPort);
-	} else {
-		console.log("Error connecting to database: " + error);
-	}
-});
-*/
+
 
 
 
