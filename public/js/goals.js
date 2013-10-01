@@ -252,10 +252,26 @@ var Requirement = Backbone.Model.extend({
 		}
 	}),
 
+	/**
+	 * An object that represents large-scale goals, such as Major and Minors,
+	 * and keeps track of someone's progress towards satisfying the Goals
+	 * @class Goal 
+	 */
 	Goal = Backbone.Model.extend({
 
+			/**
+			 * An array of Requirement Objects, which are the requirements that
+			 * need to be satisfied for the goal to be satisfied
+			 * @property requirements
+			 * @type Array
+			 */
 			urlRoot: '/goals/',
-			//initialize with the JSON goal object
+			
+			/**
+			 * Constructor for the Goal Object
+			 * @constructor
+			 * @param {Object} obj Raw JSON object representing the goal 
+			 */
 			initialize: function(obj) {
 				//reset the requirements object to become
 				//nested backbone objects
@@ -273,26 +289,47 @@ var Requirement = Backbone.Model.extend({
 				//no events called
 				this.set('requirements', requirements, {silent: true});
 			},
-			//fetch courses for a Goal from the server
-			//this is temporary
+			/**
+			 * Performs an asynchronous fetching of the courses that are relevant
+			 * to the goal and inserts the Course Objects into the nested properties
+			 * @method fetch
+			 * @param {Function} callback A callback function that is invoked after the
+			 * asynchronous call is executed.  The callback function is given a CourseCollection
+			 * object with the fetched courses as a parameter
+			 * @async
+			 */
 			fetch: function(callback) {
 				
 			},
-			//must first fetch them
-			getCourses: function(options) {
+			/**
+			 * Getter for the CourseCollection Object of the goal that contains all
+			 * the courses.  Courses must first be fetched from the server before the 
+			 * getter can be called
+			 * @method getCourses
+			 * @return {CourseCollection} A course collection object containing the courses
+			 * for the goal
+			 * @throws Error if the courses have not first been fetched from the goal: 
+			 * "Must first fetch courses from server before getCourses getter is called"
+			 */
+			getCourses: function() {
 				
 			},
+			/**
+			 * Getter for the title of the Goal
+			 * @method getTitle
+			 * @return {String} title of the goal
+			 */
 			getTitle: function() {
 				return this.get('title');
 			},
-
-			getReqs: function() {
-				return this.get('requirements');
-			},
 			
-			
-			//returns the number of levels to the deepest leaf of
-			//the requirement structure
+			/**
+			 * STRUCTURAL METHOD.  Returns the depth of the deepest leaf
+			 * within the tree structure of this Goal
+			 * @method getDepth
+			 * @return {Number} The number of nodes deep the deepest Requirement
+			 * leaf resides
+			 */
 			getDepth: function() {
 				var maxDepth;
 				if (!this.getDepth.memo) {
@@ -308,57 +345,48 @@ var Requirement = Backbone.Model.extend({
 				return this.getDepth.memo;
 			},
 
-			//returns true if the course is represented in the requirements
-			//does not indicate if a course is taken or not
-			hasCourse: function(courseCode) {
-				var i, n;
-				for (i = 0, n = this.getReqs().length; i < n; ++i) {
-					if (this.getReqs()[i].hasCourse(courseCode)) {
-						return true;
-					}
-				}
-				return false;
-			},
-
-			//adds course to the list of courses taken only if:
-				//1) the course is not already added
-				//2) the course is within the list of courses for this goal
-			//emits 'courseAdded' event if a course is successfully added
-			addCourse: function(course) {
+			/**
+			 * Indicates if a course is within the goal (a course is able to
+			 * satsify this Goal).  Does not indicate if the course is already added
+			 * to the schedule or not
+			 * @method hasCourse
+			 * @param {Course} course A Course object
+			 * @return {Boolean} true if the course can satisfy the Goal
+			 */
+			hasCourse: function(course) {
 				
 			},
-
-			//removes course from the list of courses taken only if:
-				//1) the course is in the list of taken courses
-				//2) the course is is within the list of courses for the goal
-			//emits 'courseRemoved' event if a course is successfully removed
-			removeCourse: function(course) {
-				
-			},
-
-			update: function() {},
+			
+			/**
+			 * Indicates if the Goal is completely satisfied
+			 * @method isComplete
+			 * @return {Boolean} true if the courses in the schedule are enough to
+			 * satisfy this Goal
+			 */
 			isComplete: function() {
-				var i, n;
-				for (i = 0, n = this.getReqs().length; i < n; ++i) {
-
-					if (!this.getReqs()[i].isComplete()) {
-						return false;
-					} else {
-						console.log("This is valid");
-					}
-				}
-				return true;
+				
 			},
-			//returns a decimal number between 0 and 1
-			//1 being totally complete
-			completionProgress: function() {
+			/**
+			 * Indicates the progress towards completing a goal, using a decimal
+			 * number between 0 and 1 inclusive.
+			 * @method progress
+			 * @return {Number} A number between 0 and 1 (inclusive) to indicate the 
+			 * progress towards completion, 1 being totally satisfied, and 0 being nothing is 
+			 * satisfied, with appropriate values in between
+			 */
+			progress: function() {
 				//for now, this is the implementation
 				//return (this.getTakenCourses().length) / (this.getCourseQueries().length);
 			},
 
-			//generates a StatementCollection that can be passed to 
-			//the server in order to search for suggested courses 
-			//based on the current goal the person is looking at...
+			/**
+			 * An object that checks for relevant classes to the major and returns
+			 * a StatementCollection object that can be used to perform queries for
+			 * relevant courses to this goal
+			 * @method relevantSearch
+			 * @return {StatementCollection} a statement collection that can be used
+			 * to pass to the server's api and retrieve relevant courses
+			 */
 			relevantSearch: function() {
 				//this object can include:
 					//courses that this person has already taken
@@ -369,17 +397,24 @@ var Requirement = Backbone.Model.extend({
 			}
 		}),
 
+	/**
+	 * A collection of goals that make up all the goals that a person is trying to
+	 * satisfy
+	 * @class GoalList 
+	 */
 	GoalList = Backbone.Collection.extend(
 		{
-			addCourse: function(courseCode) {
+			model: Goal,
 
-			},
-			removeCourse: function(courseCode) {
-				
-			}
 		},
 		{
-			//singleton goal collection
+			/**
+			 * A static method for getting a cached instance of the Goal list for
+			 * the current session
+			 * @method getInstance
+			 * @static
+			 * @return {GoalList} the cached GoalList instance
+			 */
 			getInstance: function() {
 
 			}
