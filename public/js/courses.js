@@ -32,35 +32,11 @@ var CourseCollection = Backbone.Collection.extend({
 			model.set('colorId', this.getColorId());
 		}).bind(this));
 	},
-	filterByCourses: function() {
-		return this.filter(function(course) {
-			var courseCode = course.get('courseCode');
-			var courseMatches = _.some(courseArray, function(coursePattern) {
-				return CourseCodeTokenizer.matches(courseCode, coursePattern);
-			});
-			return courseMatches;
-		});
-	},
-	getCourseCodes: function() {
-		return this.models.map(function(model) {
-			return model.get('courseCode');
-		});
-	},
-	//unioning backbone courses
-	//remove extra references
 
 	fetchCourses: function(statementCollection) {
 		this.url = 'courses/lookup?q=' + encodeURIComponent(statementCollection.toArray().join(','));
 		this.fetch();
 	}
 	
-},
-{
-	union: function(collection1, collection2) {
-		var collection = new CourseCollection([], {});
-		collection.union(collection1);
-		collection.union(collection2);
-		return collection;
-	}
 });
 
