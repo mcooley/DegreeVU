@@ -1,0 +1,8 @@
+{
+    "name": "DegreeVU",
+    "description": "Course scheduling and degree planning software",
+    "url": "https://github.com/mcooley/DegreeVU",
+    "options": {
+        "outdir": "./docs"
+    }
+}

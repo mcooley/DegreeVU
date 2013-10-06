@@ -2,4 +2,4 @@
 node_modules
 public/css/*.css
 progress.txt
-out/*
+docs/*
