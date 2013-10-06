@@ -11,7 +11,7 @@ var StatementHelper = {
 	addTokenToMongoQuery: function(token, mongoQuery) {
 	
 		if (!token.query) {
-			mongoQuery.courseCode = (token.not) ? {$nin: [tokenToRegExp(token)]} : StatementHelper.tokenToRegExp(token);
+			mongoQuery.courseCode = (token.not) ? {$nin: [StatementHelper.tokenToRegExp(token)]} : StatementHelper.tokenToRegExp(token);
 		} else if (token.query === '*') {
 			mongoQuery.coursePrefix = (token.not) ? {$nin: [new RegExp("^"+token.coursePrefix+"$", "i")]} : new RegExp("^"+token.coursePrefix+"$", "i");
 		} else if (token.query === '+') {
