@@ -10,6 +10,10 @@
  * increased complexity
  * @class Requirement
  */
+var isServerSide = typeof require === 'function' && typeof exports === 'object' && typeof module === 'object';
+if (isServerSide) {
+	Backbone = require('Backbone');
+}
 var Requirement = Backbone.Model.extend({
 
 		/**
@@ -473,4 +477,8 @@ var Requirement = Backbone.Model.extend({
 			}
 		});
 
-
+if (isServerSide) {
+	exports.Requirement = Requirement;
+	exports.Goal = Goal;
+	exports.GoalList = GoalList;
+}

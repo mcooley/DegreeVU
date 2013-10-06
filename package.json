@@ -16,6 +16,7 @@
     "less-middleware": "~0.1.9",
     "async": "~0.2.6",
     "underscore": "~1.1.4",
-    "jasmine-node": "*"
+    "jasmine-node": "*",
+    "backbone": "*"
   }
 }
