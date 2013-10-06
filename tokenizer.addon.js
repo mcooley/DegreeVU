@@ -11,7 +11,21 @@ var StatementHelper = {
 	addTokenToMongoQuery: function(token, mongoQuery) {
 	
 		if (!token.query) {
-			mongoQuery.courseCode = (token.not) ? {$nin: [StatementHelper.tokenToRegExp(token)]} : StatementHelper.tokenToRegExp(token);
+			if (mongoQuery.courseCode) {
+				if (token.not && mongoQuery.courseCode.$nin) {
+					mongoQuery.courseCode.$nin.push(StatementHelper.tokenToRegExp(token));
+				} else if (token.not && !mongoQuery.courseCode.$nin) {
+					mongoQuery.courseCode.$nin = [StatementHelper.tokenToRegExp(token)];
+				} else if (mongoQuery.courseCode.$in) {
+					mongoQuery.courseCode.$in.push(StatementHelper.tokenToRegExp(token));
+				} else {
+					mongoQuery.courseCode.$in = [StatementHelper.tokenToRegExp(token)];
+				}
+			} else {
+				mongoQuery.courseCode = (token.not) ? {$nin: [StatementHelper.tokenToRegExp(token)]} : {$in: [StatementHelper.tokenToRegExp]};
+			}
+				
+			
 		} else if (token.query === '*') {
 			mongoQuery.coursePrefix = (token.not) ? {$nin: [new RegExp("^"+token.coursePrefix+"$", "i")]} : new RegExp("^"+token.coursePrefix+"$", "i");
 		} else if (token.query === '+') {

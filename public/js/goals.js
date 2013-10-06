@@ -21,15 +21,13 @@ var Requirement = Backbone.Model.extend({
 		initialize: function(obj) {
 			
 			var items, i, n;
-			if (obj.take && obj.takeHours) {
-				throw new Error("Cannot define both take and takeHours in a single requirement object");
-			}
 			if (typeof obj.items[0] === 'object') {
 				//then the item is a nested Requirement
 
 				items = [];
 				for (i = 0, n = obj.items.length; i < n; ++i) {
 					obj.items[i].reqID = Requirement.generateRequirementID(i, this.get('reqID'));
+					obj.items[i].isRoot = false;
 					items[i] = new Requirement(obj.items[i]);
 				}
 				//no events called
@@ -114,6 +112,24 @@ var Requirement = Backbone.Model.extend({
 		},
 
 		/**
+		 * Adds a course collection to the requirement and all 
+		 * sub-requirements.  This method resets the Requirements,
+		 * so any courses that were previously held in the collection are removed 
+		 * and all the new courses are added.  The course collection that is passed
+		 * in as a parameter will be modified as different requirements iterate through
+		 * courses and remove courses that they "claim".  This is a "private" method, should
+		 * call addCollection exclusively on the Goal Object or GoalList Object. Fires an event
+		 * 'reset' when the Requirement is done resetting its validation
+		 * @method addCollection
+		 * @event reset
+		 * @param {CourseCollection} courseCollection A backbone CourseCollection Object.  This
+		 * method makes changes to courseCollection by removing courses as they are claimed
+		 * by requirements
+		 */
+		addCollection: function(courseCollection) {
+
+		},
+		/**
 		 * The number of items needed to satisfy the requirement.  If 
 		 * the completion type is takeHours, this method returns 0; if the
 		 * completion type is takeAll, this returns the total number of items,
@@ -156,6 +172,18 @@ var Requirement = Backbone.Model.extend({
 			
 		},
 
+		/**
+		 * Returns the number of leaf requirements that contain this course as a requirement.
+		 * If this Requirement is a leaf requirement, this method either returns 0 or 1. This method is
+		 * used in the process of determining the best way to allocate courses so that as many requirements
+		 * as possible are satisfied.
+		 * @method courseDemand
+		 * @param {Course} course A backbone course
+		 * @return {Number} the number of root requirements that satisfy this course
+		 */
+		courseDemand: function(course) {
+
+		},
 		/**
 		 * STRUCTURAL METHOD.  Indicates the depth this current Requirement is 
 		 * from the root goal within the tree structure of the goal
@@ -210,7 +238,7 @@ var Requirement = Backbone.Model.extend({
 		},
 		/**
 		 * STURCTURAL METHOD. Indicates if this Requirement is a root requirement,
-		 * meaning that it has not parents
+		 * meaning that it has no parents that are Requirement Objects.
 		 * @method isRoot
 		 * @return {Boolean} true if this Requirement has no parent Requirements
 		 */
@@ -283,7 +311,8 @@ var Requirement = Backbone.Model.extend({
 				//the head requirement
 				this.head = new Requirement(
 					{
-						title: 'root'
+						title: 'root',
+						isRoot: true,
 						items: obj.items, 
 						take: 'all'
 					});
@@ -358,6 +387,19 @@ var Requirement = Backbone.Model.extend({
 			},
 			
 			/**
+			 * Adds a course collection to the Goal and inserts the courses into
+			 * the nested Requirements. This method resets the validation, so any courses
+			 * that previously existed in the Goal are removed and reset using this new course
+			 * collection.  Fires an event 'reset' when the Goal is done resetting its validation
+			 * @method addCollection
+			 * @param {CourseCollection} courseCollection The course collection containing the new
+			 * @even reset
+			 * courses to validate.  This method makes no changes to courseCollection
+			 */
+			addCollection: function(courseCollection) {
+
+			},
+			/**
 			 * Indicates if the Goal is completely satisfied
 			 * @method isComplete
 			 * @return {Boolean} true if the courses in the schedule are enough to
@@ -366,6 +408,7 @@ var Requirement = Backbone.Model.extend({
 			isComplete: function() {
 				return this.head.isComplete();
 			},
+
 			/**
 			 * Indicates the progress towards completing a goal, using a decimal
 			 * number between 0 and 1 inclusive.

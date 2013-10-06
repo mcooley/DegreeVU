@@ -48,14 +48,10 @@ var CourseCollection = Backbone.Collection.extend({
 	},
 	//unioning backbone courses
 	//remove extra references
-	union: function(courseCollection) {
-		if (this !== courseCollection) {
-			courseCollection.each(function(course) {
-				if (!this.contains(course)) {
-					this.models.push(course);
-				}
-			}, this);
-		}
+
+	fetchCourses: function(statementCollection) {
+		this.url = 'courses/lookup?q=' + encodeURIComponent(statementCollection.toArray().join(','));
+		this.fetch();
 	}
 	
 },
