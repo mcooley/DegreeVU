@@ -2,20 +2,13 @@ goal = {
 	title: "Computer Science",
 	type: "major",
 	school: "School of Engineering",
-	requirements: 
+	items: 
 	[
 		{//the first requirement
 			title: "Math",
 			//optional elements
 			subtitle: "This is optional",
 			details: "This is also optional",
-
-			//coursesLocked and ignoreLocked hold true for all courses
-			//that are beneath this branch, both are optional and have
-			//default values
-
-			coursesLocked: true, //defaults to false
-			ignoreLocked: false, //defaults to false
 
 			//items refers to the courses or nested 
 			//validation objects that are used
@@ -44,7 +37,6 @@ goal = {
 			title: "Science",
 			subtitle: "This is optional",
 			details: "This is optional",
-			warning: "This is a warning about the accuracy of this requirement",
 
 			//these are the default values and don"t have to be
 			//declared explicitly

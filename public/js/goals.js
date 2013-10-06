@@ -230,10 +230,15 @@ var Requirement = Backbone.Model.extend({
 
 	},
 	{
-		//used to generate client-side id's for Requirement objects
-		//nested inside the Goal Backbone object so that requirements can be
-		//identified.  parentID is string or null.  This method is called by the
-		//backbone objects below and not part of any API
+		/**
+		 * STUCTURAL METHOD.  Generates ID's for requirements that help
+		 * identify where the Requirements are located in the Goal's tree structure
+		 * @method generateRequirementID
+		 * @static
+		 * @param {Number} index The index the Requirement is within its parent
+		 * @param {String} parentID The ID number of the parent
+		 * return {String} the ID that is to be assigned to the requirement 
+		 */
 		generateRequirementID: function(index, parentID) {
 
 			var appendingPortion;
@@ -254,7 +259,9 @@ var Requirement = Backbone.Model.extend({
 
 	/**
 	 * An object that represents large-scale goals, such as Major and Minors,
-	 * and keeps track of someone's progress towards satisfying the Goals
+	 * and keeps track of someone's progress towards satisfying the Goals. Methods marked 
+	 * as Structural Methods should not be called outside of the class, and are considered
+	 * "private"
 	 * @class Goal 
 	 */
 	Goal = Backbone.Model.extend({
@@ -273,21 +280,14 @@ var Requirement = Backbone.Model.extend({
 			 * @param {Object} obj Raw JSON object representing the goal 
 			 */
 			initialize: function(obj) {
-				//reset the requirements object to become
-				//nested backbone objects
-				var requirements = [],
-					i, n;
-
-				for (i = 0, n = obj.requirements.length; i < n; ++i) {
-					obj.requirements[i].isRoot = true;
-					
-					obj.requirements[i].reqID = Requirement.generateRequirementID(i);
-					//no parent id at the root
-					requirements[i] = new Requirement(obj.requirements[i]);
-					//requirements[i] = new Requirement(obj.requirements[i]);
-				}
-				//no events called
-				this.set('requirements', requirements, {silent: true});
+				//the head requirement
+				this.head = new Requirement(
+					{
+						title: 'root'
+						items: obj.items, 
+						take: 'all'
+					});
+				
 			},
 			/**
 			 * Performs an asynchronous fetching of the courses that are relevant
@@ -349,12 +349,12 @@ var Requirement = Backbone.Model.extend({
 			 * Indicates if a course is within the goal (a course is able to
 			 * satsify this Goal).  Does not indicate if the course is already added
 			 * to the schedule or not
-			 * @method hasCourse
+			 * @method contains
 			 * @param {Course} course A Course object
 			 * @return {Boolean} true if the course can satisfy the Goal
 			 */
-			hasCourse: function(course) {
-				
+			contains: function(course) {
+				return this.head.contains(course);
 			},
 			
 			/**
@@ -364,7 +364,7 @@ var Requirement = Backbone.Model.extend({
 			 * satisfy this Goal
 			 */
 			isComplete: function() {
-				
+				return this.head.isComplete();
 			},
 			/**
 			 * Indicates the progress towards completing a goal, using a decimal
@@ -394,6 +394,16 @@ var Requirement = Backbone.Model.extend({
 					//maybe global variables such as the school this person is in
 					//the major...
 				return null;
+			},
+
+			/**
+			 * converts this Goal Object to a JSON object, including all
+			 * the nested Requirements
+			 * @method toJSON
+			 * @return {Object} JSON object representing this Goal 
+			 */
+			toJSON: function() {
+
 			}
 		}),
 
