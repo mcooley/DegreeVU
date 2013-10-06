@@ -52,5 +52,4 @@ function getCoursesFromTokens(queries, callback) {
 }
 
 exports.getCoursesFromTokens = getCoursesFromTokens;
-exports.getGoalsByName = getGoalsByName;
 
