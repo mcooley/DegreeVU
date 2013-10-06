@@ -42,32 +42,13 @@ app.get("/courses/autocomplete", function(req, res) {
   });
 });
 
-
-
-// app.get("/goals/:key", function(req, res) {
-//   var goalKey = req.params.key;
-//   query.getGoalsByKey(goalKey, function(error, goals) {
-//     res.send(goals[0]);
-//   });
-// });
-
 app.get("/courses/lookup", function(req, res) {
   var str = req.query.q;
   tokens = str.split(",");
   query.getCoursesFromTokens(tokens, function(courses) {
-// <<<<<<< HEAD
+
     var results = JSON.stringify(courses);
-    // var results = "";
-    // for (var i = 0; i < courses.length; i++) {
-    //   results = results + JSON.stringify(courses[i]);
-    // }
-// =======
-    //var results = "";
-    //for (var i = 0; i < courses.length; i++) {
-    //  results = results + JSON.stringify(courses[i]);
-    //}
-// >>>>>>> 05ef88db08fad9a75b59a11a3ba3a4a50bd7177a
-    // console.log(results);
+    
     res.send(JSON.stringify(courses));
   });
 });

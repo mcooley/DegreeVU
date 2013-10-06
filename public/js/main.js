@@ -56,20 +56,7 @@ define(['views'], function() {
 			scheduleView.render();
 			//goalsListView.render();
 		});
-		/*
-		var majorId = getQueryString('major');
-		if (majorId) {
-			var	major = new Goal({
-				id: majorId
-			});
-			
-			major.once('sync', function() {
-				goalsList.add(this);
-			});
-			major.fetch();	
-		}
-		*/
-
+		
 		//Display shim to handle scrolling in the schedule grid
 		$('#scheduleGrid').scroll(function() {
 			var el = $(this);
