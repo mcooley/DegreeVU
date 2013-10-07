@@ -9,8 +9,9 @@ var Tokenizer = require('./public/js/tokenizer'),
 //returns the mongoQuery after the token has been added
 var StatementHelper = {
 	addTokenToMongoQuery: function(token, mongoQuery) {
-	
+		
 		if (!token.query) {
+			//single course
 			if (mongoQuery.courseCode) {
 				if (token.not && mongoQuery.courseCode.$nin) {
 					mongoQuery.courseCode.$nin.push(StatementHelper.tokenToRegExp(token));
@@ -22,7 +23,7 @@ var StatementHelper = {
 					mongoQuery.courseCode.$in = [StatementHelper.tokenToRegExp(token)];
 				}
 			} else {
-				mongoQuery.courseCode = (token.not) ? {$nin: [StatementHelper.tokenToRegExp(token)]} : {$in: [StatementHelper.tokenToRegExp]};
+				mongoQuery.courseCode = (token.not) ? {$nin: [StatementHelper.tokenToRegExp(token)]} : {$in: [StatementHelper.tokenToRegExp(token)]};
 			}
 				
 			

@@ -35,14 +35,18 @@ function queryCourses(query, callback) {
 		
 }
 
-function getCoursesFromTokens(queries, callback) {
-	var qCollection = new StatementCollection(queries),
-		mongoQuery = qCollection.mongoQuery();
+function getCoursesFromTokens(tokens, callback) {
+
+	var collection = new StatementCollection(tokens),
+		mongoQuery = collection.mongoQuery();
+		
 	if (mongoQuery) {
 		queryCourses(mongoQuery, function(err, courses) {
 			if (err) {
+				
 				throw err;
 			}
+			
 			callback(courses);
 		});
 	} else {
