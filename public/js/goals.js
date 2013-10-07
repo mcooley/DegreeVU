@@ -34,7 +34,7 @@ var Requirement = Backbone.Model.extend({
 					obj.items[i].isRoot = false;
 					items[i] = new Requirement(obj.items[i]);
 				}
-				//no events called
+				
 				this.set('items', items, {silent: true});
 				this.set('isLeaf', false, {silent: true});
 				
@@ -42,12 +42,46 @@ var Requirement = Backbone.Model.extend({
 				//typeof items are strings, need to convert the items
 				//into a query collection
 				this.set('isLeaf', true, {silent: true});
-				items = new QueryCollection(obj.items);
+				items = new StatementCollection(obj.items);
 				this.set('items', items, {silent: true});
 			}
 			
 		},
-		//getter methods
+
+		/**
+		 * Fetches all the courses at the leaf requirements and stores them 
+		 * within CourseCollection objects.  Fires an event 'sync' to signify that 
+		 * the fetching has completed
+		 * @method fetch
+		 * @event sync
+		 * @async
+		 */
+		fetch: function() {
+			var courses, itemCount, fetchFunct;
+			if (this.isLeaf()) {
+				courses = new CourseCollection(null, []);
+				this.set('courses', courses, {silent: true});
+				courses.once('sync', function() {
+					this.trigger('sync');
+				}, this);
+				//fetch courses using the StatementCollection
+				courses.fetchCourses(this.get('items'));
+
+			} else {
+				itemCount = this.get('items').length;
+				fetchFunct = function() {
+					itemCount -= 1;
+					if (itemCount === 0) {
+						this.trigger('sync');
+					}
+				};
+				this.get('items').forEach(function(req) {
+					req.once('sync', fetchFunct, this);
+					req.fetch();
+				}, this);
+			}
+		},
+		
 		/**
 		 * Getter for the title of the requirement
 		 * @method getTitle
@@ -58,11 +92,13 @@ var Requirement = Backbone.Model.extend({
 		},
 		
 		/**
-		 * Getter for the requirements items.  These items can either be
-		 * strings or nested requirements
+		 * Getter for the requirements items.  If the Requirement Object is a 
+		 * leaf Requirement, then this will return a StatementCollection.  Otherwise,
+		 * this will return an array of Requirements
 		 * @method getItems
-		 * @return {Array} an array of the items, either an array of strings
-		 * or an array of Requirement Objects
+		 * @return {Array, StatementCollection} An array of Requirements, if the Requirement
+		 * object has nested Requirements, or a StatementCollection, if the Requirement Object
+		 * is a leaf Requirement
 		 */
 		getItems: function() {
 			return this.get('items');

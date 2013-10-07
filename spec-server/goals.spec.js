@@ -3,9 +3,10 @@ var _Goals = require('../public/js/goals'),
 	Goal = _Goals.Goal,
 	GoalList = _Goals.GoalList;
 
-describe("Requirement Object", function() {
-	it("should fail", function() {
-		expect(true).toBeFalsy();
+describe("Shallow Requirement Object", function() {
+	
+	beforeEach(function() {
+
 	});
 });
 
