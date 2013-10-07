@@ -118,14 +118,47 @@ var Requirement = Backbone.Model.extend({
 		 * contains the indicated course.  A Requirement Contains a course
 		 * despite whether the course has been added to the schedule or not, so 
 		 * if a course is added to the schedule, the Requirement will still contain
-		 * that course
+		 * that course.  Throws error "CourseCollection not yet fetched" if the courses
+		 * for the requirement were not yet fetched from the server when this method is
+		 * called
 		 * @method contains
 		 * @param {Course} course A Course Object
 		 * @return {Boolean} true if the Requirement contains this course
+		 * @throws "CourseCollection not yet fetched"
 		 */
 		contains: function(course) {
+			var i,n;
+			if (this.isLeaf()) {
+				if (!this.getCourses()) {
+					throw new Error("CourseCollection not yet fetched");
+				}
 
+				for (i = 0, n = this.getCourses().length; i < n; ++i) {
+					if (course === this.getCourses().models[i]) {
+						return true;
+					}
+				}
+				return false;
+
+			} else {
+				return this.getItems().reduce(function(memo, req) {
+					return memo || req.contains(course);
+				}, false);
+			}
 		},
+
+		/**
+		 * Getter for courseCollection.  Returns null if the courseCollection has not
+		 * yet been fetched or if the Requirement is not a leaf requirement (only leaf 
+		 * requirements cache course collections)
+		 * @method getCourses
+		 * @return {CourseCollection} A CourseCollection Backbone Object containing the 
+		 * courses for the requirement
+		 */
+		getCourses: function() {
+			return (this.isLeaf() && this.get('courses')) ? this.get('courses') : null;
+		},
+
 		/**
 		 * returns the completion type of the requirement, whether
 		 * it is 'takeHours', 'takeItems', or 'takeAll'
