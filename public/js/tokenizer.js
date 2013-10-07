@@ -622,6 +622,17 @@ StatementCollection.prototype.each = function(callback, context) {
 };
 
 /**
+ * Get the length of the statement collection.  Note that 
+ * the value for the length might not be as expected, since 
+ * anti-statements are collapsed.  The length of the StatementCollection
+ * is most likely the number of positive statements within the collection
+ * @method length
+ * @returns {Number} the length of the Statement Collection
+ */
+StatementCollection.prototype.length = function() {
+	return this.collection.length;
+};
+/**
  * Combines a statement collection with this Statement Collection, 
  * removing any redundant Statements that are shared between the collections
  * @method union

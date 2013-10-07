@@ -297,7 +297,9 @@ var Requirement = Backbone.Model.extend({
 				return 0;
 			}
 			else if (this.completionType() === 'takeAll') {
-				return this.getItems().length;
+				//get the length of a StatementCollection if it is a leaf,
+				//otherwise, get the length of an array
+				return (this.isLeaf()) ? this.getItems().length() : this.getItems().length;
 			} else {
 				//takeCourses
 				return this.get('take');
@@ -385,11 +387,10 @@ var Requirement = Backbone.Model.extend({
 			} else {
 				total = this.itemsNeeded();
 				count = this.getItems().reduce(function(memo, req) {
-					return memo + req.progress(); 
+					return (req.isComplete()) ? memo + 1 : memo; 
 				}, 0);
 
-				//quotient will always be between 0 and 1
-				return total/count;
+				return (count >= total) ? 1 : count / total;
 			}
 		},
 
@@ -413,7 +414,6 @@ var Requirement = Backbone.Model.extend({
 				}
 				return (this.contains(course)) ? 1 : 0;
 			} else {
-				console.log("In course demand: " + this.getItems().constructor);
 				return this.getItems().reduce(function(memo, req) {
 					return memo + req.courseDemand(course);
 				}, 0);
