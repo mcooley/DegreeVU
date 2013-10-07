@@ -1,3 +1,11 @@
+//WHAT IS EXPECTED OF A GOAL
+	// - takeHours does not exist anywhere other than leaf requirements
+	// - either take or takeHours is defined per goal, never both
+	// - add lots of comments in the code so it is easier to read the requirement, in case something 
+	// needs to be changed
+	// - the root-level items (the ones that are nested directly inside the goal) should have 
+	// elaborate details on the requirements
+
 goal = {
 	title: "Computer Science",
 	type: "major",
@@ -37,11 +45,6 @@ goal = {
 			title: "Science",
 			subtitle: "This is optional",
 			details: "This is optional",
-
-			//these are the default values and don"t have to be
-			//declared explicitly
-			coursesLocked: false,
-			ignoreLocked: false,
 
 			items: 
 			[

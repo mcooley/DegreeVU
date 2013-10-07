@@ -177,21 +177,7 @@ var Requirement = Backbone.Model.extend({
 				return 'takeItems';
 			}
 		},
-		/**
-		 * The number of hours needed to complete the requirement.
-		 * If the Requirement has a completion type other than 'takeHours'.
-		 * This number is the total number of hours needed for completion, despite
-		 * any courses that have been added previously
-		 * then this returns 0
-		 * @method hoursNeeded
-		 * @return {Number} The number of hours needed to complete this requirement
-		 */
-		hoursNeeded: function() {
-			if (this.completionType() === 'takeHours') {
-				return this.get('takeHours');
-			}
-			return 0;
-		},
+		
 
 		/**
 		 * Adds a course collection to the requirement and all 
@@ -209,8 +195,37 @@ var Requirement = Backbone.Model.extend({
 		 * by requirements
 		 */
 		addCollection: function(courseCollection) {
+			if (this.isLeaf()) {
 
+			} else {
+				//sort the models in ascending order by demand
+				//so that the courses with the lowest demand
+				//are added to the schedule first
+				courseCollection.models.sort(function(course1, course2) {
+					return course1.courseDemand() - course2.courseDemand();
+				});
+
+				//now insert courses into requirements in order that the courses
+				//are in the course collection and in the order the requirements are
+			}
 		},
+
+		/**
+		 * The number of hours needed to complete the requirement.
+		 * If the Requirement has a completion type other than 'takeHours'.
+		 * This number is the total number of hours needed for completion, despite
+		 * any courses that have been added previously
+		 * then this returns 0
+		 * @method hoursNeeded
+		 * @return {Number} The number of hours needed to complete this requirement
+		 */
+		hoursNeeded: function() {
+			if (this.completionType() === 'takeHours') {
+				return this.get('takeHours');
+			}
+			return 0;
+		},
+
 		/**
 		 * The number of items needed to satisfy the requirement.  If 
 		 * the completion type is takeHours, this method returns 0; if the
@@ -234,12 +249,48 @@ var Requirement = Backbone.Model.extend({
 		},
 
 		/**
-		 * Indicates if the requirement has been satisfied
+		 * Indicates if the requirement has been satisfied.  Throws an exception,
+		 * "CourseCollection not yet fetched", if the Requirement has not yet fetched
+		 * courses from the server
 		 * @method isComplete
-		 * @return {Boolean} true if the Requirement has been completed
+		 * @return {Boolean} true if the Requirement has been completed.  Returns false
+		 * if the courses have not yet been fetched from the server
 		 */
 		isComplete: function() {
-			
+			if (!this.getCourses()) {
+				return false;
+			}
+
+			if (this.completionType() === 'takeAll') {
+				if (this.isLeaf()) {
+					return this.courseMap.reduce(function(memo, isTaken) {
+						return memo && isTaken;
+					}, true);
+
+				} else {
+					return this.getItems().reduce(function(memo, req) {
+						return memo && req.isComplete();
+					}, true);
+				}
+			} else if (this.completionType() === 'takeHours') {
+				//must be a leaf if the completion type is takeHours
+				return (this.getCourses().reduce(function(memo, course, index) {
+					return (this.courseMap[index]) ? course.getHours() : 0;
+
+				}, 0)) >= this.hoursNeeded();
+
+			} else {
+				//completion type is takeItems
+				if (this.isLeaf()) {
+					return this.courseMap.reduce(function(memo, isTaken) {
+						return (isTaken) ? memo + 1 : memo;
+					}, 0) >= this.itemsNeeded();
+				} else {
+					return this.getItems().reduce(function(memo, req) {
+						return (req.isComplete()) ? memo + 1 : memo;
+					}, 0) >= this.itemsNeeded();
+				}
+			}
 		},
 		/**
 		 * Returns a decimal number to indicate how close someone is to
