@@ -178,6 +178,38 @@ var Requirement = Backbone.Model.extend({
 			}
 		},
 		
+		/**
+		 * For adding a singe Backbone course to a requirement
+		 * This method is considered 'private'.  Should call 'addCollection'
+		 * method if adding courses.  This method does nothing if the schedule has
+		 * not yet been fetched.  This method is meant to be called on leaf Requirements,
+		 * but if it is called on higher-level requirements, it will add the course to all
+		 * sub-requirements
+		 * @param {Course} course A backbone course being added to this requirement
+		 * @return {Boolean} true if the course was successfully added, false otherwise
+		 */
+		addCourse: function(course) {
+			var i, n;
+			if (this.isLeaf()) {
+				if (this.getCourses()) {
+					for (i = 0, n = this.getCourses().length; i < n; ++i) {
+						if (this.getCourses().models[i] === course) {
+							this.courseMap[i] = true;
+							return true;
+						}
+					}
+				}
+				return false;
+			} else {
+				return this.getItems().reduce(function(memo, req) {
+					//make sure that add course is called on all
+					//sub-requirements, so separate out boolean with
+					//addCourse call
+					var added = req.addCourse(course);
+					return memo || added;
+				}, false);
+			}
+		},
 
 		/**
 		 * Adds a course collection to the requirement and all 
@@ -187,7 +219,9 @@ var Requirement = Backbone.Model.extend({
 		 * in as a parameter will be modified as different requirements iterate through
 		 * courses and remove courses that they "claim".  This is a "private" method, should
 		 * call addCollection exclusively on the Goal Object or GoalList Object. Fires an event
-		 * 'reset' when the Requirement is done resetting its validation
+		 * 'reset' when the Requirement is done resetting its validation.  This method depends
+		 * on the implementation of 'contains' and 'courseDemand'.  This method does nothing
+		 * if the courses have not yet been fetched from the server.
 		 * @method addCollection
 		 * @event reset
 		 * @param {CourseCollection} courseCollection A backbone CourseCollection Object.  This
@@ -195,18 +229,40 @@ var Requirement = Backbone.Model.extend({
 		 * by requirements
 		 */
 		addCollection: function(courseCollection) {
+			var toRemove, i, n, done;
 			if (this.isLeaf()) {
+				if (this.getCourses()) {
+					toRemove = [];
+					for (i = 0, n = courseCollection.length, done = false; i < n && !done; ++i) {
+						if (this.addCourse(courseCollection.models[i])) {
+							toRemove.push(courseCollection.models[i]);
+						}
+						if (this.isComplete()) {
+							done = true;
+						}
+					}
 
+					//remove any courses that were added
+					toRemove.forEach(function(course) {
+						courseCollection.remove(course);
+					});
+				}	
 			} else {
 				//sort the models in ascending order by demand
 				//so that the courses with the lowest demand
-				//are added to the schedule first
-				courseCollection.models.sort(function(course1, course2) {
-					return course1.courseDemand() - course2.courseDemand();
-				});
-
+				//are added to the schedule first, only have to sort at
+				//the root, this method assumes that this method is called 
+				//on root Requirements first
+				if (this.isRoot()) {
+					courseCollection.models.sort(function(course1, course2) {
+						return course1.courseDemand() - course2.courseDemand();
+					}, this);
+				}
 				//now insert courses into requirements in order that the courses
 				//are in the course collection and in the order the requirements are
+				this.getItems().forEach(function(req) {
+					req.addCollection(courseCollection);
+				});
 			}
 		},
 
@@ -257,6 +313,7 @@ var Requirement = Backbone.Model.extend({
 		 * if the courses have not yet been fetched from the server
 		 */
 		isComplete: function() {
+			/*
 			if (!this.getCourses()) {
 				return false;
 			}
@@ -291,18 +348,49 @@ var Requirement = Backbone.Model.extend({
 					}, 0) >= this.itemsNeeded();
 				}
 			}
+			*/
+			return this.progress() === 1;
 		},
 		/**
 		 * Returns a decimal number to indicate how close someone is to
 		 * completing this requirement. A value of 1 means that the requirement
 		 * is complete, and a value of 0 means that the requirement has no validated
-		 * courses
+		 * courses.  This method returns 0 if the courses have not yet been fetched
 		 * @method progress
 		 * @return {Number} A decimal number between 0 and 1 (inclusive) to indicate
 		 * the progress towards completion of the Requirement 
 		 */
 		progress: function() {
-			
+			//for now, keep it simple, each sub-requirement is weighted equally,
+			//no matter how many nested requirements it the sub-requirement has
+			var count, total;
+			if (this.isLeaf()) {
+				if (this.getCourses()) {
+					if (this.completionType() === 'takeAll' || this.completionType() === 'takeItems') {
+						count = this.courseMap.reduce(function(memo, isTaken) {
+							return (isTaken) ? memo + 1 : memo;
+						}, 0);
+						total = this.itemsNeeded();
+					} else {
+						//takeHours completion type
+						total = this.hoursNeeded();
+						count = this.getCourses().reduce(function(memo, course, index) {
+							return (courseMap[index]) ? memo + course.getHours() : memo;
+						}, 0);
+					} 
+					return (count >= total) ? 1 : count / total;
+				}
+				return 0;
+					
+			} else {
+				total = this.itemsNeeded();
+				count = this.getItems().reduce(function(memo, req) {
+					return memo + req.progress(); 
+				}, 0);
+
+				//quotient will always be between 0 and 1
+				return total/count;
+			}
 		},
 
 		/**
@@ -325,11 +413,18 @@ var Requirement = Backbone.Model.extend({
 				}
 				return (this.contains(course)) ? 1 : 0;
 			} else {
+				console.log("In course demand: " + this.getItems().constructor);
 				return this.getItems().reduce(function(memo, req) {
 					return memo + req.courseDemand(course);
 				}, 0);
 			}
 		},
+
+
+		//optimization method not yet implemented
+		clearCache: function() {},
+
+
 		/**
 		 * STRUCTURAL METHOD.  Indicates the depth this current Requirement is 
 		 * from the root goal within the tree structure of the goal
