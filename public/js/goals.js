@@ -258,13 +258,26 @@ var Requirement = Backbone.Model.extend({
 		 * Returns the number of leaf requirements that contain this course as a requirement.
 		 * If this Requirement is a leaf requirement, this method either returns 0 or 1. This method is
 		 * used in the process of determining the best way to allocate courses so that as many requirements
-		 * as possible are satisfied.
+		 * as possible are satisfied.  The course demand does not change whether courses are added or removed
+		 * to the schedule.  This method does not take into consideration any validation.  This method throws
+		 * an exception, "CourseCollection not yet fetched", if courses have not been fetched before this
+		 * method was called
 		 * @method courseDemand
 		 * @param {Course} course A backbone course
 		 * @return {Number} the number of root requirements that satisfy this course
+		 * @throws "CourseCollection not yet fetched"
 		 */
 		courseDemand: function(course) {
-
+			if (this.isLeaf()) {
+				if (!this.getCourses()) {
+					throw new Error("CourseCollection not yet fetched");
+				}
+				return (this.contains(course)) ? 1 : 0;
+			} else {
+				return this.getItems().reduce(function(memo, req) {
+					return memo + req.courseDemand(course);
+				}, 0);
+			}
 		},
 		/**
 		 * STRUCTURAL METHOD.  Indicates the depth this current Requirement is 
