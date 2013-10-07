@@ -62,8 +62,17 @@ var Requirement = Backbone.Model.extend({
 				courses = new CourseCollection(null, []);
 				this.set('courses', courses, {silent: true});
 				courses.once('sync', function() {
+					//keep a courseMap that caches whether the course
+					//is in the schedule or not, and initialize all the 
+					//values to false
+					this.courseMap = new Array(courses.length);
+					this.courseMap.forEach(function(isTaken) {
+						isTaken = false;
+					});
+					//trigger sync on requirements
 					this.trigger('sync');
 				}, this);
+				
 				//fetch courses using the StatementCollection
 				courses.fetchCourses(this.get('items'));
 
