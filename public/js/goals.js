@@ -284,11 +284,12 @@ var Requirement = Backbone.Model.extend({
 				//the root, this method assumes that this method is called 
 				//on root Requirements first
 				if (this.isRoot()) {
-					courseCollection = courseCollection.models.sort(function(course1, course2) {
+					courseCollection.models = courseCollection.models.sort(function(course1, course2) {
 
 						return this.courseDemand(course1) - this.courseDemand(course2);
 					}.bind(this));
 				}
+				
 				//now insert courses into requirements in order that the courses
 				//are in the course collection and in the order the requirements are
 				this.getItems().forEach(function(req) {
@@ -404,7 +405,6 @@ var Requirement = Backbone.Model.extend({
 		 */
 		courseDemand: function(course) {
 			if (this.isLeaf()) {
-				console.log("At leaf");
 				if (!this.getCourses()) {
 					throw new Error("CourseCollection not yet fetched");
 				}
@@ -665,7 +665,10 @@ var Requirement = Backbone.Model.extend({
 			 * satisfied, with appropriate values in between
 			 */
 			progress: function() {
-				return this.head.progress();
+				if (!progress.cache) {
+					progress.cache = this.head.progress();
+				}
+				return progress.cache;	
 			},
 
 			/**
