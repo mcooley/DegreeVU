@@ -284,9 +284,10 @@ var Requirement = Backbone.Model.extend({
 				//the root, this method assumes that this method is called 
 				//on root Requirements first
 				if (this.isRoot()) {
-					courseCollection.models.sort(function(course1, course2) {
-						return course1.courseDemand() - course2.courseDemand();
-					}, this);
+					courseCollection = courseCollection.models.sort(function(course1, course2) {
+
+						return this.courseDemand(course1) - this.courseDemand(course2);
+					}.bind(this));
 				}
 				//now insert courses into requirements in order that the courses
 				//are in the course collection and in the order the requirements are
@@ -403,6 +404,7 @@ var Requirement = Backbone.Model.extend({
 		 */
 		courseDemand: function(course) {
 			if (this.isLeaf()) {
+				console.log("At leaf");
 				if (!this.getCourses()) {
 					throw new Error("CourseCollection not yet fetched");
 				}
@@ -619,6 +621,16 @@ var Requirement = Backbone.Model.extend({
 				return this.head.contains(course);
 			},
 			
+			/**
+			 * Returns the top level requirements that are nested
+			 * directly within the goals object
+			 * @method getTopLevelReqs
+			 * @return {Array} An array of Requirement Objects that form
+			 * the top level Requirements
+			 */
+			getTopLevelReqs: function() {
+				return this.head.getItems();
+			},
 			/**
 			 * Adds a course collection to the Goal and inserts the courses into
 			 * the nested Requirements. This method resets the validation, so any courses
