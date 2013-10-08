@@ -284,6 +284,7 @@ var Requirement = Backbone.Model.extend({
 				//the root, this method assumes that this method is called 
 				//on root Requirements first
 				if (this.isRoot()) {
+					this.reset();
 					courseCollection.models = courseCollection.models.sort(function(course1, course2) {
 
 						return this.courseDemand(course1) - this.courseDemand(course2);
@@ -416,6 +417,21 @@ var Requirement = Backbone.Model.extend({
 			}
 		},
 
+		/**
+		 * Resets the course mappings that cache which courses have been 
+		 * satsifed within this requirement.  Should not be called directly,
+		 * used by the Goal to reset before adding a new collection
+		 * @method reset
+		 */
+		reset: function() {
+			if (this.isLeaf() && this.getCourses()) {
+				this.courseMap.forEach(function(isTaken) {isTaken = false;});
+			} else if (!this.isLeaf()) {
+				this.getItems().forEach(function(req) {
+					req.reset();
+				});
+			}
+		},
 		/**
 		 * STRUCTURAL METHOD.  Indicates the depth this current Requirement is 
 		 * from the root goal within the tree structure of the goal
@@ -665,12 +681,23 @@ var Requirement = Backbone.Model.extend({
 			 * satisfied, with appropriate values in between
 			 */
 			progress: function() {
-				if (!progress.cache) {
-					progress.cache = this.head.progress();
+				if (typeof this.progress.cache !== 'number') {
+					this.progress.cache = this.head.progress();
 				}
-				return progress.cache;	
+				return this.progress.cache;	
 			},
 
+			/**
+			 * Resets any cached values within the goal object,
+			 * and resets the courses within the Goal and sub-requirements,
+			 * so that no courses have been satsified for the Goal.  This is a
+			 * 'private' method used by 'addCollection' method
+			 * @method reset
+			 */
+			reset: function() {
+				this.progress.cache = null;
+				this.head.reset();
+			},
 			/**
 			 * An object that checks for relevant classes to the major and returns
 			 * a StatementCollection object that can be used to perform queries for
