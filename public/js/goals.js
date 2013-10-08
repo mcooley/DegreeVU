@@ -176,13 +176,13 @@ var Requirement = Backbone.Model.extend({
 				for (i = 0, n = collection.length; i < n; ++i) {
 					if (collection.models[i]) {
 						for (j = i + 1; j < n; ++j) {
-							if (collection.models[j] && collection.models[i] === collection.models[j]) {
+							if (collection.models[i] === collection.models[j]) {
 								collection.models[j] = null;
 							}
 						}
 					}	
 				}
-				collection.models = collection.models.filter(function(course) {
+				collection.models = collection.filter(function(course) {
 					return course;
 				});
 				return collection;
@@ -345,42 +345,6 @@ var Requirement = Backbone.Model.extend({
 		 * if the courses have not yet been fetched from the server
 		 */
 		isComplete: function() {
-			/*
-			if (!this.getCourses()) {
-				return false;
-			}
-
-			if (this.completionType() === 'takeAll') {
-				if (this.isLeaf()) {
-					return this.courseMap.reduce(function(memo, isTaken) {
-						return memo && isTaken;
-					}, true);
-
-				} else {
-					return this.getItems().reduce(function(memo, req) {
-						return memo && req.isComplete();
-					}, true);
-				}
-			} else if (this.completionType() === 'takeHours') {
-				//must be a leaf if the completion type is takeHours
-				return (this.getCourses().reduce(function(memo, course, index) {
-					return (this.courseMap[index]) ? course.getHours() : 0;
-
-				}, 0)) >= this.hoursNeeded();
-
-			} else {
-				//completion type is takeItems
-				if (this.isLeaf()) {
-					return this.courseMap.reduce(function(memo, isTaken) {
-						return (isTaken) ? memo + 1 : memo;
-					}, 0) >= this.itemsNeeded();
-				} else {
-					return this.getItems().reduce(function(memo, req) {
-						return (req.isComplete()) ? memo + 1 : memo;
-					}, 0) >= this.itemsNeeded();
-				}
-			}
-			*/
 			return this.progress() === 1;
 		},
 		/**
@@ -449,11 +413,6 @@ var Requirement = Backbone.Model.extend({
 				}, 0);
 			}
 		},
-
-
-		//optimization method not yet implemented
-		clearCache: function() {},
-
 
 		/**
 		 * STRUCTURAL METHOD.  Indicates the depth this current Requirement is 
