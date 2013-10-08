@@ -149,14 +149,44 @@ var Requirement = Backbone.Model.extend({
 
 		/**
 		 * Getter for courseCollection.  Returns null if the courseCollection has not
-		 * yet been fetched or if the Requirement is not a leaf requirement (only leaf 
-		 * requirements cache course collections)
+		 * yet been fetched.  If this is called on a Requirement that is not a leaf, then
+		 * all courses from sub-requirements will be fetched and unioned to remove redundancies.
 		 * @method getCourses
 		 * @return {CourseCollection} A CourseCollection Backbone Object containing the 
 		 * courses for the requirement
 		 */
 		getCourses: function() {
-			return (this.isLeaf() && this.get('courses')) ? this.get('courses') : null;
+			var collection, i, n, j;
+			if (this.isLeaf()) {
+				if (this.get('courses')) {
+					return this.get('courses');
+				}
+				//null for courses not yet fetched
+				return null;
+			} else {
+				collection = new CourseCollection(null, []);
+				this.getItems().forEach(function(req) {
+					var tempColl = req.getCourses();
+					if (tempColl) {
+						collection.add(tempColl.models);
+					}
+				});
+
+				//union here
+				for (i = 0, n = collection.length; i < n; ++i) {
+					if (collection.models[i]) {
+						for (j = i + 1; j < n; ++j) {
+							if (collection.models[j] && collection.models[i] === collection.models[j]) {
+								collection.models[j] = null;
+							}
+						}
+					}	
+				}
+				collection.models = collection.models.filter(function(course) {
+					return course;
+				});
+				return collection;
+			}
 		},
 
 		/**
@@ -569,7 +599,7 @@ var Requirement = Backbone.Model.extend({
 			 * @async
 			 */
 			fetch: function(callback) {
-				
+				this.head.fetch();
 			},
 			/**
 			 * Getter for the CourseCollection Object of the goal that contains all
@@ -582,7 +612,10 @@ var Requirement = Backbone.Model.extend({
 			 * "Must first fetch courses from server before getCourses getter is called"
 			 */
 			getCourses: function() {
-				
+				if (!this.getCourses.cache) {
+					this.getCourses.cache = this.head.getCourses();
+				}
+				return this.getCourses.cache;
 			},
 			/**
 			 * Getter for the title of the Goal
@@ -638,7 +671,9 @@ var Requirement = Backbone.Model.extend({
 			 * courses to validate.  This method makes no changes to courseCollection
 			 */
 			addCollection: function(courseCollection) {
-
+				//make a copy so the requirement objects do not modify the course collection
+				var collectionCopy = new CourseCollection(courseCollection.models.slice(), {});
+				this.head.addCollection(collectionCopy);
 			},
 			/**
 			 * Indicates if the Goal is completely satisfied
@@ -659,8 +694,7 @@ var Requirement = Backbone.Model.extend({
 			 * satisfied, with appropriate values in between
 			 */
 			progress: function() {
-				//for now, this is the implementation
-				//return (this.getTakenCourses().length) / (this.getCourseQueries().length);
+				return this.head.progress();
 			},
 
 			/**
