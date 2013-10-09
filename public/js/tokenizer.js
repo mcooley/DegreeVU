@@ -798,6 +798,17 @@ StatementCollection.collapseStatements = function(statements) {
 	
 };
 
+
+StatementCollection.prototype.matchCourse = function(course) {
+	var i, n;
+	for (i = 0, n = this.collection.length; i < n; ++i) {
+		if (this.collection[i].matchCourse(course)) {
+			return true;
+		}
+	}
+	return false;
+};
+
 /**
  * Cleans up the Statements within the collection by removing 
  * redundancies and removing any Statements that have contradictory tokens
@@ -810,6 +821,7 @@ StatementCollection.prototype.refactor = function() {
 		return statement.refactor();
 	});
 };
+
 
 
 //set the exports for server side script
