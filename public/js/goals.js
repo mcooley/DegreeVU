@@ -57,7 +57,7 @@ var Requirement = Backbone.Model.extend({
 		 * @async
 		 */
 		fetch: function() {
-			var courses, itemCount, fetchFunct;
+			var courses, itemCount, fetchFunct, i, n;
 			if (this.isLeaf()) {
 				courses = new CourseCollection(null, []);
 				this.set('courses', courses, {silent: true});
@@ -66,9 +66,9 @@ var Requirement = Backbone.Model.extend({
 					//is in the schedule or not, and initialize all the 
 					//values to false
 					this.courseMap = new Array(courses.length);
-					this.courseMap.forEach(function(isTaken) {
-						isTaken = false;
-					});
+					for (i = 0, n = this.courseMap.length; i < n; ++i) {
+						this.courseMap[i] = false;
+					}
 					//trigger sync on requirements
 					this.trigger('sync');
 				}, this);
@@ -294,7 +294,10 @@ var Requirement = Backbone.Model.extend({
 				//now insert courses into requirements in order that the courses
 				//are in the course collection and in the order the requirements are
 				this.getItems().forEach(function(req) {
-					req.addCollection(courseCollection);
+					if (!req.isComplete()) {
+						req.addCollection(courseCollection);
+					}
+					
 				});
 			}
 		},
@@ -424,8 +427,11 @@ var Requirement = Backbone.Model.extend({
 		 * @method reset
 		 */
 		reset: function() {
+			var i, n;
 			if (this.isLeaf() && this.getCourses()) {
-				this.courseMap.forEach(function(isTaken) {isTaken = false;});
+				for (i = 0, n = this.courseMap.length; i < n; ++i) {
+					this.courseMap[i] = false;
+				}
 			} else if (!this.isLeaf()) {
 				this.getItems().forEach(function(req) {
 					req.reset();
@@ -660,6 +666,7 @@ var Requirement = Backbone.Model.extend({
 			addCollection: function(courseCollection) {
 				//make a copy so the requirement objects do not modify the course collection
 				var collectionCopy = new CourseCollection(courseCollection.models.slice(), {});
+				this.reset();
 				this.head.addCollection(collectionCopy);
 			},
 			/**
