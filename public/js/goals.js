@@ -165,6 +165,26 @@ var Requirement = Backbone.Model.extend({
 		},
 
 		/**
+		 * Getter for the Statement Collection of the Requirement.  If this 
+		 * is not a leaf requirement, this unions the StatementCollections of the
+		 * the leaves 
+		 * @method statementCollection
+		 * @return {StatementCollection} A StatementCollection object of all the 
+		 * courses within the Requirement
+		 */
+		statementCollection: function() {
+			var i, n, collection;
+			if (this.isLeaf()) {
+				return this.getItems();
+			} else {
+				collection = new StatementCollection([]);
+				for (i = 0, n = this.getItems().length; i< n; ++i) {
+					collection.union(this.getItems()[i].statementCollection());
+				}
+				return collection;
+			}
+		},
+		/**
 		 * Adds a course collection to the requirement and all 
 		 * sub-requirements.  This method resets the Requirements,
 		 * so any courses that were previously held in the collection are removed 
