@@ -1,15 +1,20 @@
 //WHAT IS EXPECTED OF A GOAL
 	// - takeHours does not exist anywhere other than leaf requirements
 	// - either take or takeHours is defined per goal, never both
-	// - add lots of comments in the code so it is easier to read the requirement, in case something 
-	// needs to be changed
+	// - the root-level items must be objects, not strings
+	// - must set the goal object to global variable 'goal' like below
+//TIPS
 	// - the root-level items (the ones that are nested directly inside the goal) should have 
-	// elaborate details on the requirements
+	// elaborate details on the requirements 
+	// - add lots of comments in the code so it is easier to read the requirement, in case something 
+	// needs to be changed by someone who didn't write the goal (chances are that we are going to be 
+	// changing these a lot)
+
 
 goal = {
 	title: "Computer Science",
 	type: "major",
-	school: "School of Engineering",
+	college: "SE",
 	items: 
 	[
 		{//the first requirement

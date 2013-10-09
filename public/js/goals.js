@@ -653,6 +653,16 @@ var Requirement = Backbone.Model.extend({
 			requirements: function() {
 				return this.head.getItems();
 			},
+
+			/**
+			 * Returns the number of top-level Requirements that exist within 
+			 * the Goal
+			 * @method length
+			 * @return {Number} the number of top-level Requirements
+			 */
+			length: function() {
+				return this.head.getItems().length;
+			},
 			/**
 			 * Adds a course collection to the Goal and inserts the courses into
 			 * the nested Requirements. This method resets the validation, so any courses
