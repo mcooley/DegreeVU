@@ -405,6 +405,45 @@ Statement.formatObject = function(obj) {
 	return format;
 };
 
+
+/**
+ * NOT YET TESTED.
+ * matches a Backbone course object with a Statement.
+ * returns true if the course matches the Statement.
+ * @method matchCourse
+ * @param {Course} course A backbone course object
+ * @return {Boolean} true if the course matches the statement,
+ * false otherwise
+ */
+Statement.prototype.matchCourse = function(course) {
+	var i, n, courseToken, college;
+	for (i = 0, n = this.tokens.length; i < n; ++i) {
+		courseToken = CourseCodeTokenizer.parse(course.get('courseCode'));
+		try {
+			if (!CourseCodeTokenizer.matchObject(courseToken, this.tokens[i])) {
+				return false;
+			}
+		} catch (e) {
+			if (this.tokens[i].query === '^') {
+				college = Statement.collegeMap(this.tokens[i].school);
+				if (this.tokens[i].not && college === course.get('college')) {
+					return false;
+				} else if (!this.tokens[i].not && college !== course.get('college')){
+					return false;
+				}
+			} else if (this.tokens[i].query === '~') {
+				if (this.tokens[i].not && this.tokens[i].category === course.get('category')) {
+					return false;
+				} else if (!this.tokens[i].not && this.tokens[i].category !== course.get('category')) {
+					return false;
+				}
+			}
+		}	
+	}
+	return true;
+};
+
+
 /**
  * Iterates through the tokens in the internal representation
  * of the statement and removes unneeded or redundant 
@@ -421,6 +460,32 @@ Statement.prototype.refactor = function() {
 		return memo && funct.call(self);
 	}, true);
 	
+};
+
+/**
+ * NOT YET TESTED
+ * converts a college abbreviation to the actual name
+ * of the college.  This is used to convert tokens to actual
+ * colleges.  This is considered a 'private' method and should
+ * not be called directly.  This method is used by the matchCourse
+ * method and other methods on the server side tokenizer.  SE: 
+ * School of Engineering.  AS: College of Arts and Science. BL: 
+ * Blair School of Music.  PB: Peabody College.
+ * @method collegeMap
+ * @param {String} abbreviation An abbreviation for the College
+ * @return {String} the actual college name.
+ */
+Statement.collegeMap = function(abbreviation) {
+	if (abbreviation.toUpperCase() === 'SE') {
+		return "School of Engineering";
+	} else if (abbreviation.toUpperCase() === 'AS') {
+		return "College of Arts and Science";
+	} else if (abbreviation.toUpperCase() === 'BL') {
+		return "Blair School of Music";
+	} else if (abbreviation.toUpperCase() === "PB") {
+		return "Peabody College";
+	}
+	return null;
 };
 
 /**
@@ -499,6 +564,8 @@ Statement.refactorCollection = [
 
 ];
  
+
+
 /**
  * A collection of statements that are used
  * for more powerful matching and querying
