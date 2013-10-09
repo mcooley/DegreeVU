@@ -644,13 +644,13 @@ var Requirement = Backbone.Model.extend({
 			},
 			
 			/**
-			 * Returns the top level requirements that are nested
+			 * Getter for the top level requirements that are nested
 			 * directly within the goals object
-			 * @method getTopLevelReqs
+			 * @method requirements
 			 * @return {Array} An array of Requirement Objects that form
 			 * the top level Requirements
 			 */
-			getTopLevelReqs: function() {
+			requirements: function() {
 				return this.head.getItems();
 			},
 			/**
