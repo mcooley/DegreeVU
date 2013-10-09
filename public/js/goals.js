@@ -259,45 +259,27 @@ var Requirement = Backbone.Model.extend({
 		 * by requirements
 		 */
 		addCollection: function(courseCollection) {
-			var toRemove, i, n, done;
+			var i, n, done;
 			if (this.isLeaf()) {
 				if (this.getCourses()) {
 					toRemove = [];
 					for (i = 0, n = courseCollection.length, done = false; i < n && !done; ++i) {
-						if (this.addCourse(courseCollection.models[i])) {
-							toRemove.push(courseCollection.models[i]);
-						}
+						this.addCourse(courseCollection.models[i]);
 						if (this.isComplete()) {
 							done = true;
 						}
 					}
-
-					//remove any courses that were added
-					toRemove.forEach(function(course) {
-						courseCollection.remove(course);
-					});
 				}	
 			} else {
-				//sort the models in ascending order by demand
-				//so that the courses with the lowest demand
-				//are added to the schedule first, only have to sort at
-				//the root, this method assumes that this method is called 
-				//on root Requirements first
+				//reset the Requirements before adding courses
 				if (this.isRoot()) {
 					this.reset();
-					courseCollection.models = courseCollection.models.sort(function(course1, course2) {
-
-						return this.courseDemand(course1) - this.courseDemand(course2);
-					}.bind(this));
 				}
 				
 				//now insert courses into requirements in order that the courses
 				//are in the course collection and in the order the requirements are
 				this.getItems().forEach(function(req) {
-					if (!req.isComplete()) {
-						req.addCollection(courseCollection);
-					}
-					
+					req.addCollection(courseCollection);
 				});
 			}
 		},
@@ -343,6 +325,54 @@ var Requirement = Backbone.Model.extend({
 		},
 
 		/**
+		 * Calculates the hours taken for a requirement.  This method
+		 * returns 0 if the courses have not yet been fetched. If the requirement
+		 * has a maxHours flag, then any additional hours beyond the maxHours will
+		 * be truncated out, and this method will just return the maxHours.  If the 
+		 * Requirement is not a leaf Requirement, this method tallies up the total number
+		 * of hours in the sub-requirements.  Note that this can result in courses being
+		 * counted more than once.
+		 * @method hoursTaken
+		 * @return {Number} the number of hours satisfied for this Requirement
+		 */
+		hoursTaken: function() {
+			var hours;
+			if (this.isLeaf()) {
+				hours =  (this.getCourses()) ? this.getCourses().reduce(function(memo, course, index) {
+					return (this.courseMap[index]) ? memo + course.getHours() : memo;
+				}.bind(this), 0) : 0;
+
+				//check for a max hours flag
+				return (this.get('maxHours') && this.get('maxHours') < hours) ? this.get('maxHours') : hours;
+
+			} else {
+				return this.getItems().reduce(function(memo, req) {
+					return memo + req.hoursTaken();
+				}, 0)
+			}
+		},
+
+		/**
+		 * Calculates the number of items taken.  If courses have not yet been fetched, this will
+		 * return a 0.  If this is not a leaf requirement, this will return the number of sub-requirements
+		 * that are complete
+		 * @method itemsTaken
+		 * @return {Number} the number of items that are satisfied within the Requirement
+		 */
+		itemsTaken: function() {
+			if (this.isLeaf()) {
+				return (this.getCourses()) ? this.getCourses().reduce(function(memo, course, index) {
+					return (this.courseMap[index]) ? memo + 1 : memo;
+				}.bind(this), 0) : 0;
+			} else {
+
+				return this.getItems().reduce(function(memo, req) {
+					return (req.isComplete()) ? memo + 1 : memo;
+				}, 0);
+			}
+		},
+
+		/**
 		 * Indicates if the requirement has been satisfied.  Throws an exception,
 		 * "CourseCollection not yet fetched", if the Requirement has not yet fetched
 		 * courses from the server
@@ -368,7 +398,7 @@ var Requirement = Backbone.Model.extend({
 			var count, total;
 			if (this.isLeaf()) {
 				if (this.getCourses()) {
-					if (this.completionType() === 'takeAll' || this.completionType() === 'takeItems') {
+					if (this.completionType() !== 'takeHours') {
 						count = this.courseMap.reduce(function(memo, isTaken) {
 							return (isTaken) ? memo + 1 : memo;
 						}, 0);
@@ -385,12 +415,20 @@ var Requirement = Backbone.Model.extend({
 				return 0;
 					
 			} else {
-				total = this.itemsNeeded();
-				count = this.getItems().reduce(function(memo, req) {
-					return (req.isComplete()) ? memo + 1 : memo; 
-				}, 0);
+				if (this.completionType() !== 'takeHours') {
+					total = this.itemsNeeded();
+					count = this.getItems().reduce(function(memo, req) {
+						return (req.isComplete()) ? memo + 1 : memo; 
+					}, 0);
+					return (count >= total) ? 1 : count / total;
+				} else {
+					//completion type is takeHours
+					console.log("Completion type of take hours not at a leaf");
+					return 0;
+				}
+					
 
-				return (count >= total) ? 1 : count / total;
+				
 			}
 		},
 

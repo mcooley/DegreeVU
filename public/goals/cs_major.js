@@ -100,8 +100,8 @@ goal = {
 
 		{ //ROOT-ITEM 2: SHOULD ALWAYS LABEL ROOT ITEMS USING COMMENTS, THEY SHOULD BE EASY TO FIND
 			title: "Science Sequence (12 hours)",
-			subtitle: "You must complete a Science Sequence.  At least 1 sequence must be satisfied.  Biology Sequence 1: BSCI 110A-B, BSCI 111A-B.  Biology Sequence 2: BSCI 100, 218, and 219. Chemisty Sequence: CHEM 102A-B, CHEM 104A-B.  Earth and Environmental Science: EES 101, EES 111. Material Science and Engineering: MSE 150.  Physics Sequence: PHYS 116A-B, PHYS 118A-B. It is recommended for computer science major to take Chemistry or Physics."
-			details: "",
+			subtitle: "You must complete a Science Sequence.  At least 1 sequence must be satisfied.  Biology Sequence 1: BSCI 110A-B, BSCI 111A-B.  Biology Sequence 2: BSCI 100, 218, and 219. Chemisty Sequence: CHEM 102A-B, CHEM 104A-B.  Earth and Environmental Science: EES 101, EES 111. Material Science and Engineering: MSE 150.  Physics Sequence: PHYS 116A-B, PHYS 118A-B. It is recommended for computer science major to take Chemistry or Physics.",
+			details: "Here are the details...",
 			take: 1,
 			items: [
 				{
@@ -195,7 +195,7 @@ goal = {
 			subtitle: "Must take a total of 6 hours of courses deemed technical courses for computer science",
 			details: "You may take courses numbered CS 240 or higher, courses within the school of engineering but outside if computer science number 200 or higher, or from sciences within the College of Arts and Science numbered 200 or higher that are listed in the mathematics and naturals sciences (MNS) distribution requirements in AXLE",
 			takeHours: 6,
-			items: ["CS 240+", "!CS 250", "!CS 251" "!CS 270", "!CS 281", "SE^ & !CS*", "MNS~"]
+			items: ["CS 240+", "!CS 250", "!CS 251", "!CS 270", "!CS 281", "SE^ & !CS*", "MNS~"]
 
 		},
 		{//ROOT-REQUIREMENT 6
@@ -209,7 +209,7 @@ goal = {
 			title: "Writing Component (3 hours)",
 			subtitle: "Must take a writing course",
 			details: "Must take 1 course that is labeled as W",
-			takeHours 3,
+			takeHours: 3,
 			items: ["W$"]
 		}
 	]

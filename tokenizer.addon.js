@@ -55,6 +55,15 @@ var StatementHelper = {
 			mongoQuery.courseSuffix = new RegExp("^"+token.courseSuffix+"$", "i");
 		} else if (token.query === '^') {
 			//school name
+			if (token.school === "SE") {
+				mongoQuery.college = (token.not) ? {$nin: ["School of Engineering"]} : {$in: ["School of Engineering"]};
+			} else if (token.school === "AS") {
+				mongoQuery.college = (token.not) ? {$nin: ["College of Arts and Science"]} : {$in: ["School of Engineering"]};
+			} else if (token.school === "PB") {
+				mongoQuery.college = (token.not) ? {$nin: ["Peabody College"]} : {$in: ["School of Engineering"]};
+			} else if (token.school === "BL") {
+				mongoQuery.college = (token.not) ? {$nin: ["Blair School of Music"]} : {$in: ["School of Engineering"]};
+			}
 		} else if (token.query === '~') {
 			//category
 			if (mongoQuery.category) {
