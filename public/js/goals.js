@@ -85,10 +85,12 @@ var Requirement = Backbone.Model.extend({
 		contains: function(course) {
 			var i,n;
 			if (this.isLeaf()) {
-
+				return this.getItems().matchCourse(course);
 				
 			} else {
-				
+				return this.getItems().reduce(function(memo, req) {
+					return memo || req.contains(course);
+				}, false);
 			}
 		},
 
@@ -122,24 +124,24 @@ var Requirement = Backbone.Model.extend({
 		 * @return {Boolean} true if the course was successfully added, false otherwise
 		 */
 		addCourse: function(course) {
-			var i, n;
 			if (this.isLeaf()) {
-				if (this.getCourses()) {
-					for (i = 0, n = this.getCourses().length; i < n; ++i) {
-						if (this.getCourses().models[i] === course) {
-							this.courseMap[i] = true;
-							return true;
-						}
+				if (this.getItems().matchCourse(course)) {
+					//lazy instantiation of course collection
+					if (!this.courses) {
+						console.log("Added course " + course.get('courseCode') + " to req " + this.getTitle());
+						this.courses = new CourseCollection([course], {});
+						return true;
+					} else if (!this.courses.contains(course)) {
+						console.log("Added course " + course.get('courseCode') + " to req " + this.getTitle());
+						this.courses.add(course);
+						return true;
 					}
 				}
 				return false;
 			} else {
 				return this.getItems().reduce(function(memo, req) {
-					//make sure that add course is called on all
-					//sub-requirements, so separate out boolean with
-					//addCourse call
-					var added = req.addCourse(course);
-					return memo || added;
+				
+					return req.addCourse(course) || memo;
 				}, false);
 			}
 		},
@@ -164,23 +166,10 @@ var Requirement = Backbone.Model.extend({
 		addCollection: function(courseCollection) {
 			var i, n, done;
 			if (this.isLeaf()) {
-				if (this.getCourses()) {
-					toRemove = [];
-					for (i = 0, n = courseCollection.length, done = false; i < n && !done; ++i) {
-						this.addCourse(courseCollection.models[i]);
-						if (this.isComplete()) {
-							done = true;
-						}
-					}
-				}	
+				courseCollection.each(function(course) {
+					this.addCourse(course);
+				}, this);
 			} else {
-				//reset the Requirements before adding courses
-				if (this.isRoot()) {
-					this.reset();
-				}
-				
-				//now insert courses into requirements in order that the courses
-				//are in the course collection and in the order the requirements are
 				this.getItems().forEach(function(req) {
 					req.addCollection(courseCollection);
 				});
@@ -228,8 +217,7 @@ var Requirement = Backbone.Model.extend({
 		},
 
 		/**
-		 * Calculates the hours taken for a requirement.  This method
-		 * returns 0 if the courses have not yet been fetched. If the requirement
+		 * Calculates the hours taken for a requirement. If the requirement
 		 * has a maxHours flag, then any additional hours beyond the maxHours will
 		 * be truncated out, and this method will just return the maxHours.  If the 
 		 * Requirement is not a leaf Requirement, this method tallies up the total number
@@ -241,37 +229,35 @@ var Requirement = Backbone.Model.extend({
 		hoursTaken: function() {
 			var hours;
 			if (this.isLeaf()) {
-				hours =  (this.getCourses()) ? this.getCourses().reduce(function(memo, course, index) {
-					return (this.courseMap[index]) ? memo + course.getHours() : memo;
-				}.bind(this), 0) : 0;
-
-				//check for a max hours flag
+				if (!this.courses) {
+					return 0;
+				}
+				hours = this.courses.reduce(function(memo, course) {
+					return memo + course.getHours();
+				}, 0);
 				return (this.get('maxHours') && this.get('maxHours') < hours) ? this.get('maxHours') : hours;
-
 			} else {
-				return this.getItems().reduce(function(memo, req) {
+				hours = this.getItems().reduce(function(memo, req) {
 					return memo + req.hoursTaken();
-				}, 0)
+				}, 0);
+				return (this.get('maxHours') && this.get('maxHours') < hours) ? this.get('maxHours') : hours;
 			}
 		},
 
 		/**
-		 * Calculates the number of items taken.  If courses have not yet been fetched, this will
-		 * return a 0.  If this is not a leaf requirement, this will return the number of sub-requirements
+		 * Calculates the number of items taken.  If this is not a leaf requirement, 
+		 * this will return the number of sub-requirements
 		 * that are complete
 		 * @method itemsTaken
 		 * @return {Number} the number of items that are satisfied within the Requirement
 		 */
 		itemsTaken: function() {
 			if (this.isLeaf()) {
-				return (this.getCourses()) ? this.getCourses().reduce(function(memo, course, index) {
-					return (this.courseMap[index]) ? memo + 1 : memo;
-				}.bind(this), 0) : 0;
+				return (this.courses) ? this.courses.length : 0;
 			} else {
-
 				return this.getItems().reduce(function(memo, req) {
 					return (req.isComplete()) ? memo + 1 : memo;
-				}, 0);
+				}, 0)
 			}
 		},
 
@@ -296,43 +282,20 @@ var Requirement = Backbone.Model.extend({
 		 * the progress towards completion of the Requirement 
 		 */
 		progress: function() {
-			//for now, keep it simple, each sub-requirement is weighted equally,
-			//no matter how many nested requirements it the sub-requirement has
-			var count, total;
-			if (this.isLeaf()) {
-				if (this.getCourses()) {
-					if (this.completionType() !== 'takeHours') {
-						count = this.courseMap.reduce(function(memo, isTaken) {
-							return (isTaken) ? memo + 1 : memo;
-						}, 0);
-						total = this.itemsNeeded();
-					} else {
-						//takeHours completion type
-						total = this.hoursNeeded();
-						count = this.getCourses().reduce(function(memo, course, index) {
-							return (courseMap[index]) ? memo + course.getHours() : memo;
-						}, 0);
-					} 
-					return (count >= total) ? 1 : count / total;
-				}
-				return 0;
-					
-			} else {
-				if (this.completionType() !== 'takeHours') {
-					total = this.itemsNeeded();
-					count = this.getItems().reduce(function(memo, req) {
-						return (req.isComplete()) ? memo + 1 : memo; 
-					}, 0);
-					return (count >= total) ? 1 : count / total;
-				} else {
-					//completion type is takeHours
-					console.log("Completion type of take hours not at a leaf");
-					return 0;
-				}
-					
 
-				
+			//DONT FORGET TO ADD A CHECK FOR THE MANDATE FLAG
+			var taken, needed;
+			
+			if (this.completionType() !== 'takeHours') {
+				//either takeAll or takeItems
+				taken = this.itemsTaken();
+				needed = this.itemsNeeded();
+			} else {
+				taken = this.hoursTaken();
+				needed = this.hoursNeeded();
 			}
+			return (taken > needed) ? 1 : taken / needed;
+			
 		},
 
 		/**
@@ -340,19 +303,13 @@ var Requirement = Backbone.Model.extend({
 		 * If this Requirement is a leaf requirement, this method either returns 0 or 1. This method is
 		 * used in the process of determining the best way to allocate courses so that as many requirements
 		 * as possible are satisfied.  The course demand does not change whether courses are added or removed
-		 * to the schedule.  This method does not take into consideration any validation.  This method throws
-		 * an exception, "CourseCollection not yet fetched", if courses have not been fetched before this
-		 * method was called
+		 * to the schedule.  This method does not take into consideration any validation.
 		 * @method courseDemand
 		 * @param {Course} course A backbone course
 		 * @return {Number} the number of root requirements that satisfy this course
-		 * @throws "CourseCollection not yet fetched"
 		 */
 		courseDemand: function(course) {
 			if (this.isLeaf()) {
-				if (!this.getCourses()) {
-					throw new Error("CourseCollection not yet fetched");
-				}
 				return (this.contains(course)) ? 1 : 0;
 			} else {
 				return this.getItems().reduce(function(memo, req) {
@@ -368,12 +325,10 @@ var Requirement = Backbone.Model.extend({
 		 * @method reset
 		 */
 		reset: function() {
-			var i, n;
-			if (this.isLeaf() && this.getCourses()) {
-				for (i = 0, n = this.courseMap.length; i < n; ++i) {
-					this.courseMap[i] = false;
-				}
-			} else if (!this.isLeaf()) {
+			if (this.isLeaf()) {
+				this.courses = null;
+
+			} else {
 				this.getItems().forEach(function(req) {
 					req.reset();
 				});
