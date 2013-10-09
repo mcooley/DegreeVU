@@ -47,49 +47,6 @@ var Requirement = Backbone.Model.extend({
 			}
 			
 		},
-
-		/**
-		 * Fetches all the courses at the leaf requirements and stores them 
-		 * within CourseCollection objects.  Fires an event 'sync' to signify that 
-		 * the fetching has completed
-		 * @method fetch
-		 * @event sync
-		 * @async
-		 */
-		fetch: function() {
-			var courses, itemCount, fetchFunct, i, n;
-			if (this.isLeaf()) {
-				courses = new CourseCollection(null, []);
-				this.set('courses', courses, {silent: true});
-				courses.once('sync', function() {
-					//keep a courseMap that caches whether the course
-					//is in the schedule or not, and initialize all the 
-					//values to false
-					this.courseMap = new Array(courses.length);
-					for (i = 0, n = this.courseMap.length; i < n; ++i) {
-						this.courseMap[i] = false;
-					}
-					//trigger sync on requirements
-					this.trigger('sync');
-				}, this);
-				
-				//fetch courses using the StatementCollection
-				courses.fetchCourses(this.get('items'));
-
-			} else {
-				itemCount = this.get('items').length;
-				fetchFunct = function() {
-					itemCount -= 1;
-					if (itemCount === 0) {
-						this.trigger('sync');
-					}
-				};
-				this.get('items').forEach(function(req) {
-					req.once('sync', fetchFunct, this);
-					req.fetch();
-				}, this);
-			}
-		},
 		
 		/**
 		 * Getter for the title of the requirement
@@ -124,68 +81,14 @@ var Requirement = Backbone.Model.extend({
 		 * @method contains
 		 * @param {Course} course A Course Object
 		 * @return {Boolean} true if the Requirement contains this course
-		 * @throws "CourseCollection not yet fetched"
 		 */
 		contains: function(course) {
 			var i,n;
 			if (this.isLeaf()) {
-				if (!this.getCourses()) {
-					throw new Error("CourseCollection not yet fetched");
-				}
 
-				for (i = 0, n = this.getCourses().length; i < n; ++i) {
-					if (course === this.getCourses().models[i]) {
-						return true;
-					}
-				}
-				return false;
-
+				
 			} else {
-				return this.getItems().reduce(function(memo, req) {
-					return memo || req.contains(course);
-				}, false);
-			}
-		},
-
-		/**
-		 * Getter for courseCollection.  Returns null if the courseCollection has not
-		 * yet been fetched.  If this is called on a Requirement that is not a leaf, then
-		 * all courses from sub-requirements will be fetched and unioned to remove redundancies.
-		 * @method getCourses
-		 * @return {CourseCollection} A CourseCollection Backbone Object containing the 
-		 * courses for the requirement
-		 */
-		getCourses: function() {
-			var collection, i, n, j;
-			if (this.isLeaf()) {
-				if (this.get('courses')) {
-					return this.get('courses');
-				}
-				//null for courses not yet fetched
-				return null;
-			} else {
-				collection = new CourseCollection(null, []);
-				this.getItems().forEach(function(req) {
-					var tempColl = req.getCourses();
-					if (tempColl) {
-						collection.add(tempColl.models);
-					}
-				});
-
-				//union here
-				for (i = 0, n = collection.length; i < n; ++i) {
-					if (collection.models[i]) {
-						for (j = i + 1; j < n; ++j) {
-							if (collection.models[i] === collection.models[j]) {
-								collection.models[j] = null;
-							}
-						}
-					}	
-				}
-				collection.models = collection.filter(function(course) {
-					return course;
-				});
-				return collection;
+				
 			}
 		},
 
