@@ -58,6 +58,24 @@ var Requirement = Backbone.Model.extend({
 		},
 		
 		/**
+		 * Getter for the Requirement's subtitle
+		 * @method getSubtitle
+		 * @return {String} The subtitles for the Requirement
+		 */
+		getSubtitle: function() {
+			return this.get('subtitle');
+		},
+
+		/**
+		 * Getter for the details
+		 * @method getDetails
+		 * @return {String} The details for the Requirement
+		 */
+		getDetails: function() {
+			return this.get('details');
+		},
+
+		/**
 		 * Getter for the requirements items.  If the Requirement Object is a 
 		 * leaf Requirement, then this will return a StatementCollection.  Otherwise,
 		 * this will return an array of Requirements
@@ -284,7 +302,7 @@ var Requirement = Backbone.Model.extend({
 		progress: function() {
 
 			//DONT FORGET TO ADD A CHECK FOR THE MANDATE FLAG
-			var taken, needed;
+			var taken, needed, completionArray, i, n;
 			
 			if (this.completionType() !== 'takeHours') {
 				//either takeAll or takeItems
@@ -295,7 +313,7 @@ var Requirement = Backbone.Model.extend({
 				needed = this.hoursNeeded();
 			}
 			return (taken > needed) ? 1 : taken / needed;
-			
+
 		},
 
 		/**
