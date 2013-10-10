@@ -24,15 +24,32 @@ var Requirement = Backbone.Model.extend({
 		 */
 		initialize: function(obj) {
 			
-			var items, i, n;
+			var items, i, n, nextItem;
 			if (typeof obj.items[0] === 'object') {
 				//then the item is a nested Requirement
 
 				items = [];
+				//set any flags on this Requirement
+				//defaults if the flags aren't explicit
+				this.mandate = this.get('mandate') || null;
+				this.lock = this.get('lock') || true;
+				this.ignoreLock = this.get('ignoreLock') || false;
+				this.maxHours = this.get('maxHours') || null;
+
+				
 				for (i = 0, n = obj.items.length; i < n; ++i) {
-					obj.items[i].reqID = Requirement.generateRequirementID(i, this.get('reqID'));
-					obj.items[i].isRoot = false;
-					items[i] = new Requirement(obj.items[i]);
+					nextItem = obj.items[i];
+					nextItem.reqID = Requirement.generateRequirementID(i, this.get('reqID'));
+					nextItem.isRoot = false;
+
+					//set the flags on the next item
+					//inheritted unless explicilty set
+					nextItem.mandate = nextItem.mandate || this.mandate;
+					nextItem.lock = nextItem.lock || this.lock;
+					nextItem.ignoreLock = nextItem.ignoreLock || this.ignoreLock;
+					nextItem.maxHours = nextItem.maxHours || this.maxHours;
+
+					items[i] = new Requirement(nextItem);
 				}
 				
 				this.set('items', items, {silent: true});

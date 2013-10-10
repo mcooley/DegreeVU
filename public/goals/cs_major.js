@@ -58,6 +58,11 @@ goal = {
 				{ //calc
 					title: 'Calculus Sequence (11-16 hours)',
 					//only 1 calc sequence needed
+					//lock is true by default, locks courses so courses
+					//that satisfy this cannot satisfy anything after this
+					//lock is inherited by parent Requirements, any sub-requirement 
+					//has the same lock flag if not explicitly set
+					lock: false,
 					take: 1,
 					items: [
 						{ //seq1
@@ -82,16 +87,19 @@ goal = {
 				},
 				{
 					title: 'Linear Algebra (3-4 hours)',
+					lock: false,
 					take: 1,
 					items: ["MATH 194", "MATH 205", "MATH 205B"]
 				},
 				{
 					title: 'Statistics (3 hours)',
+					lock: false,
 					take: 1,
 					items: ["MATH 216", "MATH 218", "MATH 247"]
 				},
 				{
 					title: 'Elective Math Course (3 hours)',
+					lock: false,
 					takeHours: 3,
 					items: ["MATH 198", "MATH 200", "MATH 208+"]
 				}
@@ -166,6 +174,8 @@ goal = {
 				},
 				{
 					title: "Math Depth Courses",
+					//setting takeHours to 0 since this item is only here to help tally
+					//up the hours for the parent requirement
 					takeHours: 0,
 					//the maxHours flag makes it so that these are the maximum number of hours
 					//that this requirement can satsify.  This when the parent Requirement is trying
@@ -179,8 +189,7 @@ goal = {
 					//make sure not to count project courses or core curriculum computer science courses,
 					//such as cs 250
 					items: ["CS 240+", "!CS 250", "!CS 251", "!CS 270", "!CS 281", "!CS 248", "!CS 265", "!CS 269", "!CS 274", "!CS 276", "!CS 279", "!CS 282", "!CS 283", "!CS 284", "!CS 285"],
-					//setting takeHours to 0 since this item is only here to help tally
-					//up the hours for the parent requirement
+					
 					takeHours: 0
 				},
 				{
@@ -209,6 +218,9 @@ goal = {
 			title: "Writing Component (3 hours)",
 			subtitle: "Must take a writing course",
 			details: "Must take 1 course that is labeled as W",
+			//ignores any locks on courses, so courses can satsify this requirement
+			//that have been claimed by other requirements
+			ignoreLock: true,
 			takeHours: 3,
 			items: ["W$"]
 		}
