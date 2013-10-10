@@ -16,8 +16,8 @@ exports.index = function(req, res) {
 
 };
 
-exports.home = function(req, res) {
-	res.render('home');
+exports.planner = function(req, res) {
+	res.render('planner');
 };
 
 exports.templates = function(req, res) {

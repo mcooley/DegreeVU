@@ -60,7 +60,7 @@ app.get("/courses/:key", function(req, res) {
   });
 }); 
 
-app.get('/home', routes.home);
+app.get('/planner', routes.planner);
 
 app.get('/ejs/templates', routes.templates);
 
