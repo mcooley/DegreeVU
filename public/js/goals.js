@@ -35,7 +35,7 @@ var Requirement = Backbone.Model.extend({
 					nextItem = obj.items[i];
 					nextItem.reqID = Requirement.generateRequirementID(i, this.get('reqID'));
 					nextItem.isRoot = false;
-
+					nextItem.goalID = this.get('goalID');
 					//set the flags on the next item
 					//inheritted unless explicilty set
 					//console.log(JSON.stringify(obj));
@@ -378,6 +378,16 @@ var Requirement = Backbone.Model.extend({
 				});
 			}
 		},
+
+		/**
+		 * The ID of the parent goal to this Requirement
+		 * @method goalID
+		 * @return {String} The id of the parent goal
+		 */
+		goalID: function() {
+			return this.get('goalID');
+		},
+
 		/**
 		 * STRUCTURAL METHOD.  Indicates the depth this current Requirement is 
 		 * from the root goal within the tree structure of the goal
@@ -515,6 +525,7 @@ var Requirement = Backbone.Model.extend({
 						lock: true,
 						ignoreLock: false,
 						items: obj.items, 
+						goalID: this.id,
 						take: 'all'
 					});
 				
