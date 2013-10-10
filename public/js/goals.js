@@ -1,5 +1,5 @@
 
-
+tempID = 0;
 
 /**
  * An object that resides within a goal, that relates
@@ -502,6 +502,9 @@ var Requirement = Backbone.Model.extend({
 			 * @param {Object} obj Raw JSON object representing the goal 
 			 */
 			initialize: function(obj) {
+				//temp id's until server side id's are created
+				this.id = (tempID++).toString();
+
 				//the head requirement
 				//set the default flags at the root
 				//so they are inheritted by child requirements
