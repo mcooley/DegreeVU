@@ -145,8 +145,7 @@ var Requirement = Backbone.Model.extend({
 		/**
 		 * For adding a singe Backbone course to a requirement
 		 * This method is considered 'private'.  Should call 'addCollection'
-		 * method if adding courses.  This method does nothing if the schedule has
-		 * not yet been fetched.  This method is meant to be called on leaf Requirements,
+		 * method if adding courses. This method is meant to be called on leaf Requirements,
 		 * but if it is called on higher-level requirements, it will add the course to all
 		 * sub-requirements
 		 * @param {Course} course A backbone course being added to this requirement
@@ -204,8 +203,7 @@ var Requirement = Backbone.Model.extend({
 		 * courses and remove courses that they "claim".  This is a "private" method, should
 		 * call addCollection exclusively on the Goal Object or GoalList Object. Fires an event
 		 * 'reset' when the Requirement is done resetting its validation.  This method depends
-		 * on the implementation of 'contains' and 'courseDemand'.  This method does nothing
-		 * if the courses have not yet been fetched from the server.
+		 * on the implementation of 'contains' and 'courseDemand'.
 		 * @method addCollection
 		 * @event reset
 		 * @param {CourseCollection} courseCollection A backbone CourseCollection Object.  This
@@ -229,8 +227,7 @@ var Requirement = Backbone.Model.extend({
 		 * The number of hours needed to complete the requirement.
 		 * If the Requirement has a completion type other than 'takeHours'.
 		 * This number is the total number of hours needed for completion, despite
-		 * any courses that have been added previously
-		 * then this returns 0
+		 * any courses that have been added previously, then this returns 0
 		 * @method hoursNeeded
 		 * @return {Number} The number of hours needed to complete this requirement
 		 */
@@ -311,9 +308,7 @@ var Requirement = Backbone.Model.extend({
 		},
 
 		/**
-		 * Indicates if the requirement has been satisfied.  Throws an exception,
-		 * "CourseCollection not yet fetched", if the Requirement has not yet fetched
-		 * courses from the server
+		 * Indicates if the requirement has been satisfied.
 		 * @method isComplete
 		 * @return {Boolean} true if the Requirement has been completed.  Returns false
 		 * if the courses have not yet been fetched from the server
@@ -325,7 +320,7 @@ var Requirement = Backbone.Model.extend({
 		 * Returns a decimal number to indicate how close someone is to
 		 * completing this requirement. A value of 1 means that the requirement
 		 * is complete, and a value of 0 means that the requirement has no validated
-		 * courses.  This method returns 0 if the courses have not yet been fetched
+		 * courses.
 		 * @method progress
 		 * @return {Number} A decimal number between 0 and 1 (inclusive) to indicate
 		 * the progress towards completion of the Requirement 
@@ -521,34 +516,7 @@ var Requirement = Backbone.Model.extend({
 					});
 				
 			},
-			/**
-			 * Performs an asynchronous fetching of the courses that are relevant
-			 * to the goal and inserts the Course Objects into the nested properties
-			 * @method fetch
-			 * @param {Function} callback A callback function that is invoked after the
-			 * asynchronous call is executed.  The callback function is given a CourseCollection
-			 * object with the fetched courses as a parameter
-			 * @async
-			 */
-			fetch: function(callback) {
-				this.head.fetch();
-			},
-			/**
-			 * Getter for the CourseCollection Object of the goal that contains all
-			 * the courses.  Courses must first be fetched from the server before the 
-			 * getter can be called
-			 * @method getCourses
-			 * @return {CourseCollection} A course collection object containing the courses
-			 * for the goal
-			 * @throws Error if the courses have not first been fetched from the goal: 
-			 * "Must first fetch courses from server before getCourses getter is called"
-			 */
-			getCourses: function() {
-				if (!this.getCourses.cache) {
-					this.getCourses.cache = this.head.getCourses();
-				}
-				return this.getCourses.cache;
-			},
+			
 			/**
 			 * Getter for the title of the Goal
 			 * @method getTitle
