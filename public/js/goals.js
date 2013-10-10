@@ -380,7 +380,8 @@ var Requirement = Backbone.Model.extend({
 		},
 
 		/**
-		 * The ID of the parent goal to this Requirement
+		 * STURCTURAL METHOD.The ID of the parent goal to 
+		 * this Requirement
 		 * @method goalID
 		 * @return {String} The id of the parent goal
 		 */
