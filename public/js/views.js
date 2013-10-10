@@ -58,64 +58,6 @@ var CourseView = Backbone.View.extend({
 	}
 });
 
-var ScheduleView = Backbone.View.extend({
-	initialize: function() {
-		//this.collection.on('add remove reset', (this.updateHoursCount).bind(this));
-	},
-	
-	render: function() {
-		_.each(this.collection.getSemesters(), (function(semester) {
-			this.$el.append(window.templates['semester.ejs']({
-				season: semester.season,
-				year: semester.year
-			}));
-			
-		}).bind(this));
-		
-		$('.scheduleCol').sortable({
-			connectWith: '.scheduleCol',
-			items: '.courseBlock',
-			cursor: 'move',
-			opacity: 0.75,
-			distance: 5,
-			helper: 'clone',
-			appendTo: 'body',
-			beforeStop: function(event, ui) {
-				ui.item.trigger(event, ui);
-			},
-			stop: function(event, ui) {
-				ui.item.trigger(event, ui);
-			}
-		}).disableSelection();
-		
-		
-		this.$el.children('.scheduleCol').on('sortreceive', (this.onCourseMoved).bind(this));
-	},
-	
-	onCourseMoved: function(event, ui) {
-		var col = $(event.target).parent();
-		var semester = {season: col.attr('data-semesterseason'), year:col.attr('data-semesteryear')};
-		
-		if (ui.sender.parent().is('.reqCourseList')) {
-			// Adding course to the schedule
-			var courseModel = ui.sender.data('courseObj');
-			courseModel.set('semester', semester);
-			this.collection.add(courseModel);
-		} else if (ui.sender.parent().is('.scheduleCol')) {
-			// Moving course within the schedule
-			console.log('Move course within schedule.');
-		}
-	},
-	
-	updateHoursCount: function() {
-		//TODO: change this to count semester-by-semester
-		var h = this.collection.reduce(function(memo, model) {
-			return memo + (model.get('numOfCredits'))[0];
-		}, 0);
-		this.$el.find('.hoursCount').text('(' + h + ')');
-	}
-});
-
 var GoalListView = Backbone.View.extend({
 	initialize:function() {
 		this._goalViews = [];

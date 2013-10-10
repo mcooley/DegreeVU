@@ -62,8 +62,6 @@ app.get("/courses/:key", function(req, res) {
 
 app.get('/planner', routes.planner);
 
-app.get('/ejs/templates', routes.templates);
-
 app.get('/goals', routes.goals);
 app.post('/goals/upload', routes.uploadGoals);
 app.get('/goals/status', routes.uploadStatus);
