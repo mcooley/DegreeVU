@@ -29,12 +29,6 @@ var Requirement = Backbone.Model.extend({
 				//then the item is a nested Requirement
 
 				items = [];
-				//set any flags on this Requirement
-				//defaults if the flags aren't explicit
-				this.mandate = this.get('mandate') || null;
-				this.lock = this.get('lock') || true;
-				this.ignoreLock = this.get('ignoreLock') || false;
-				this.maxHours = this.get('maxHours') || null;
 
 				
 				for (i = 0, n = obj.items.length; i < n; ++i) {
@@ -44,10 +38,10 @@ var Requirement = Backbone.Model.extend({
 
 					//set the flags on the next item
 					//inheritted unless explicilty set
-					nextItem.mandate = nextItem.mandate || this.mandate;
-					nextItem.lock = nextItem.lock || this.lock;
-					nextItem.ignoreLock = nextItem.ignoreLock || this.ignoreLock;
-					nextItem.maxHours = nextItem.maxHours || this.maxHours;
+					//console.log(JSON.stringify(obj));
+
+					nextItem.lock = (typeof nextItem.lock === 'boolean') ? nextItem.lock : this.get('lock');
+					nextItem.ignoreLock = (typeof nextItem.lock === 'boolean') ? nextItem.ignoreLock : this.ignoreLock;
 
 					items[i] = new Requirement(nextItem);
 				}
@@ -514,10 +508,14 @@ var Requirement = Backbone.Model.extend({
 			 */
 			initialize: function(obj) {
 				//the head requirement
+				//set the default flags at the root
+				//so they are inheritted by child requirements
 				this.head = new Requirement(
 					{
 						title: 'root',
 						isRoot: true,
+						lock: true,
+						ignoreLock: false,
 						items: obj.items, 
 						take: 'all'
 					});

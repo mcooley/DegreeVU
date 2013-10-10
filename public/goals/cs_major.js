@@ -51,7 +51,7 @@ goal = {
 			//every root-level requirement needs details
 			//BUG HERE: MATH 205 clearly can be overlapping two different math requirements
 			details: "In order to satisfy the Mathematics Requirement, a calculus sequence must be taken.  Calculus sequence 1: MATH 150A, MATH 150B, MATH 170, MATH 175.  Calculus Sequence 2: MATH 155A, MATH 155B, MATH 175. Calculus Sequence 3: MATH 155A MATH 155B, MATH 205A, MATH 205B.  In addition, a linear algebra course must be taken, either MATH 194, MATH 204, or MATH 205B.  A statistics course must be satisfied, either MATH 216, MATH 218, or MATH 247.  Finally, a math elective, 1 course of either MATH 198, MATH 200, or any math course number 208 or above.",
-			
+			lock: false,
 			take: 'all',
 
 			items: [
@@ -62,7 +62,6 @@ goal = {
 					//that satisfy this cannot satisfy anything after this
 					//lock is inherited by parent Requirements, any sub-requirement 
 					//has the same lock flag if not explicitly set
-					lock: false,
 					take: 1,
 					items: [
 						{ //seq1
@@ -87,19 +86,19 @@ goal = {
 				},
 				{
 					title: 'Linear Algebra (3-4 hours)',
-					lock: false,
+					
 					take: 1,
 					items: ["MATH 194", "MATH 205", "MATH 205B"]
 				},
 				{
 					title: 'Statistics (3 hours)',
-					lock: false,
+					
 					take: 1,
 					items: ["MATH 216", "MATH 218", "MATH 247"]
 				},
 				{
 					title: 'Elective Math Course (3 hours)',
-					lock: false,
+					
 					takeHours: 3,
 					items: ["MATH 198", "MATH 200", "MATH 208+"]
 				}
