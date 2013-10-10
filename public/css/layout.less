@@ -1,334 +1,133 @@
-@import url(http://fonts.googleapis.com/css?family=Noto+Sans);
+/* Schedule area */
 
-/* Colors */
-
-@color4: #ff2c00;
-@color1: #ff6a00;
-@color5: #ffd600;
-@color7: #8eeb00;
-@color2: #00c618;
-@color9: #00938e;
-@color3: #1240ab;
-@color8: #510fad;
-@color6: #c7007d;
-
-
-.color1 .courseBlockHeader {
-	background-color:@color1;
-}
-.courseBlock.color1.highlight {
-	background-color:lighten(@color1, 30%);
-}
-.reqsSidebar .color1.yes a {
-	background-image:url('../img/yes-1-sm.png');
-}
-.reqsSidebar .color1.no a {
-	background-image:url('../img/no-1-sm.png');
-}
-
-.color2 .courseBlockHeader {
-	background-color:@color2;
-}
-.courseBlock.color2.highlight {
-	background-color:lighten(@color2, 30%);
-}
-.reqsSidebar .color2.yes a {
-	background-image:url('../img/yes-2-sm.png');
-}
-.reqsSidebar .color2.no a {
-	background-image:url('../img/no-2-sm.png');
-}
-
-.color3 .courseBlockHeader {
-	background-color:@color3;
-}
-.courseBlock.color3.highlight {
-	background-color:lighten(@color3, 30%);
-}
-.reqsSidebar .color3.yes a {
-	background-image:url('../img/yes-3-sm.png');
-}
-.reqsSidebar .color3.no a {
-	background-image:url('../img/no-3-sm.png');
-}
-
-.color4 .courseBlockHeader {
-	background-color:@color4;
-}
-.courseBlock.color4.highlight {
-	background-color:lighten(@color4, 30%);
-}
-.reqsSidebar .color4.yes a {
-	background-image:url('../img/yes-4-sm.png');
-}
-.reqsSidebar .color4.no a {
-	background-image:url('../img/no-4-sm.png');
-}
-
-
-.color5 .courseBlockHeader {
-	background-color:@color5;
-}
-.courseBlock.color5.highlight {
-	background-color:lighten(@color5, 30%);
-}
-.reqsSidebar .color5.yes a {
-	background-image:url('../img/yes-5-sm.png');
-}
-.reqsSidebar .color5.no a {
-	background-image:url('../img/no-5-sm.png');
-}
-
-.color6 .courseBlockHeader {
-	background-color:@color6;
-}
-.courseBlock.color6.highlight {
-	background-color:lighten(@color6, 30%);
-}
-.reqsSidebar .color6.yes a {
-	background-image:url('../img/yes-6-sm.png');
-}
-.reqsSidebar .color6.no a {
-	background-image:url('../img/no-6-sm.png');
-}
-
-.color7 .courseBlockHeader {
-	background-color:@color7;
-}
-.courseBlock.color7.highlight {
-	background-color:lighten(@color7, 30%);
-}
-.reqsSidebar .color7.yes a {
-	background-image:url('../img/yes-7-sm.png');
-}
-.reqsSidebar .color7.no a {
-	background-image:url('../img/no-7-sm.png');
-}
-
-.color8 .courseBlockHeader {
-	background-color:@color8;
-}
-.courseBlock.color8.highlight {
-	background-color:lighten(@color8, 30%);
-}
-.reqsSidebar .color8.yes a {
-	background-image:url('../img/yes-8-sm.png');
-}
-.reqsSidebar .color8.no a {
-	background-image:url('../img/no-8-sm.png');
-}
-
-.color9 .courseBlockHeader {
-	background-color:@color9;
-}
-.courseBlock.color9.highlight {
-	background-color:lighten(@color9, 30%);
-}
-.reqsSidebar .color9.yes a {
-	background-image:url('../img/yes-9-sm.png');
-}
-.reqsSidebar .color9.no a {
-	background-image:url('../img/no-9-sm.png');
-}
-
-
-/* Constants */
-
-@scheduleColWidth: 160px;
-@pixelsPerHour: 18px;
-
-/* Junk for testing - get rid of this */
-
-html, body {
-	height:100%;
-	font-family:'Noto Sans', Helvetica, sans-serif;
-	line-height:1.3;
-}
-
-.courseBlock {
-	height:((@pixelsPerHour * (3 - 1)) - 4);
-}
-
-.courseBlock.oneHour {
-	height:0;
-}
-
-/* Schedule Grid */
-
-#scheduleGrid {
+#schedule {
 	width:100%;
-	height:50%;
-	position:relative;
+	height:60%;
+	position:absolute; left:0; top:0;
 	overflow:auto;
-	background-color:#fafafa;
-	background-image:url('../img/grid2.png');
-	background-position:0 25px;
 	white-space:nowrap;
+	font-size:0;
 }
 
-#fadeOut {
-	position:absolute;
-	left:0;
-	bottom:50%;
-	width:100%;
-	height:25px;
-	background-image:url('../img/fadeout.png');
-	z-index:40;
-}
-
-.scheduleCol {
-	padding-left:2px; padding-right:2px;
-	border-left:1px solid #000;
+.period {
 	display:inline-block;
-	vertical-align:top;
-	padding-top:25px;
-	padding-bottom:25px;
-	width:@scheduleColWidth;
 	min-height:100%;
+	vertical-align:top;
+	width:170px;
+	font-size:14px;
+	border-left:1px solid #ddd;
+	position:relative;
+	background-color:#eeeef9;
 }
 
-.scheduleCol .semesterName {
-	position:absolute; top:0;
-	width:@scheduleColWidth + 4px;
+.period h2 {
+	margin:0;
+	padding-top:5px;
+	font-family: 'Roboto Slab';
+	font-size:1.3em;
+	position:absolute; left:0; bottom:0;
+	width:170px;
+	height:35px;
+	border-top:2px solid #ddd;
+	color:#666;
 	text-align:center;
-	background-color:#08c;
-	color:#eee;
-	height:22px;
-	margin-bottom:2px;
-	padding-top:1px;
-	margin-left:-2px;
-	z-index:30;
+	background-color:#f6f6f6;
 }
 
-/* Special Columns */
-
-.infoCol {
-	display:inline-block;
-	width:220px;
-	background-color:#08c;
-	color:#eee;
-	border-radius:10px;
-	margin-left:20px;
-	margin-top:10px;
-	margin-right:5px;
-	padding:15px;
-	white-space:normal;
-	min-height:80%;
+.pdwrap {
+	position:absolute; bottom:0;
+	margin-bottom:35px;
+	padding-top:35px;
+	
+	overflow:hidden;
+	max-height:100%;
 }
 
-.scheduleCol.fall {
-	border-left-width:2px;
+.pdwrap:hover {
+	overflow-y:auto;
 }
 
-/* Course Blocks */
-
-.courseBlock {
-	width:(@scheduleColWidth - 12);
+/* Schedule items */
+.course {
+	width:168px;
 	font-size:9pt;
 	position:relative;
 	margin-bottom:1px;
 	background-color:#ccc;
 	border-radius:3px;
-	padding-top:@pixelsPerHour + 2px;
 	padding-left:5px;
 	padding-right:5px;
+	padding-top:3px;
 	overflow:hidden;
 	white-space:normal;
 	border:1px solid #aaa;
-	border-top:none;
+	line-height:1;
+	
+	height:47px; /* will be 48px */
 }
 
-.courseBlock.oneHour {
-	padding-top:@pixelsPerHour;
-	border:none;
-	width:(@scheduleColWidth - 10);
+.course h3 {
+	font-size:1em;
+	margin:0;
+	margin-bottom:2px;
 }
 
-.courseBlockHeader {
-	border-top-left-radius:3px;
-	border-top-right-radius:3px;
-	height:(@pixelsPerHour - 1px);
-	color:#fff;
-	padding-left:5px;
-	padding-right:5px;
-	padding-top:1px;
-	position:absolute; left:0; top:0;
-	width:(@scheduleColWidth - 10px);
-	z-index:10;
-}
+/* Menu area */
 
-.courseBlock.oneHour .courseBlockHeader {
-	height:(@pixelsPerHour - 1px);
-	border-bottom-left-radius:3px;
-	border-bottom-right-radius:3px;
+#menu {
+	width:100%;
+	height:40%;
+	position:absolute; left:0; bottom:0;
+	overflow:auto;
 }
-
-/* Course block states */
-
-.courseBlock.ui-state-disabled {
-	background-color:#eee;
-	color:#ccc;
-}
-.courseBlock.ui-state-disabled .courseBlockHeader {
-	background-color:#ddd;
-	color:#aaa;
-}
-
-/* Goals area */
 
 #goals {
-	height:40%;
-	overflow:auto;
-	padding:20px;
+	width:20%;
+	position:absolute; left:0; top:0;
+	min-height:100%;
+	text-align:center;
+	border-right:2px solid #ddd;
 }
 
-.reqPane h2 {
-	display:inline-block;
-	padding-right:40px;
-	background-position:right center;
-	background-repeat:no-repeat;
-	margin-bottom:0;
+#goals h2 {
+	font-family: 'Roboto Slab';
+	margin:0;
+	border-bottom:1px solid #ddd;
+	font-size:1.3em;
+	text-align:left;
+	color:#666;
+	padding:7px;
 }
 
-.reqPane .description {
-	font-size:1.4em;
-	color:#999;
+.goal {
+	border-bottom:1px solid #ddd;
+	position:relative;
+	padding:7px;
+	text-align:left;
 }
 
-.reqPane h2.yes {
-	background-image:url('../img/yes.png');
+.goal label {
+	padding-left:20px;
 }
 
-.reqPane h2.no {
-	background-image:url('../img/no.png');
+.goal input[type=checkbox] {
+	position: absolute; left:7px; top:7px;
 }
 
-.reqsSidebar {
-	padding:8px 0;
+.goal .progress {
+	margin:0;
+	height:7px;
 }
 
-.reqsSidebar li.active a {
-	color:#eee;
+#addGoal {
+	margin-top:1em;
 }
 
-.reqsSidebar li.yes a, .reqsSidebar li.no a {
-	background-size:16px 16px;
-	background-repeat:no-repeat;
-	background-position:15px 4px;
-	padding-left:40px;
-}
-
-.reqPane .validationError {
-	color:rgb(178, 126, 35);
-}
-
-.reqCourseList {
-	margin-top:15px;
-}
-
-.reqCourseList .courseBlock {
-	display:inline-block;
-	vertical-align:top;
-	margin-right:6px;
-	margin-bottom:6px;
+/* Drag and drop */
+[draggable] {
+  -moz-user-select: none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+  user-select: none;
+  cursor:move;
 }
