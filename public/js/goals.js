@@ -41,11 +41,11 @@ var Requirement = Backbone.Model.extend({
 					//console.log(JSON.stringify(obj));
 
 					nextItem.lock = (typeof nextItem.lock === 'boolean') ? nextItem.lock : this.get('lock');
-					nextItem.ignoreLock = (typeof nextItem.lock === 'boolean') ? nextItem.ignoreLock : this.ignoreLock;
+					nextItem.ignoreLock = (typeof nextItem.ignoreLock === 'boolean') ? nextItem.ignoreLock : this.get('ignoreLock') ;
 
 					items[i] = new Requirement(nextItem);
 				}
-				
+
 				this.set('items', items, {silent: true});
 				this.set('isLeaf', false, {silent: true});
 				
@@ -56,6 +56,11 @@ var Requirement = Backbone.Model.extend({
 				items = new StatementCollection(obj.items);
 				this.set('items', items, {silent: true});
 			}
+			//flags, easy access
+			this.lock = this.get('lock');
+			this.ignoreLock = this.get('ignoreLock');
+			this.mandate = this.get('mandate');
+			this.maxHours = this.get('maxHours');
 			
 		},
 		
@@ -152,18 +157,28 @@ var Requirement = Backbone.Model.extend({
 		 * @return {Boolean} true if the course was successfully added, false otherwise
 		 */
 		addCourse: function(course) {
+			var shouldAddCourse;
 			if (this.isLeaf()) {
 				if (this.getItems().matchCourse(course)) {
-					//lazy instantiation of course collection
-					if (!this.courses) {
-						console.log("Added course " + course.get('courseCode') + " to req " + this.getTitle());
-						this.courses = new CourseCollection([course], {});
+					shouldAddCourse = !this.lock || this.ignoreLock || !course.isLocked(this.goalID());
+					if (shouldAddCourse) {
+						//lazy instantiation of course collection
+						if (!this.courses) {
+							console.log("Added course " + course.get('courseCode') + " to " + this.getTitle());
+							this.courses = new CourseCollection([course], {});
+							
+						} else if (!this.courses.contains(course)) {
+							console.log("Added course " + course.get('courseCode') + " to " + this.getTitle());
+							this.courses.add(course);
+							
+						}
+
+						if (this.lock) {
+							console.log("Locking course " + course.get('courseCode'));
+							course.addLock(this.goalID());
+						}
 						return true;
-					} else if (!this.courses.contains(course)) {
-						console.log("Added course " + course.get('courseCode') + " to req " + this.getTitle());
-						this.courses.add(course);
-						return true;
-					}
+					}	
 				}
 				return false;
 			} else {
@@ -211,7 +226,7 @@ var Requirement = Backbone.Model.extend({
 		 * by requirements
 		 */
 		addCollection: function(courseCollection) {
-			var i, n, done;
+			var i, n;
 			if (this.isLeaf()) {
 				courseCollection.each(function(course) {
 					this.addCourse(course);
@@ -221,6 +236,7 @@ var Requirement = Backbone.Model.extend({
 					req.addCollection(courseCollection);
 				});
 			}
+			this.trigger('reset');
 		},
 
 		/**
@@ -610,6 +626,7 @@ var Requirement = Backbone.Model.extend({
 				var collectionCopy = new CourseCollection(courseCollection.models.slice(), {});
 				this.reset();
 				this.head.addCollection(collectionCopy);
+				this.trigger('reset');
 			},
 			/**
 			 * Indicates if the Goal is completely satisfied

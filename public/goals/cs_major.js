@@ -199,7 +199,7 @@ goal = {
 			]
 		},
 		{//ROOT-REQUIREMENT 5
-			title: "Technical Elevtives",
+			title: "Technical Electives",
 			subtitle: "Must take a total of 6 hours of courses deemed technical courses for computer science",
 			details: "You may take courses numbered CS 240 or higher, courses within the school of engineering but outside if computer science number 200 or higher, or from sciences within the College of Arts and Science numbered 200 or higher that are listed in the mathematics and naturals sciences (MNS) distribution requirements in AXLE",
 			takeHours: 6,
