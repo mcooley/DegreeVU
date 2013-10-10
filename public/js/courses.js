@@ -21,15 +21,6 @@ var Course = Backbone.UniqueModel(Backbone.Model.extend({
  */
 var CourseCollection = Backbone.Collection.extend({
 	model:Course,
-	initialize: function(models, options) {
-		this.on('add remove reset', (this.doOnLoad).bind(this));
-		this._colorId = options.colorId;
-	},
-	doOnLoad: function() {
-		this.each((function(model) {
-			model.set('colorId', this.getColorId());
-		}).bind(this));
-	},
 
 	/**
 	 * Fetches courses from the server and places them caches them into the
