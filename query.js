@@ -55,5 +55,49 @@ function getCoursesFromTokens(tokens, callback) {
 		
 }
 
+function getCourseByKey(key, callback) {
+	Db.connect(MONGODB_URL, function(err, db) {
+
+		db.collection("courses", function(error, collection) {
+			collection.findOne({_id : new mongo.ObjectID(key)}, function(err,doc) {
+				callback(err, doc);
+				db.close();
+			});
+		});
+
+	});
+}
+
+function getGoalByKey(key, callback) {
+	Db.connect(MONGODB_URL, function(err, db) {
+
+		db.collection("goals", function(error, collection) {
+			collection.findOne({_id : new mongo.ObjectID(key)}, function(err,doc) {
+				callback(err, doc);
+				db.close();
+			});
+		});
+
+	});
+}
+
+function listMajors(callback) {
+	Db.connect(MONGODB_URL, function(err, db) {
+
+		db.collection("goals", function(error, collection) {
+			collection.find({type: 'major'}, {items: 0}, function(err, cursor) {
+				cursor.toArray(function(err, majors) {
+					callback(err, majors);
+					db.close();
+				});
+			});
+		});
+
+	});
+}
+
 exports.getCoursesFromTokens = getCoursesFromTokens;
+exports.getCourseByKey = getCourseByKey;
+exports.getGoalByKey = getGoalByKey;
+exports.listMajors = listMajors;
 

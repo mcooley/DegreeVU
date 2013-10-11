@@ -55,10 +55,17 @@ app.get("/courses/lookup", function(req, res) {
 
 app.get("/courses/:key", function(req, res) {
   var courseKey = req.params.key;
-  query.getCoursesByKey(courseKey, function(course) {
-    res.send(course[0]);
+  query.getCourseByKey(courseKey, function(err, doc) {
+	  res.send(doc);
   });
-}); 
+});
+
+app.get("/goals/:key", function(req, res) {
+  var goalKey = req.params.key;
+  query.getGoalByKey(goalKey, function(err, doc) {
+	  res.send(doc);
+  });
+});
 
 app.get('/planner', routes.planner);
 

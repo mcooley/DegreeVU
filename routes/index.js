@@ -4,16 +4,9 @@ var query = require('../query.js'),
 
 
 exports.index = function(req, res) {
-	//TO-DO, retrieve goals from here
-	/*
-	query.getGoalsByName("", function(goals) {
-		console.log(goals);
-;		res.render('index', {queryArray: goals});
+	query.listMajors(function(err, majors) {
+		res.render('index', {majors: majors});
 	});
-*/
-	res.render('index');
-
-
 };
 
 exports.planner = function(req, res) {
