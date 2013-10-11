@@ -18,6 +18,10 @@ require.config({
 		},
 		'underscore': {
 			exports: '_'
+		},
+		'backbone_uniquemodel': {
+			deps: ['backbone'],
+			exports: 'Backbone.UniqueModel'
 		}
 		//'jquery_ui': ['jquery'],
 		//'backbone': ['underscore', 'jquery']
@@ -29,7 +33,7 @@ require.config({
 
 require(['jquery', 'underscore', 'backbone', 'scheduleview', 'schedule'], function($, _, Backbone, ScheduleView, Schedule) {
 	$(document).ready(function () {
-	
+		
 		var getQueryString = function (key) {
 			var re=new RegExp('(?:\\?|&)'+key+'=(.*?)(?=&|$)','gi');
 			var r=[], m;
