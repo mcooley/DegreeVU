@@ -2,8 +2,7 @@ var express = require('express'),
   routes = require('./routes'),
   lessMiddleware = require('less-middleware'),
   http = require('http'),
-  query = require("./query.js"),
-  mongo = require("./node_modules/mongodb");
+  query = require("./query.js");
 
 var app = express();
 
@@ -27,35 +26,22 @@ app.configure('development', function(){
   app.use(express.errorHandler());
 });
 
-app.get('/', routes.index)
-
-
-app.get("/courses/autocomplete", function(req, res) {
-  var qryStr = req.query.qry;
-  var courses = query.getCoursesLike(qryStr, 10, function(courses) {
-    var results = "";
-    for (var i = 0; i < courses.length; i++) {
-      // delete results._id;
-      results = results + JSON.stringify(courses[i]);
-    }
-    res.send("Your courses: " + results);
-  });
-});
+app.get('/', routes.index);
 
 app.get("/courses/lookup", function(req, res) {
-  var str = req.query.q;
-  tokens = str.split(",");
-  query.getCoursesFromTokens(tokens, function(courses) {
-
-    var results = JSON.stringify(courses);
-    
-    res.send(JSON.stringify(courses));
-  });
+	var tokens = req.query.q.split(",");
+	query.getCoursesFromTokens(tokens, function(err, courses) {
+  	  if (err) throw err;
+  	  if (!courses) res.send(404);
+  	  res.send(courses);
+	});
 });
 
 app.get("/courses/:key", function(req, res) {
   var courseKey = req.params.key;
   query.getCourseByKey(courseKey, function(err, doc) {
+	  if (err) throw err;
+	  if (!doc) res.send(404);
 	  res.send(doc);
   });
 });
@@ -63,6 +49,8 @@ app.get("/courses/:key", function(req, res) {
 app.get("/goals/:key", function(req, res) {
   var goalKey = req.params.key;
   query.getGoalByKey(goalKey, function(err, doc) {
+	  if (err) throw err;
+	  if (!doc) res.send(404);
 	  res.send(doc);
   });
 });

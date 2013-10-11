@@ -1,5 +1,5 @@
 var mongo = require("mongodb"),
-	Db = mongo.Db,
+	async = require("async"),
    
     Tokenizer = require('./tokenizer.addon'),
     Statement = Tokenizer.Statement,
@@ -7,94 +7,97 @@ var mongo = require("mongodb"),
 
     MONGODB_URL;
 
-
-
-//initial setup here
+// Initial connection setup.
 if (process.env.MONGOHQ_URL) {
 	MONGODB_URL = process.env.MONGOHQ_URL;
 } else {
 	MONGODB_URL = "mongodb://localhost:27017/degreeVU";
 }
 
-//pass in a DB query and the courses that are
-//returned from the database are passed into the callback
-//the callback arguments are error, courses
-function queryCourses(query, callback) {
-	Db.connect(MONGODB_URL, function(err, db) {
+var db = { // Dummy object while we wait for a connection.
+	collection: function(name, cb) {
+		cb('A database connection has not been established. Try again.');
+	}
+};
 
-		db.collection("courses", function(error, collection) {
-			collection.find(query, function(err,cursor) {
-				cursor.toArray(function(err, courses) {
-					callback(err, courses);
-					db.close();
-				});
-			});
-		});
+mongo.Db.connect(MONGODB_URL, function(err, dbPool) {
+	if (err) {
+		console.log("Couldn't establish a database connection. Exiting...");
+		process.exit(1);
+	}
+	db = dbPool;
+});
 
-	});
-		
+
+// Factory function to get a collection. Can be used directly in async.waterfall.
+var getCollection = function(name) {
+	return function(cb) {
+		db.collection(name, cb);
+	}
 }
 
-function getCoursesFromTokens(tokens, callback) {
 
+////// Query functions //////
+
+var getCoursesFromTokens = function(tokens, callback) {
 	var collection = new StatementCollection(tokens),
 		mongoQuery = collection.mongoQuery();
 		
 	if (mongoQuery) {
-		queryCourses(mongoQuery, function(err, courses) {
-			if (err) {
-				
-				throw err;
+		async.waterfall([
+			getCollection('courses'),
+			function(collection, cb) {
+				collection.find(mongoQuery, cb);
+			},
+			function(cursor, cb) {
+				cursor.toArray(cb);
 			}
-			
-			callback(courses);
-		});
+		], callback);
 	} else {
-		callback([]);
+		callback(null, []);
 	}
-		
 }
 
-function getCourseByKey(key, callback) {
-	Db.connect(MONGODB_URL, function(err, db) {
+var getCourseByKey = function(key, callback) {
+	async.waterfall([
+		getCollection('courses'),
+		function(collection, cb) {
+			try {
+				var id = new mongo.ObjectID(key);
+				collection.findOne({_id : id}, cb);
+			} catch (e) {
+				cb(null, null);
+			}
+		}
+	], callback);
+};
 
-		db.collection("courses", function(error, collection) {
-			collection.findOne({_id : new mongo.ObjectID(key)}, function(err,doc) {
-				callback(err, doc);
-				db.close();
-			});
-		});
+var getGoalByKey = function(key, callback) {
+	async.waterfall([
+		getCollection('goals'),
+		function(collection, cb) {
+			try {
+				var id = new mongo.ObjectID(key);
+				collection.findOne({_id : id}, cb);
+			} catch (e) {
+				cb(null, null);
+			}
+		}
+	], callback);
+};
 
-	});
-}
-
-function getGoalByKey(key, callback) {
-	Db.connect(MONGODB_URL, function(err, db) {
-
-		db.collection("goals", function(error, collection) {
-			collection.findOne({_id : new mongo.ObjectID(key)}, function(err,doc) {
-				callback(err, doc);
-				db.close();
-			});
-		});
-
-	});
-}
-
-function listMajors(callback) {
-	Db.connect(MONGODB_URL, function(err, db) {
-
-		db.collection("goals", function(error, collection) {
-			collection.find({type: 'major'}, {items: 0}, function(err, cursor) {
-				cursor.toArray(function(err, majors) {
-					callback(err, majors);
-					db.close();
-				});
-			});
-		});
-
-	});
-}
+var listMajors = function(callback) {
+	async.waterfall([
+		getCollection('goals'),
+		function (collection, cb) {
+			collection.find({type: 'major'}, {items: 0}, cb);
+		},
+		function(cursor, cb) {
+			cursor.toArray(cb);
+		}
+	],
+	callback);
+};
 
 exports.getCoursesFromTokens = getCoursesFromTokens;
 exports.getCourseByKey = getCourseByKey;
