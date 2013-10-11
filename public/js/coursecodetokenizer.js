@@ -1,13 +1,5 @@
-if (typeof define !== 'function') { var define = require('amdefine')(module) }
-
-//the school tokens are:
-	//SE: school of engineering
-	//AS: arts and science
-	//PB: peabody
-	//BL: Blair
-
 define(function() {
-
+	
 	/**
 	 * Parses course codes into tokens that can be
 	 * interpretted by higher level functions.  Also offers
@@ -16,7 +8,7 @@ define(function() {
 	 * @class CourseCodeTokenizer
 	 */
 	var CourseCodeTokenizer = {
-
+	
 		/**
 		 * Compares course code strings for equality.  This goes
 		 * beyond string comparison; compares if the course codes are
@@ -59,7 +51,7 @@ define(function() {
 			    }
 
 			if (!token.query) {
-		
+			
 				//then the Statement is just a normal course code
 				token.coursePrefix = courseCode.match(/^[a-z]+/i)[0].toUpperCase();
 				token.courseNumber = +courseCode.match(/\d+/)[0];
@@ -69,8 +61,8 @@ define(function() {
 
 			} else if (token.query === '$') {
 				token.courseSuffix = courseCode.match(/^[a-z]+/i)[0].toUpperCase();
-		
-		
+			
+			
 			} else if (token.query === '+') {
 				if (courseCode.match(/\d+/)) {
 					token.courseNumber = +courseCode.match(/\d+/)[0];
@@ -99,7 +91,7 @@ define(function() {
 
 			} else {
 				token.coursePrefix = courseCode.match(/^[a-z]+/i)[0].toUpperCase();
-		
+			
 			}
 
 			return token;
@@ -120,7 +112,7 @@ define(function() {
 			    codeObject = CourseCodeTokenizer.parse(courseCode);
 
 			return CourseCodeTokenizer.matchObject(codeObject, token);
-	
+		
 		},
 		/**
 		 * similar to matchQuery, except it matches object against object
@@ -160,7 +152,7 @@ define(function() {
 
 			return false;
 		},
-
+	
 		/**
 		 * Performs a deep, logical copy of a course token
 		 * @method copyToken
@@ -265,12 +257,12 @@ define(function() {
 		if (typeof statement === 'string') {
 			return this.isEqual(new Statement(statement));
 		} else if (typeof statement === 'object' && statement.constructor === Statement) {
-	
-			if (this.tokens.length === statement.tokens.length) {
 		
+			if (this.tokens.length === statement.tokens.length) {
+			
 				statementCopy = statement.tokens.slice();
 				for (i = 0, n = this.tokens.length; i < n; ++i) {
-			
+				
 					for (j = 0; j < n; ++j) {
 						//null out any tokens that match in both arrays
 						if (_.isEqual(this.tokens[i], statementCopy[j])) {
@@ -454,7 +446,7 @@ define(function() {
 			//make sure to pass in the correct context to the function
 			return memo && funct.call(self);
 		}, true);
-
+	
 	};
 
 	/**
@@ -558,7 +550,7 @@ define(function() {
 		}
 
 	];
-
+ 
 
 
 	/**
@@ -580,7 +572,7 @@ define(function() {
 			return new StatementCollection(statements.map(function(statementString) {return new Statement(statementString);}));
 		}
 		else if (statements[0].constructor === Statement) {
-	
+		
 			this.collection = StatementCollection.collapseStatements(statements);
 			this.refactor();
 		}
@@ -719,13 +711,13 @@ define(function() {
 			for (i = 0, n = this.collection.length; i < n; ++i) {
 				if (this.collection[i]) {
 					for (j = i + 1; j < n; ++j) {
-				
+					
 						if (this.collection[j] && this.collection[i].isEqual(this.collection[j])) {
 							this.collection[j] = null;
 						}
 					}
 				}
-			
+				
 			}
 			//filter out the nulled elements
 			this.collection = this.collection.filter(function(statement) {
@@ -751,17 +743,17 @@ define(function() {
 	StatementCollection.union = function(collection1, collection2) {
 		var queries = null;
 
-
+	
 		//collection 1 and 2 both have values in it
 		if (Array.isArray(collection1) && typeof collection1[0] === 'string') {
 			queries = new StatementCollection(collection1);
-		
+			
 		} else if (collection1.constructor === StatementCollection) {
 			queries = collection1;
 		}
 
 		queries.union(collection2);
-
+	
 		return queries;
 	};
 
@@ -790,7 +782,7 @@ define(function() {
 		return _statements.filter(function(statement) {
 			return !statement.isNegated();
 		});
-
+	
 	};
 
 
@@ -816,11 +808,11 @@ define(function() {
 			return statement.refactor();
 		});
 	};
-
+	
 return {
 	'CourseCodeTokenizer': CourseCodeTokenizer,
 	'Statement': Statement,
 	'StatementCollection': StatementCollection
 };
-
+	
 });

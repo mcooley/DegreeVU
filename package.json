@@ -17,6 +17,7 @@
     "async": "~0.2.6",
     "underscore": "~1.1.4",
     "jasmine-node": "*",
-    "backbone": "*"
+    "backbone": "*",
+	"amdefine": ">=0.0.8"
   }
 }
