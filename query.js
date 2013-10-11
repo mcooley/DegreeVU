@@ -1,11 +1,11 @@
 var mongo = require("mongodb"),
 	async = require("async"),
-   
-    Tokenizer = require('./tokenizer.addon'),
-    Statement = Tokenizer.Statement,
-    StatementCollection = Tokenizer.StatementCollection,
 
-    MONGODB_URL;
+	Tokenizer = require('./tokenizer.addon'),
+	Statement = Tokenizer.Statement,
+	StatementCollection = Tokenizer.StatementCollection,
+
+	MONGODB_URL;
 
 // Initial connection setup.
 if (process.env.MONGOHQ_URL) {
@@ -42,7 +42,7 @@ var getCollection = function(name) {
 var getCoursesFromTokens = function(tokens, callback) {
 	var collection = new StatementCollection(tokens),
 		mongoQuery = collection.mongoQuery();
-		
+
 	if (mongoQuery) {
 		async.waterfall([
 			getCollection('courses'),
@@ -52,7 +52,8 @@ var getCoursesFromTokens = function(tokens, callback) {
 			function(cursor, cb) {
 				cursor.toArray(cb);
 			}
-		], callback);
+		],
+		callback);
 	} else {
 		callback(null, []);
 	}
@@ -64,12 +65,13 @@ var getCourseByKey = function(key, callback) {
 		function(collection, cb) {
 			try {
 				var id = new mongo.ObjectID(key);
-				collection.findOne({_id : id}, cb);
+				collection.findOne({ _id: id }, cb);
 			} catch (e) {
 				cb(null, null);
 			}
 		}
-	], callback);
+	],
+	callback);
 };
 
 var getGoalByKey = function(key, callback) {
@@ -78,19 +80,20 @@ var getGoalByKey = function(key, callback) {
 		function(collection, cb) {
 			try {
 				var id = new mongo.ObjectID(key);
-				collection.findOne({_id : id}, cb);
+				collection.findOne({ _id: id }, cb);
 			} catch (e) {
 				cb(null, null);
 			}
 		}
-	], callback);
+	],
+	callback);
 };
 
 var listMajors = function(callback) {
 	async.waterfall([
 		getCollection('goals'),
-		function (collection, cb) {
-			collection.find({type: 'major'}, {items: 0}, cb);
+		function(collection, cb) {
+			collection.find({ type: 'major' }, { items: 0 }, cb);
 		},
 		function(cursor, cb) {
 			cursor.toArray(cb);
@@ -103,4 +106,3 @@ exports.getCoursesFromTokens = getCoursesFromTokens;
 exports.getCourseByKey = getCourseByKey;
 exports.getGoalByKey = getGoalByKey;
 exports.listMajors = listMajors;
-
