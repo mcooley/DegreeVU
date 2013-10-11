@@ -7,62 +7,43 @@ require.config({
 		jquery_ui: '../lib/jquery-ui/jquery-ui-1.10.2.custom',
 		underscore: '../lib/underscore/underscore-min',
 		backbone: '../lib/backbone/backbone-min',
-		backbone_uniquemodel: '../lib/backbone-uniqueModel/backbone.uniquemodel'
+		backbone_uniquemodel: '../lib/backbone-uniqueModel/backbone.uniquemodel',
+		tpl: '../lib/requirejs-tpl/tpl'
 	},
 	//list dependencies
 	shim: {
-		'jquery_ui': ['jquery'],
-		'backbone': ['underscore', 'jquery'],
-		'backbone_uniquemodel': ['backbone'],
-		'courses': ['backbone_uniquemodel','backbone'],
-		'home': ['backbone', 'tokenizer', 'courses'],
-		'goals': ['home'],
-		'views': ['home', 'goals', 'backbone', 'jquery_ui']
-		
+		'backbone': {
+            deps: ['underscore', 'jquery'],
+            exports: 'Backbone'
+		},
+		'underscore': {
+			exports: '_'
+		}
+		//'jquery_ui': ['jquery'],
+		//'backbone': ['underscore', 'jquery']
+		//'backbone_uniquemodel': ['backbone'],
+		//'courses': ['backbone_uniquemodel','backbone'],
+		//'views': ['goals', 'backbone', 'jquery_ui']
 	}
 });
 
-
-
-//initial script
-define(['views'], function() {
-
-	getQueryString = function (key) {
-		var re=new RegExp('(?:\\?|&)'+key+'=(.*?)(?=&|$)','gi');
-		var r=[], m;
-		while ((m=re.exec(document.location.search)) != null) r.push(m[1]);
-		return r;
-	}
-
+require(['jquery', 'underscore', 'backbone', 'scheduleview', 'schedule'], function($, _, Backbone, ScheduleView, Schedule) {
 	$(document).ready(function () {
+	
+		var getQueryString = function (key) {
+			var re=new RegExp('(?:\\?|&)'+key+'=(.*?)(?=&|$)','gi');
+			var r=[], m;
+			while ((m=re.exec(document.location.search)) != null) r.push(m[1]);
+			return r;
+		}
 	
 		var gradYear = parseInt(getQueryString('gradYear'), 10);
 		if (!_.isFinite(gradYear) || Math.abs(gradYear - 2013) > 4) {
 			gradYear = 2016;
 		}
 		
-		var scheduleView = new ScheduleView({collection: Schedule.getInstance(gradYear), el:'#scheduleGrid'});
-		
-		//TEMP GLOBAL
-		//goalsList = new GoalList();	
-		//var goalsListView = new GoalListView({collection:goalsList, el:'#goals'});
-		
-		$.getJSON('/ejs/templates', function(data) {
-			window.templates = {};
-			_.each(data, function(val, index) {
-				window.templates[index] = _.template(val);
-			});
-			
-			scheduleView.render();
-			//goalsListView.render();
-		});
-		
-		//Display shim to handle scrolling in the schedule grid
-		$('#scheduleGrid').scroll(function() {
-			var el = $(this);
-			el.css('background-position', '0 ' + (25 - el.scrollTop()) + 'px');
-			el.find('.semesterName').css('top', el.scrollTop());
-		});
+		var scheduleView = new ScheduleView({collection: Schedule.getInstance(gradYear), el:'#schedule'});
+		scheduleView.render();
 		
 	});
 });

@@ -20,23 +20,6 @@ exports.planner = function(req, res) {
 	res.render('planner');
 };
 
-exports.templates = function(req, res) {
-	//TODO: caching, and remove the synchronous file reads
-	fs.readdir('views/templates', function(err, filenames) {
-		if (err) {
-			console.log(err);
-			res.send(500);
-		} else {
-			var templates = {};
-			filenames.forEach(function(filename) {
-				var tmpl = fs.readFileSync('views/templates/' + filename);
-				templates[filename] = tmpl.toString();
-			});
-			res.json(templates);
-		}
-	});
-}
-
 //eventually lock this with authentication
 exports.goals = function(req, res) {
 	res.render('uploadGoals');
