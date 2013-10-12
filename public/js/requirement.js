@@ -8,8 +8,8 @@ var Requirement = Backbone.Model.extend({
  * @constructor
  * @param {obj} obj A raw JSON object that is the requirement in declarive form
  */
-initialize: function(obj) {
-	
+parse: function(obj) {
+	//TODO: fix this--needs to return the attributes to be set
 	var items, i, n, nextItem;
 	if (typeof obj.items[0] === 'object') {
 		//then the item is a nested Requirement

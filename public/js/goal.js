@@ -24,14 +24,12 @@ return Backbone.Model.extend({
 	 * @constructor
 	 * @param {Object} obj Raw JSON object representing the goal 
 	 */
-	initialize: function(obj) {
-		//temp id's until server side id's are created
-		this.id = (tempID++).toString();
-
+	parse: function(obj) {
+		
 		//the head requirement
 		//set the default flags at the root
 		//so they are inheritted by child requirements
-		this.head = new Requirement(
+		obj.head = new Requirement(
 			{
 				title: 'root',
 				isRoot: true,
@@ -41,16 +39,21 @@ return Backbone.Model.extend({
 				goalID: this.id,
 				take: 'all'
 			});
-		
+		obj.items = undefined;
+		return obj;
 	},
 	
 	/**
-	 * Getter for the title of the Goal
+	 * Getter for the title of the Goal, as a verb phrase.
 	 * @method getTitle
 	 * @return {String} title of the goal
 	 */
 	getTitle: function() {
-		return this.get('title');
+		if (this.get('type') === 'major') {
+			return 'Major in ' + this.get('title');
+		} else {
+			return this.get('title');
+		}
 	},
 	
 	/**

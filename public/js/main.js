@@ -5,6 +5,7 @@ require.config({
 		underscore: '../lib/underscore/underscore-min',
 		backbone: '../lib/backbone/backbone-min',
 		backbone_uniquemodel: '../lib/backbone-uniqueModel/backbone.uniquemodel',
+		backbone_babysitter: '../lib/backbone-babysitter/backbone.babysitter.min',
 		tpl: '../lib/requirejs-tpl/tpl'
 	},
 	shim: {
@@ -22,7 +23,8 @@ require.config({
 	}
 });
 
-require(['jquery', 'underscore', 'backbone', 'scheduleview', 'schedule'], function($, _, Backbone, ScheduleView, Schedule) {
+require(['jquery', 'underscore', 'backbone', 'scheduleview', 'schedule', 'goallistview', 'goalcollection', 'goal'],
+function($, _, Backbone, ScheduleView, Schedule, GoalListView, GoalCollection, Goal) {
 	$(document).ready(function () {
 		
 		var getQueryString = function (key) {
@@ -39,6 +41,18 @@ require(['jquery', 'underscore', 'backbone', 'scheduleview', 'schedule'], functi
 		
 		var scheduleView = new ScheduleView({collection: Schedule.getInstance(gradYear), el:'#schedule'});
 		scheduleView.render();
+		
+		
+		var goalList = new GoalCollection();
+		var goalListView = new GoalListView({collection: goalList, el:'#goals'});
+		goalListView.render();
+		
+		var major = getQueryString('major');
+		if (major) {
+			var majorObj = new Goal({id: major});
+			majorObj.fetch();
+			goalList.add(majorObj);
+		}
 		
 	});
 });
