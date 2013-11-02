@@ -1,12 +1,12 @@
 require.config({
-	baseURL: './js',
 	paths: {
 		jquery: '../lib/jquery/jquery-1.9.1',
 		underscore: '../lib/underscore/underscore-min',
 		backbone: '../lib/backbone/backbone-min',
 		backbone_uniquemodel: '../lib/backbone-uniqueModel/backbone.uniquemodel',
 		backbone_babysitter: '../lib/backbone-babysitter/backbone.babysitter.min',
-		tpl: '../lib/requirejs-tpl/tpl'
+		tpl: '../lib/requirejs-tpl/tpl',
+		bootstrap: '../lib/bootstrap/js/bootstrap.min'
 	},
 	shim: {
 		'backbone': {
@@ -19,11 +19,14 @@ require.config({
 		'backbone_uniquemodel': {
 			deps: ['backbone'],
 			exports: 'Backbone.UniqueModel'
+		},
+		'bootstrap' : {
+			deps: ['jquery']
 		}
 	}
 });
 
-require(['jquery', 'underscore', 'backbone', 'scheduleview', 'schedule', 'goallistview', 'goalcollection', 'goal'],
+require(['jquery', 'underscore', 'backbone', 'scheduleview', 'schedule', 'goallistview', 'goalcollection', 'goal', 'bootstrap'],
 function($, _, Backbone, ScheduleView, Schedule, GoalListView, GoalCollection, Goal) {
 	$(document).ready(function () {
 		
@@ -44,7 +47,7 @@ function($, _, Backbone, ScheduleView, Schedule, GoalListView, GoalCollection, G
 		
 		
 		var goalList = new GoalCollection();
-		var goalListView = new GoalListView({collection: goalList, el:'#goals'});
+		var goalListView = new GoalListView({collection: goalList, el:'#menu'});
 		goalListView.render();
 		
 		var major = getQueryString('major');
@@ -54,5 +57,10 @@ function($, _, Backbone, ScheduleView, Schedule, GoalListView, GoalCollection, G
 			goalList.add(majorObj);
 		}
 		
+        //TODO: put this where it belongs
+        $('#menu').scrollspy({ target: '#sideChecklist' });
+        
+		//for (var i = 0; i < 5; i++)
+		//	goalList.add(new Goal());
 	});
 });

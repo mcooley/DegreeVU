@@ -79,11 +79,12 @@
 	height:40%;
 	position:absolute; left:0; bottom:0;
 	overflow:auto;
+	padding-left:20%;
 }
 
 #goals {
 	width:20%;
-	position:absolute; left:0; top:0;
+	position:fixed; left:0;
 	min-height:100%;
 	text-align:center;
 	border-right:2px solid #ddd;
@@ -119,8 +120,94 @@
 	height:7px;
 }
 
+.goal.selected {
+	background-color:#eeeef9;
+}
+
 #addGoal {
 	margin-top:1em;
+}
+
+/* Side checklist */
+
+#sideChecklist {
+	//position:absolute; right:10px; top:10px;
+	position:fixed; right:30px;
+	margin-top:10px;
+	width:25%;
+	//margin-left:83%;
+	padding-top:10px;
+	padding-bottom:10px;
+	border-radius:10px;
+	background-color:#eeeef9;
+	max-height:100%;
+	overflow:auto;
+}
+
+#sideChecklist h2 {
+	font-family:'Roboto Slab';
+	margin:0;
+	padding-left:20px;
+	padding-right:20px;
+	padding-bottom:5px;
+	font-size:1.5em;
+}
+
+#sideChecklist ul {
+	font-size:0.9em;
+}
+
+#sideChecklist li > a {
+	padding-left:20px;
+	padding-right:20px;
+	padding-top:0;
+	padding-bottom:0;
+}
+
+#sideChecklist li.active > a {
+	background-color:darken(#eeeef9, 3%);
+}
+
+#sideChecklist li ul {
+	display:none;
+}
+
+#sideChecklist li.active ul {
+	display:block;
+	padding-left:10px;
+}
+
+/* Requirements list */
+.requirementsList {
+    padding-left:10px;
+    padding-right:35%;
+    padding-top:10px;
+    list-style:none;
+}
+
+.requirementsList li {
+    padding-top:10px;
+}
+
+.requirementsList h2, .requirementsList h3 {
+    font-family:'Roboto Slab';
+    display:inline-block;
+    margin:0;
+    padding-right:2px;
+}
+
+.requirementsList p.subtitle {
+    display:inline;
+    color:#666;
+    font-size:1.4em;
+}
+
+.requirementsList ul.subReqs {
+    list-style:none;
+}
+
+.requirementsList ul.subReqs p.subtitle {
+    font-size:1.2em;
 }
 
 /* Drag and drop */

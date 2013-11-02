@@ -1,0 +1,20 @@
+<% if (requirement.get('title') { %>
+<li id="requirement-<%= requirement.get('id') %>">
+    <h2><%= requirement.get('title') %></h2>
+    <% if (requirement.get('subtitle') { %>
+        <p class="subtitle"><%= requirement.get('subtitle') %></p>
+    <% } %>
+    <!-- TODO: finish this template. -->
+    <p>Details here.</p>
+    <ul class="subReqs">
+        <li>
+            <h3>Calculus Sequence</h3>
+            <p class="subtitle">(11-16 hours) Subtitle here.</p>
+            <p>Details here.</p>
+        </li>
+        <li><h3>Linear Algebra (3-4 hours)</h3></li>
+        <li><h3>Statistics (3 hours)</h3></li>
+        <li><h3>Elective Math Course (3 hours)</h3></li>
+    </ul>
+</li>
+<% } %>

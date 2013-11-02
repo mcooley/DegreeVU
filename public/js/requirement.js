@@ -1,4 +1,8 @@
-define(['backbone'], function(Backbone) {
+if (typeof define !== 'function') { var define = require('amdefine')(module) }
+
+define(['backbone', 'coursecodetokenizer'], function(Backbone, CourseCodeTokenizer) {
+
+var StatementCollection = CourseCodeTokenizer.StatementCollection;
 
 var Requirement = Backbone.Model.extend({
 
@@ -8,17 +12,25 @@ var Requirement = Backbone.Model.extend({
  * @constructor
  * @param {obj} obj A raw JSON object that is the requirement in declarive form
  */
-parse: function(obj) {
-	//TODO: fix this--needs to return the attributes to be set
+initialize: function() {
+    this.on('change:items', this.initTree);
+    if (this.has('items')) {
+        this.initTree();
+    }
+},
+
+initTree: function() {
+    if (!this.has('items')) return;
+    
 	var items, i, n, nextItem;
-	if (typeof obj.items[0] === 'object') {
+	if (typeof this.get('items')[0] === 'object') {
 		//then the item is a nested Requirement
 
 		items = [];
 
 		
-		for (i = 0, n = obj.items.length; i < n; ++i) {
-			nextItem = obj.items[i];
+		for (i = 0, n = this.get('items').length; i < n; ++i) {
+			nextItem = this.get('items')[i];
 			nextItem.reqID = Requirement.generateRequirementID(i, this.get('reqID'));
 			nextItem.isRoot = false;
 			nextItem.goalID = this.get('goalID');
@@ -32,22 +44,23 @@ parse: function(obj) {
 			items[i] = new Requirement(nextItem);
 		}
 
-		this.set('items', items, {silent: true});
+		this.set('subitems', items, {silent: true});
 		this.set('isLeaf', false, {silent: true});
 		
 	} else {
 		//typeof items are strings, need to convert the items
 		//into a query collection
 		this.set('isLeaf', true, {silent: true});
-		items = new StatementCollection(obj.items);
-		this.set('items', items, {silent: true});
+		items = new StatementCollection(this.get('items'));
+		this.set('subitems', items, {silent: true});
 	}
 	//flags, easy access
 	this.lock = this.get('lock');
 	this.ignoreLock = this.get('ignoreLock');
 	this.mandate = this.get('mandate');
 	this.maxHours = this.get('maxHours');
-	
+    
+    this.unset('items');
 },
 
 /**
@@ -87,7 +100,15 @@ getDetails: function() {
  * is a leaf Requirement
  */
 getItems: function() {
-	return this.get('items');
+	return this.get('subitems');
+},
+
+getRenderableItems: function() {
+    if (_.isArray(this.getItems())) {
+        return _.filter(this.getItems(), function(item) {
+            return item.has('title');
+        });
+    }
 },
 
 /**

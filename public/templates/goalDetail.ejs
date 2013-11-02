@@ -1,0 +1,51 @@
+<div id="sideChecklist">
+	<h2>Requirements</h2>
+	<ul class="nav nav-list">
+    <% _.each(reqs, function(requirement) { %>
+    <li>
+        <a href="#requirement-<%= requirement.cid %>"><%= requirement.get('title') %></a>
+        <% if (requirement.getRenderableItems()) { %>
+        <ul class="nav">
+            <% _.each(requirement.getRenderableItems(), function(requirement) { %>
+                <li><a href="#requirement-<%= requirement.cid %>"><%= requirement.get('title') %></a></li>
+            <% }); %>
+        </ul>
+        <% } %>
+    </li>
+    <% }); %>
+	</ul>
+</div>
+<ul class="requirementsList">
+    <% _.each(reqs, function(requirement) { %>
+    <li id="#requirement-<%= requirement.cid %>">
+        <h2><%= requirement.get('title') %></h2>
+        <% if (requirement.has('subtitle')) { %>
+            <p class="subtitle"><%= requirement.get('subtitle') %></p>
+        <% } %>
+        <% if (requirement.has('details')) { %>
+            <p><%= requirement.get('details') %></p>
+        <% } %>
+        
+        <!-- TODO: add draggables -->
+        
+        <% if (requirement.getRenderableItems()) { %>
+        <ul class="subReqs">
+            <% _.each(requirement.getRenderableItems(), function(requirement) { %>
+            <li id="#requirement-<%= requirement.cid %>">
+                <h3><%= requirement.get('title') %></h3>
+                <% if (requirement.has('subtitle')) { %>
+                    <p class="subtitle"><%= requirement.get('subtitle') %></p>
+                <% } %>
+                <% if (requirement.has('details')) { %>
+                    <p><%= requirement.get('details') %></p>
+                <% } %>
+                
+                <!-- TODO: add draggables -->
+                
+            </li>
+            <% }); %>
+        </ul>
+        <% } %>
+    </li>
+    <% }); %>
+</ul>

@@ -19,30 +19,29 @@ return Backbone.Model.extend({
 	 */
 	urlRoot: '/goals/',
 	
-	/**
-	 * Constructor for the Goal Object
-	 * @constructor
-	 * @param {Object} obj Raw JSON object representing the goal 
-	 */
-	parse: function(obj) {
-		
-		//the head requirement
-		//set the default flags at the root
-		//so they are inheritted by child requirements
-		obj.head = new Requirement(
+    initialize: function() {
+        this.on('change:items', this.initHead);
+        if (this.has('items')) {
+            this.initHead();
+        }
+    },
+    
+    initHead: function() {
+        if (!this.has('items')) return;
+        
+		this.set('head', new Requirement(
 			{
 				title: 'root',
 				isRoot: true,
 				lock: true,
 				ignoreLock: false,
-				items: obj.items, 
-				goalID: this.id,
+				items: this.get('items'),
+				goalID: this.get('id'),
 				take: 'all'
-			});
-		obj.items = undefined;
-		return obj;
-	},
-	
+			}));
+		this.unset('items');
+    },
+    
 	/**
 	 * Getter for the title of the Goal, as a verb phrase.
 	 * @method getTitle
@@ -98,7 +97,9 @@ return Backbone.Model.extend({
 	 * the top level Requirements
 	 */
 	requirements: function() {
-		return this.head.getItems();
+        if (this.has('head')) {
+		    return this.get('head').getItems();
+        }
 	},
 
 	/**
@@ -108,7 +109,7 @@ return Backbone.Model.extend({
 	 * @return {Number} the number of top-level Requirements
 	 */
 	length: function() {
-		return this.head.getItems().length;
+		return this.get('head').getItems().length;
 	},
 	/**
 	 * Adds a course collection to the Goal and inserts the courses into
