@@ -17,7 +17,7 @@
 </div>
 <ul class="requirementsList">
     <% _.each(reqs, function(requirement) { %>
-    <li id="#requirement-<%= requirement.cid %>">
+    <li id="requirement-<%= requirement.cid %>">
         <h2><%= requirement.get('title') %></h2>
         <% if (requirement.has('subtitle')) { %>
             <p class="subtitle"><%= requirement.get('subtitle') %></p>
@@ -31,7 +31,7 @@
         <% if (requirement.getRenderableItems()) { %>
         <ul class="subReqs">
             <% _.each(requirement.getRenderableItems(), function(requirement) { %>
-            <li id="#requirement-<%= requirement.cid %>">
+            <li id="requirement-<%= requirement.cid %>">
                 <h3><%= requirement.get('title') %></h3>
                 <% if (requirement.has('subtitle')) { %>
                     <p class="subtitle"><%= requirement.get('subtitle') %></p>

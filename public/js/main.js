@@ -56,11 +56,5 @@ function($, _, Backbone, ScheduleView, Schedule, GoalListView, GoalCollection, G
 			majorObj.fetch();
 			goalList.add(majorObj);
 		}
-		
-        //TODO: put this where it belongs
-        $('#menu').scrollspy({ target: '#sideChecklist' });
-        
-		//for (var i = 0; i < 5; i++)
-		//	goalList.add(new Goal());
 	});
 });

@@ -12,10 +12,8 @@ return Backbone.View.extend({
 	render: function() {
         if (this.model.has('head')) {
 		    this.$el.html(goalTemplate({ reqs: this.model.get('head').getRenderableItems() }));
+            $('#menu').scrollspy({ target: '#sideChecklist' });
         }
-        
-        //TODO: scope this correctly
-        $('#menu').scrollspy('refresh');
         
 		return this;
 	}
